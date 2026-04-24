@@ -1,0 +1,172 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 240 100% 10%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 240 100% 10%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 100% 10%;
+
+    --primary: 240 100% 25%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 240 20% 96%;
+    --secondary-foreground: 240 100% 25%;
+
+    --muted: 240 10% 95%;
+    --muted-foreground: 240 20% 45%;
+
+    --accent: 240 60% 90%;
+    --accent-foreground: 240 100% 25%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 240 20% 88%;
+    --input: 240 20% 88%;
+    --ring: 240 100% 25%;
+
+    --radius: 0.75rem;
+
+    /* Sidebar */
+    --sidebar-background: 240 100% 25%;
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-primary: 0 0% 100%;
+    --sidebar-primary-foreground: 240 100% 25%;
+    --sidebar-accent: 240 100% 32%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 240 100% 20%;
+    --sidebar-ring: 0 0% 100%;
+  }
+
+  .dark {
+    --background: 224 20% 9%;
+    --foreground: 210 20% 95%;
+
+    --card: 224 20% 12%;
+    --card-foreground: 210 20% 95%;
+
+    --popover: 224 20% 12%;
+    --popover-foreground: 210 20% 95%;
+
+    --primary: 240 100% 65%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 224 20% 18%;
+    --secondary-foreground: 210 20% 90%;
+
+    --muted: 224 20% 16%;
+    --muted-foreground: 210 15% 55%;
+
+    --accent: 224 20% 20%;
+    --accent-foreground: 210 20% 95%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 224 20% 20%;
+    --input: 224 20% 20%;
+    --ring: 240 100% 65%;
+
+    /* Sidebar stays navy in dark mode */
+    --sidebar-background: 240 100% 18%;
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-primary: 0 0% 100%;
+    --sidebar-primary-foreground: 240 100% 25%;
+    --sidebar-accent: 240 100% 25%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 240 100% 14%;
+    --sidebar-ring: 0 0% 100%;
+  }
+
+  * {
+    @apply border-border;
+    box-sizing: border-box;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Inter', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+@layer components {
+  .glass-card {
+    @apply bg-white/80 backdrop-blur-sm border border-white/20 shadow-lg;
+  }
+
+  .sidebar-item {
+    @apply flex items-center gap-3 px-3 py-2.5 rounded-lg text-sidebar-foreground/80
+           hover:bg-sidebar-accent hover:text-sidebar-foreground transition-all duration-200
+           cursor-pointer text-sm font-medium;
+  }
+
+  .sidebar-item.active {
+    @apply bg-white/20 text-white;
+  }
+
+  .btn-primary {
+    @apply bg-[#000080] hover:bg-[#000066] text-white font-semibold py-2.5 px-6
+           rounded-lg transition-all duration-200 shadow-md hover:shadow-lg
+           hover:translate-y-[-1px] active:translate-y-0;
+  }
+
+  .input-field {
+    @apply w-full px-4 py-3 rounded-lg border border-[#000080]/20 bg-white
+           focus:outline-none focus:ring-2 focus:ring-[#000080]/40 focus:border-[#000080]
+           text-gray-800 placeholder:text-gray-400 transition-all duration-200 text-sm;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #000080;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #000066;
+}
+
+/* Animations */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(0, 0, 128, 0.2); }
+  50% { box-shadow: 0 0 0 12px rgba(0, 0, 128, 0); }
+}
+
+.float-animation {
+  animation: float 3s ease-in-out infinite;
+}
+
+.pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
