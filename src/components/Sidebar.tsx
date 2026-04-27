@@ -8,6 +8,7 @@ import {
   Sun,
   Moon,
   Loader2,
+  LayoutDashboard,
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useMe } from "@/hooks/useUser";
@@ -38,6 +39,7 @@ export function SidebarProvider({ children }: { children: React.ReactNode }) {
 
 // ─── Nav Items ───────────────────────────────────────────────────────────────
 const navItems = [
+  { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
   { icon: ClipboardList, label: "Summary of Debit and Credit", path: "/summary-of-debit-and-credit" },
 ];
 

@@ -3,12 +3,14 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
+import { Toaster } from "sonner";
 import LoginPage from "@/pages/LoginPage";
 import SignupPage from "@/pages/SignupPage";
 import ForgotPasswordPage from "@/pages/ForgotPasswordPage";
 import DashboardLayout from "@/layouts/DashboardLayout";
 import ProtectedRoute from "@/components/ProtectedRoute";
-import SummeryOfDebitAndCredit from "./pages/summeryOfDebitAndCredit";
+import SummeryOfDebitAndCredit from "./pages/SummeryOfDebitAndCredit";
+import DashboardPage from "@/pages/DashboardPage";
 
 function App() {
   return (
@@ -24,6 +26,7 @@ function App() {
 
               <Route element={<ProtectedRoute />}>
                 <Route element={<DashboardLayout />}>
+                  <Route path="/dashboard" element={<DashboardPage />} />
                   <Route path="/summary-of-debit-and-credit" element={<SummeryOfDebitAndCredit />} />
                 </Route>
               </Route>
@@ -35,6 +38,7 @@ function App() {
           </AuthProvider>
         </BrowserRouter>
       </QueryClientProvider>
+      <Toaster position="top-right" richColors />
     </ThemeProvider>
   );
 }
