@@ -11,6 +11,7 @@ import DashboardLayout from "@/layouts/DashboardLayout";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import SummeryOfDebitAndCredit from "./pages/SummeryOfDebitAndCredit";
 import DashboardPage from "@/pages/DashboardPage";
+import CashFlow from "./pages/CashFlow";
 
 function App() {
   return (
@@ -28,6 +29,7 @@ function App() {
                 <Route element={<DashboardLayout />}>
                   <Route path="/dashboard" element={<DashboardPage />} />
                   <Route path="/summary-of-debit-and-credit" element={<SummeryOfDebitAndCredit />} />
+                  <Route path="/cash-flow" element={<CashFlow />} />
                 </Route>
               </Route>
 

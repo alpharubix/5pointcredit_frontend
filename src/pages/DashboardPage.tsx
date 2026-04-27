@@ -267,6 +267,7 @@ export default function DashboardPage() {
                   <Input
                     id="file"
                     type="file"
+                    accept=".pdf"
                     onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
                     required
                     className="cursor-pointer file:cursor-pointer file:bg-[#000080]/5 file:text-[#000080] file:border-0 file:rounded-md file:mr-4 file:px-4 file:py-1 hover:file:bg-[#000080]/10 transition-all"

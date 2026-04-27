@@ -6,29 +6,53 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Loader2, RefreshCcw, Filter, X } from "lucide-react";
 import { toast } from "sonner";
-// import { useNavigate } from "react-router-dom";
 
-interface MonthlyBreakdown {
-  month: string;
-  inflows_value: { total_receipt_inflows_value: number };
-  inflows_no: { total_receipt_inflows_no: number };
-  outflows_value: { total_payments_outflows_value: number };
-  outflows_no: { total_payments_outflows_no: number };
+interface CashFlowSummary {
+  inflows_revenue_a: number;
+  outflows_expenses_b: number;
+  gross_inflow_profit_c: number;
+  indirect_expenses_d: number;
+  indirect_income_e: number;
+  net_inflow_profit_f: number;
+  total_payables: number;
+  total_receivables_g: number;
+  bank_accruals: number;
+  opening_balance: number;
+  closing_balance: number;
+  net_cashflow: number;
 }
 
-interface SummaryData {
-  _id: string;
-  monthly_breakdown: MonthlyBreakdown[];
-  total: {
-    total_receipt_inflows_value: number;
-    total_receipt_inflows_no: number;
-    total_payments_outflows_value: number;
-    total_payments_outflows_no: number;
-  };
+interface CashFlowMonth {
+  MonthYear: number;
+  TotalInflowPercentage: number;
+  Inflow: number;
+  CashDeposit: number;
+  ChequeReceipt: number;
+  OnlineReceipt: number;
+  OtherReceipt: number;
+  TotalOutflowPercentage: number;
+  OutFlow: number;
+  CashWithdraw: number;
+  ChequePayment: number;
+  OnlinePayment: number;
+  OtherPayment: number;
+  GrossInflow: number;
+  IndirectExpense: number;
+  IndirectIncome: number;
+  NetInflow: number;
+  Payable: number;
+  Receiveble: number;
+  BankAccural: number;
+  OpeningBalance: number;
+  ClosingBalance: number;
 }
 
-export default function SummeryOfDebitAndCredit() {
-  // const navigate = useNavigate();
+interface CashFlowData {
+  summary: CashFlowSummary;
+  monthly_breakdown: CashFlowMonth[];
+}
+
+export default function CashFlow() {
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
   const [appliedFromDate, setAppliedFromDate] = useState("");
@@ -111,12 +135,12 @@ export default function SummeryOfDebitAndCredit() {
   };
 
   const { data, isLoading, isError, error, refetch } = useQuery({
-    queryKey: ["summary-of-debit-and-credit", appliedFromDate, appliedToDate],
+    queryKey: ["cashflow", appliedFromDate, appliedToDate],
     queryFn: async () => {
       const response = await apiClient.get(
-        `/bsa/summary-of-debit-and-credit_monthwise?from_date=${appliedFromDate}&to_date=${appliedToDate}`
+        `/bsa/cashflow?from_month=${appliedFromDate}&to_month=${appliedToDate}`
       );
-      return response.data?.data as SummaryData;
+      return response.data?.data as CashFlowData;
     },
     enabled: !!appliedFromDate && !!appliedToDate,
   });
@@ -141,7 +165,8 @@ export default function SummeryOfDebitAndCredit() {
 
   const expectedMonths = generateMonthsRange(appliedFromDate, appliedToDate);
 
-  const formatCurrency = (value: number) => {
+  const formatCurrency = (value: number | undefined | null) => {
+    if (value === undefined || value === null) return "-";
     return new Intl.NumberFormat('en-IN', {
       style: 'currency',
       currency: 'INR',
@@ -149,22 +174,79 @@ export default function SummeryOfDebitAndCredit() {
     }).format(value);
   };
 
-  const dataMap = new Map<string, MonthlyBreakdown>();
-  if (data?.monthly_breakdown) {
-    data.monthly_breakdown.forEach((item) => {
-      dataMap.set(item.month.toLowerCase(), item);
-    });
-  }
+  const rows = [
+    {
+      label: "Inflows/Revenue: (A)",
+      summaryKey: "inflows_revenue_a" as keyof CashFlowSummary,
+      monthKey: "Inflow" as keyof CashFlowMonth,
+      bgClass: "bg-white",
+    },
+    {
+      label: "OutFlows/Expenses: (B)",
+      summaryKey: "outflows_expenses_b" as keyof CashFlowSummary,
+      monthKey: "OutFlow" as keyof CashFlowMonth,
+      bgClass: "bg-white",
+    },
+    {
+      label: "Gross Inflow/Profit (C=A-B)",
+      summaryKey: "gross_inflow_profit_c" as keyof CashFlowSummary,
+      monthKey: "GrossInflow" as keyof CashFlowMonth,
+      bgClass: "bg-[#e6f0ff] font-semibold",
+    },
+    {
+      label: "Less: Indirect Expenses (D)",
+      summaryKey: "indirect_expenses_d" as keyof CashFlowSummary,
+      monthKey: "IndirectExpense" as keyof CashFlowMonth,
+      bgClass: "bg-white",
+    },
+    {
+      label: "Add: Indirect Income (E)",
+      summaryKey: "indirect_income_e" as keyof CashFlowSummary,
+      monthKey: "IndirectIncome" as keyof CashFlowMonth,
+      bgClass: "bg-white",
+    },
+    {
+      label: "Net Inflow/Profit (F=C-D+E)",
+      summaryKey: "net_inflow_profit_f" as keyof CashFlowSummary,
+      monthKey: "NetInflow" as keyof CashFlowMonth,
+      bgClass: "bg-[#e6f0ff] font-semibold",
+    },
+    {
+      label: "Add: Receivables (g)",
+      summaryKey: "total_receivables_g" as keyof CashFlowSummary,
+      monthKey: "Receiveble" as keyof CashFlowMonth,
+      bgClass: "bg-white",
+    },
+    {
+      label: "Bank Accruals",
+      summaryKey: "bank_accruals" as keyof CashFlowSummary,
+      monthKey: "BankAccural" as keyof CashFlowMonth,
+      bgClass: "bg-white",
+    },
+    {
+      label: "Add: Opening Balance",
+      summaryKey: "opening_balance" as keyof CashFlowSummary,
+      monthKey: "OpeningBalance" as keyof CashFlowMonth,
+      bgClass: "bg-white",
+    },
+    {
+      label: "Closing Balance",
+      summaryKey: "closing_balance" as keyof CashFlowSummary,
+      monthKey: "ClosingBalance" as keyof CashFlowMonth,
+      bgClass: "bg-white",
+    },
+  ];
 
   return (
-    <div className="p-8 max-w-7xl mx-auto animate-fade-in relative min-h-[calc(100vh-4rem)]">
+    <div className="p-8 max-w-[1400px] mx-auto animate-fade-in relative min-h-[calc(100vh-4rem)]">
       <div className="flex items-center gap-4 mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-[#000080] mb-2">Summary of Debit and Credit</h1>
-          <p className="text-gray-600">Monthwise breakdown of inflows and outflows</p>
+          <h1 className="text-3xl font-bold text-[#000080] mb-2">Cash Flow</h1>
+          <p className="text-gray-600">Monthwise cash flow statement analysis</p>
         </div>
       </div>
 
+      {/* Date Filter Card */}
       <Card className="mb-8 shadow-sm border-[#000080]/10 bg-white">
         <CardContent className="p-4">
           <div className="flex flex-col md:flex-row gap-4 items-end">
@@ -208,10 +290,10 @@ export default function SummeryOfDebitAndCredit() {
         </CardContent>
       </Card>
 
-      <Card className="shadow-lg border-[#000080]/10 bg-white">
+      <Card className="shadow-lg border-[#000080]/10 bg-white overflow-hidden">
         <CardHeader className="flex flex-row items-center justify-between bg-gray-50/50 border-b pb-4">
           <div>
-            <CardTitle className="text-xl text-[#000080]">Monthly Overview</CardTitle>
+            <CardTitle className="text-xl text-[#000080]">Cash Flow Statement</CardTitle>
             <CardDescription>
               {appliedFromDate && appliedToDate ? `From ${appliedFromDate} to ${appliedToDate}` : "Select a date range"}
             </CardDescription>
@@ -225,70 +307,58 @@ export default function SummeryOfDebitAndCredit() {
           {isLoading ? (
             <div className="flex flex-col items-center justify-center p-12 text-gray-500">
               <Loader2 className="h-8 w-8 animate-spin text-[#000080] mb-4" />
-              <p>Loading summary data...</p>
+              <p>Loading cash flow data...</p>
             </div>
           ) : isError ? (
             <div className="p-8 text-center text-red-500">
               <p>Error loading data: {(error as any)?.message || "Unknown error"}</p>
               <Button onClick={() => refetch()} variant="outline" className="mt-4">Try Again</Button>
             </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm text-left">
-                <thead className="text-xs text-gray-700 uppercase bg-gray-100/80 border-b">
+          ) : data ? (
+            <div className="overflow-x-auto w-full">
+              <table className="w-full text-sm text-left border-collapse min-w-[1000px]">
+                <thead>
+
                   <tr className="bg-[#1f4e78] text-white text-xs">
-                    <th scope="col" className="px-6 py-4 font-semibold">Month</th>
-                    <th scope="col" className="px-6 py-4 font-semibold text-right">Inflows (Receipts) - (No.)</th>
-                    <th scope="col" className="px-6 py-4 font-semibold text-right">Inflows (Receipts) - (Val.)</th>
-                    <th scope="col" className="px-6 py-4 font-semibold text-right">Outflows (Payments) - (No.)</th>
-                    <th scope="col" className="px-6 py-4 font-semibold text-right">Outflows (Payments) - (Val.)</th>
+                    <th className="px-4 py-3 border border-black/20 font-medium whitespace-nowrap min-w-[200px]">Particulars</th>
+                    <th className="px-4 py-3 border border-black/20 font-medium whitespace-nowrap text-right">Total (Amount)</th>
+                    <th className="px-4 py-3 border border-black/20 font-medium whitespace-nowrap text-right">Total (%)</th>
+                    {expectedMonths.map((month) => (
+                      <th key={month} className="px-4 py-3 border border-black/20 font-medium whitespace-nowrap text-right capitalize">
+                        {month}
+                      </th>
+                    ))}
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {expectedMonths.map((month) => {
-                    const monthData = dataMap.get(month);
-
-                    return (
-                      <tr key={month} className="hover:bg-blue-50/30 transition-colors">
-                        <td className="px-6 py-4 font-medium text-gray-900 capitalize">
-                          {month}
-                        </td>
-                        <td className="px-6 py-4 text-right text-gray-600">
-                          {monthData ? monthData.inflows_no.total_receipt_inflows_no : "-"}
-                        </td>
-                        <td className="px-6 py-4 text-right font-medium text-green-600">
-                          {monthData ? formatCurrency(monthData.inflows_value.total_receipt_inflows_value) : "-"}
-                        </td>
-                        <td className="px-6 py-4 text-right text-gray-600">
-                          {monthData ? monthData.outflows_no.total_payments_outflows_no : "-"}
-                        </td>
-                        <td className="px-6 py-4 text-right font-medium text-red-600">
-                          {monthData ? formatCurrency(monthData.outflows_value.total_payments_outflows_value) : "-"}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-                {data?.total && (
-                  <tfoot className="bg-blue-50/50 font-bold border-t-2 border-[#000080]/20">
-                    <tr>
-                      <td className="px-6 py-4 text-[#000080]">Total</td>
-                      <td className="px-6 py-4 text-right text-gray-800">
-                        {data.total.total_receipt_inflows_no}
+                <tbody>
+                  {rows.map((row, index) => (
+                    <tr key={index} className={`border-b border-black/10 ${row.bgClass}`}>
+                      <td className="px-4 py-2.5 border border-black/20 font-medium text-gray-800 bg-gray-200/50">
+                        {row.label}
                       </td>
-                      <td className="px-6 py-4 text-right text-green-700">
-                        {formatCurrency(data.total.total_receipt_inflows_value)}
+                      <td className="px-4 py-2.5 border border-black/20 text-right font-medium">
+                        {formatCurrency(data.summary[row.summaryKey])}
                       </td>
-                      <td className="px-6 py-4 text-right text-gray-800">
-                        {data.total.total_payments_outflows_no}
+                      <td className="px-4 py-2.5 border border-black/20 text-right text-gray-500">
+                        {/* Total % is typically blank or computed differently, keeping blank as per reference */}
                       </td>
-                      <td className="px-6 py-4 text-right text-red-700">
-                        {formatCurrency(data.total.total_payments_outflows_value)}
-                      </td>
+                      {expectedMonths.map((month, monthIndex) => {
+                        // Match month data by index since API returns an array in chronological order
+                        const monthData = data.monthly_breakdown[monthIndex];
+                        return (
+                          <td key={month} className="px-4 py-2.5 border border-black/20 text-right">
+                            {monthData ? formatCurrency(monthData[row.monthKey]) : "-"}
+                          </td>
+                        );
+                      })}
                     </tr>
-                  </tfoot>
-                )}
+                  ))}
+                </tbody>
               </table>
+            </div>
+          ) : (
+            <div className="p-8 text-center text-gray-500">
+              No data available for the selected date range.
             </div>
           )}
         </CardContent>
