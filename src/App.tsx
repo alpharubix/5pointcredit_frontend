@@ -1,17 +1,19 @@
+import { lazy } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { Toaster } from "sonner";
-import LoginPage from "@/pages/LoginPage";
-import SignupPage from "@/pages/SignupPage";
-import ForgotPasswordPage from "@/pages/ForgotPasswordPage";
-import DashboardLayout from "@/layouts/DashboardLayout";
-import ProtectedRoute from "@/components/ProtectedRoute";
-import SummeryOfDebitAndCredit from "./pages/SummeryOfDebitAndCredit";
-import DashboardPage from "@/pages/DashboardPage";
-import CashFlow from "./pages/CashFlow";
+const LoginPage = lazy(() => import("@/pages/LoginPage"))
+const SignupPage = lazy(() => import("@/pages/SignupPage"))
+const ForgotPasswordPage = lazy(() => import("@/pages/ForgotPasswordPage"))
+const DashboardLayout = lazy(() => import("@/layouts/DashboardLayout"))
+const ProtectedRoute = lazy(() => import("@/components/ProtectedRoute"))
+const SummeryOfDebitAndCredit = lazy(() => import("@/pages/bsa/SummeryOfDebitAndCredit"))
+const DashboardPage = lazy(() => import("@/pages/DashboardPage"))
+const CashFlow = lazy(() => import("@/pages/bsa/CashFlow"))
+const OverviewMonthlyWise = lazy(() => import("@/pages/bsa/OverviewMonthlyWise"))
 
 function App() {
   return (
@@ -27,9 +29,10 @@ function App() {
 
               <Route element={<ProtectedRoute />}>
                 <Route element={<DashboardLayout />}>
-                  <Route path="/dashboard" element={<DashboardPage />} />
-                  <Route path="/summary-of-debit-and-credit" element={<SummeryOfDebitAndCredit />} />
-                  <Route path="/cash-flow" element={<CashFlow />} />
+                  <Route path="/home/dashboard" element={<DashboardPage />} />
+                  <Route path="/bsa/summary-of-debit-and-credit" element={<SummeryOfDebitAndCredit />} />
+                  <Route path="/bsa/cash-flow" element={<CashFlow />} />
+                  <Route path="/bsa/overview-monthly-wise" element={<OverviewMonthlyWise />} />
                 </Route>
               </Route>
 

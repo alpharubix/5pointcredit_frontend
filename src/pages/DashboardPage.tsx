@@ -24,6 +24,7 @@ export default function DashboardPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
+
   const [formData, setFormData] = useState({
     entityName: "",
     companyType: "",
@@ -264,14 +265,27 @@ export default function DashboardPage() {
 
                 <div className="space-y-2">
                   <Label htmlFor="file">Statement File</Label>
-                  <Input
-                    id="file"
-                    type="file"
-                    accept=".pdf"
-                    onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
-                    required
-                    className="cursor-pointer file:cursor-pointer file:bg-[#000080]/5 file:text-[#000080] file:border-0 file:rounded-md file:mr-4 file:px-4 file:py-1 hover:file:bg-[#000080]/10 transition-all"
-                  />
+                  <div className="flex items-center gap-2 w-full">
+                    <Input
+                      id="file"
+                      type="file"
+                      multiple={true}
+                      accept=".pdf"
+                      onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+                      required
+                      className="cursor-pointer file:cursor-pointer file:bg-[#000080]/5 file:text-[#000080] file:border-0 file:rounded-md file:mr-4 file:px-4 file:py-1 hover:file:bg-[#000080]/10 transition-all"
+                    />
+                    <Button
+                      variant="secondary"
+                      size="icon"
+                      onClick={() => {
+                        setSelectedFile(null);
+                        (document.getElementById('file') as HTMLInputElement).value = '';
+                      }}
+                    >
+                      <X className="h-5 w-5" />
+                    </Button>
+                  </div>
                 </div>
 
                 <Button

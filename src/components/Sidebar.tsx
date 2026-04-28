@@ -6,15 +6,12 @@ import {
   ChevronLeft,
   ChevronRight,
   ChevronDown,
-  Sun,
-  Moon,
   Loader2,
   LayoutDashboard,
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useMe } from "@/hooks/useUser";
 import { useLogout } from "@/hooks/useAuth";
-import { useTheme } from "@/contexts/ThemeContext";
 import FivePointCreditWhiteLogo from "../assets/5PontCreditWhiteLogo.svg";
 
 // ─── Context ────────────────────────────────────────────────────────────────
@@ -40,13 +37,14 @@ export function SidebarProvider({ children }: { children: React.ReactNode }) {
 
 // ─── Nav Items ───────────────────────────────────────────────────────────────
 const navItems = [
-  { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
+  { icon: LayoutDashboard, label: "Dashboard", path: "/home/dashboard" },
   {
     icon: ClipboardList,
     label: "BSA Reports",
     subItems: [
-      { label: "Summary of Debit and Credit", path: "/summary-of-debit-and-credit" },
-      { label: "Cash Flow", path: "/cash-flow" },
+      { label: "Summary of Debit and Credit", path: "/bsa/summary-of-debit-and-credit" },
+      { label: "Cash Flow", path: "/bsa/cash-flow" },
+      { label: "Overview Monthly Wise", path: "/bsa/overview-monthly-wise" }
     ]
   },
 ];
@@ -68,7 +66,6 @@ export function AppSidebar() {
   const { collapsed, setCollapsed } = useSidebar();
   const navigate = useNavigate();
   const location = useLocation();
-  const { toggleTheme, isDark } = useTheme();
   const logoutMutation = useLogout();
   const [expandedMenus, setExpandedMenus] = useState<Record<string, boolean>>({});
 
@@ -214,23 +211,6 @@ export function AppSidebar() {
 
       {/* Bottom Items */}
       <div className="border-t border-white/10 px-2 py-3 space-y-1">
-
-        {/* Dark Mode Toggle */}
-        <button
-          onClick={toggleTheme}
-          className={cn("sidebar-item w-full", collapsed && "justify-center px-0")}
-          title={collapsed ? (isDark ? "Light Mode" : "Dark Mode") : undefined}
-          id="theme-toggle"
-        >
-          {isDark ? (
-            <Sun className="h-5 w-5 shrink-0 text-yellow-300" />
-          ) : (
-            <Moon className="h-5 w-5 shrink-0 text-white/70" />
-          )}
-          {!collapsed && (
-            <span className="truncate">{isDark ? "Light Mode" : "Dark Mode"}</span>
-          )}
-        </button>
 
         {/* Logout */}
         <button

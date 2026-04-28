@@ -53,7 +53,7 @@ export function useLogin() {
       // We only cache optional display info (name, email) for the UI.
       const user = data?.user || data?.data?.user || data?.data || {};
       setUser(user);
-      navigate("/dashboard");
+      navigate("/home/dashboard");
     },
   });
 }

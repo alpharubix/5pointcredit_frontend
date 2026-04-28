@@ -21,7 +21,8 @@ apiClient.interceptors.response.use(
     if (error.response?.status === 401) {
       window.dispatchEvent(new Event("auth:unauthorized"));
     }
-    const msg = error.response?.data?.message || error.response?.data?.error;
+
+    const msg = error.response?.data?.detail || error.response?.data?.detail?.message;
     if (msg) {
       toast.error(msg);
     } else {
