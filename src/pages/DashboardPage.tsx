@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { FileText, Building2, CreditCard, PieChart, ShieldCheck, UploadCloud, X } from "lucide-react";
+import { Select, SelectTrigger, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectValue } from "@/components/ui/select";
 
 interface Bank {
   srNo: number;
@@ -192,39 +193,45 @@ export default function DashboardPage() {
 
                   <div className="space-y-2">
                     <Label htmlFor="companyType">Company Type <span className="text-red-500">*</span></Label>
-                    <select
-                      id="companyType"
-                      name="companyType"
-                      value={formData.companyType}
-                      onChange={handleInputChange}
-                      className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                      required
-                    >
-                      <option value="">Select</option>
-                      <option value="Individual">Individual</option>
-                      <option value="Company">Company</option>
-                      <option value="Sole Proprietorship">Sole Proprietorship</option>
-                      <option value="Trust">Trust</option>
-                      <option value="Partnership">Partnership</option>
-                    </select>
+
+                    <Select value={formData.companyType} onValueChange={(value) => setFormData({ ...formData, companyType: value })}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select Company Type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          <SelectLabel>Company Type</SelectLabel>
+                          <SelectItem value="Individual">Individual</SelectItem>
+                          <SelectItem value="Company">Company</SelectItem>
+                          <SelectItem value="Sole Proprietorship">Sole Proprietorship</SelectItem>
+                          <SelectItem value="Trust">Trust</SelectItem>
+                          <SelectItem value="Partnership">Partnership</SelectItem>
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="accountType">Account Type <span className="text-red-500">*</span></Label>
-                    <select
-                      id="accountType"
-                      name="accountType"
+                    <Select
                       value={formData.accountType}
-                      onChange={handleInputChange}
-                      className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                      required
+                      onValueChange={(value) => {
+                        setFormData({ ...formData, accountType: value })
+                      }}
                     >
-                      <option value="">Select</option>
-                      <option value="CURRENT">CURRENT</option>
-                      <option value="SAVINGS">SAVINGS</option>
-                      <option value="Over Draft(OD)">Over Draft(OD)</option>
-                      <option value="Cash Credit(CC)">Cash Credit(CC)</option>
-                    </select>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select Account Type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          <SelectLabel>Account Type</SelectLabel>
+                          <SelectItem value="CURRENT">CURRENT</SelectItem>
+                          <SelectItem value="SAVINGS">SAVINGS</SelectItem>
+                          <SelectItem value="Over Draft(OD)">Over Draft(OD)</SelectItem>
+                          <SelectItem value="Cash Credit(CC)">Cash Credit(CC)</SelectItem>
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
 

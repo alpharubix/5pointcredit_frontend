@@ -3,8 +3,11 @@ import apiClient from "@/lib/axios";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Loader2, RefreshCcw, Filter, X } from "lucide-react";
+import { Loader2, RefreshCcw, Filter, X, CalendarIcon } from "lucide-react";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
 import { toast } from "sonner";
 
 interface MonthlyBreakdown {
@@ -327,23 +330,76 @@ export default function OverviewMonthlyWise() {
           <div className="flex flex-col md:flex-row gap-4 items-end">
             <div className="flex-1 space-y-1">
               <label className="text-sm font-medium text-gray-700">From Date</label>
-              <Input
-                type="date"
-                value={fromDate}
-                min={dateRangeData?.from_date}
-                max={dateRangeData?.to_date}
-                onChange={(e) => setFromDate(e.target.value)}
-              />
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant={"outline"}
+                    className={cn(
+                      "w-full justify-start text-left font-normal bg-background border-input",
+                      !fromDate && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {fromDate ? format(new Date(fromDate + "T00:00:00"), "PPP") : <span>Pick a date</span>}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    captionLayout="dropdown"
+                    startMonth={dateRangeData?.from_date ? new Date(dateRangeData.from_date + "T00:00:00") : new Date(1990, 0)}
+                    endMonth={dateRangeData?.to_date ? new Date(dateRangeData.to_date + "T00:00:00") : new Date(2100, 11)}
+                    selected={fromDate ? new Date(fromDate + "T00:00:00") : undefined}
+                    defaultMonth={fromDate ? new Date(fromDate + "T00:00:00") : undefined}
+                    onSelect={(date) => setFromDate(date ? format(date, "yyyy-MM-dd") : "")}
+                    disabled={(date) => {
+                      if (!dateRangeData?.from_date || !dateRangeData?.to_date) return false;
+                      const from = new Date(dateRangeData.from_date + "T00:00:00");
+                      from.setHours(0, 0, 0, 0);
+                      const to = new Date(dateRangeData.to_date + "T00:00:00");
+                      to.setHours(23, 59, 59, 999);
+                      return date < from || date > to;
+                    }}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
             </div>
             <div className="flex-1 space-y-1">
               <label className="text-sm font-medium text-gray-700">To Date</label>
-              <Input
-                type="date"
-                value={toDate}
-                min={dateRangeData?.from_date}
-                max={dateRangeData?.to_date}
-                onChange={(e) => setToDate(e.target.value)}
-              />
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant={"outline"}
+                    className={cn(
+                      "w-full justify-start text-left font-normal bg-background border-input",
+                      !toDate && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {toDate ? format(new Date(toDate + "T00:00:00"), "PPP") : <span>Pick a date</span>}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    captionLayout="dropdown"
+                    startMonth={dateRangeData?.from_date ? new Date(dateRangeData.from_date + "T00:00:00") : new Date(1990, 0)}
+                    endMonth={dateRangeData?.to_date ? new Date(dateRangeData.to_date + "T00:00:00") : new Date(2100, 11)}
+                    selected={toDate ? new Date(toDate + "T00:00:00") : undefined}
+                    onSelect={(date) => setToDate(date ? format(date, "yyyy-MM-dd") : "")}
+                    disabled={(date) => {
+                      if (!dateRangeData?.from_date || !dateRangeData?.to_date) return false;
+                      const from = new Date(dateRangeData.from_date + "T00:00:00");
+                      from.setHours(0, 0, 0, 0);
+                      const to = new Date(dateRangeData.to_date + "T00:00:00");
+                      to.setHours(23, 59, 59, 999);
+                      return date < from || date > to;
+                    }}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
             </div>
             <div className="flex gap-2">
               <Button onClick={handleApply} className="bg-[#000080] hover:bg-[#000080]/90 text-white gap-2">
@@ -358,7 +414,7 @@ export default function OverviewMonthlyWise() {
             * You can select a maximum date range of 12 months.
             {dateRangeData && (
               <span className="ml-1">
-                Available data range: {dateRangeData.from_date} to {dateRangeData.to_date}.
+                Available data range: {format(new Date(dateRangeData.from_date + "T00:00:00"), "PPP")} to {format(new Date(dateRangeData.to_date + "T00:00:00"), "PPP")}.
               </span>
             )}
           </div>
