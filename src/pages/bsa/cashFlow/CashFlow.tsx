@@ -9,51 +9,8 @@ import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-
-interface CashFlowSummary {
-  inflows_revenue_a: number;
-  outflows_expenses_b: number;
-  gross_inflow_profit_c: number;
-  indirect_expenses_d: number;
-  indirect_income_e: number;
-  net_inflow_profit_f: number;
-  total_payables: number;
-  total_receivables_g: number;
-  bank_accruals: number;
-  opening_balance: number;
-  closing_balance: number;
-  net_cashflow: number;
-}
-
-interface CashFlowMonth {
-  MonthYear: number;
-  TotalInflowPercentage: number;
-  Inflow: number;
-  CashDeposit: number;
-  ChequeReceipt: number;
-  OnlineReceipt: number;
-  OtherReceipt: number;
-  TotalOutflowPercentage: number;
-  OutFlow: number;
-  CashWithdraw: number;
-  ChequePayment: number;
-  OnlinePayment: number;
-  OtherPayment: number;
-  GrossInflow: number;
-  IndirectExpense: number;
-  IndirectIncome: number;
-  NetInflow: number;
-  Payable: number;
-  Receiveble: number;
-  BankAccural: number;
-  OpeningBalance: number;
-  ClosingBalance: number;
-}
-
-interface CashFlowData {
-  summary: CashFlowSummary;
-  monthly_breakdown: CashFlowMonth[];
-}
+import type { CashFlowData } from "./cashFlowType";
+import rows from "./cashflowtablerow"
 
 export default function CashFlow() {
   const [fromDate, setFromDate] = useState("");
@@ -168,77 +125,18 @@ export default function CashFlow() {
 
   const expectedMonths = generateMonthsRange(appliedFromDate, appliedToDate);
 
-  const formatCurrency = (value: number | undefined | null) => {
-    if (value === undefined || value === null) return "-";
+  const formatCurrency = (value: number | string | undefined | null) => {
+    if (value === undefined || value === null || value === "") return "-";
+    const num = typeof value === 'string' ? parseFloat(value) : value;
+    if (isNaN(num)) return "-";
     return new Intl.NumberFormat('en-IN', {
       style: 'currency',
       currency: 'INR',
       minimumFractionDigits: 2,
-    }).format(value);
+    }).format(num);
   };
 
-  const rows = [
-    {
-      label: "Inflows/Revenue: (A)",
-      summaryKey: "inflows_revenue_a" as keyof CashFlowSummary,
-      monthKey: "Inflow" as keyof CashFlowMonth,
-      bgClass: "bg-white",
-    },
-    {
-      label: "OutFlows/Expenses: (B)",
-      summaryKey: "outflows_expenses_b" as keyof CashFlowSummary,
-      monthKey: "OutFlow" as keyof CashFlowMonth,
-      bgClass: "bg-white",
-    },
-    {
-      label: "Gross Inflow/Profit (C=A-B)",
-      summaryKey: "gross_inflow_profit_c" as keyof CashFlowSummary,
-      monthKey: "GrossInflow" as keyof CashFlowMonth,
-      bgClass: "bg-[#e6f0ff] font-semibold",
-    },
-    {
-      label: "Less: Indirect Expenses (D)",
-      summaryKey: "indirect_expenses_d" as keyof CashFlowSummary,
-      monthKey: "IndirectExpense" as keyof CashFlowMonth,
-      bgClass: "bg-white",
-    },
-    {
-      label: "Add: Indirect Income (E)",
-      summaryKey: "indirect_income_e" as keyof CashFlowSummary,
-      monthKey: "IndirectIncome" as keyof CashFlowMonth,
-      bgClass: "bg-white",
-    },
-    {
-      label: "Net Inflow/Profit (F=C-D+E)",
-      summaryKey: "net_inflow_profit_f" as keyof CashFlowSummary,
-      monthKey: "NetInflow" as keyof CashFlowMonth,
-      bgClass: "bg-[#e6f0ff] font-semibold",
-    },
-    {
-      label: "Add: Receivables (g)",
-      summaryKey: "total_receivables_g" as keyof CashFlowSummary,
-      monthKey: "Receiveble" as keyof CashFlowMonth,
-      bgClass: "bg-white",
-    },
-    {
-      label: "Bank Accruals",
-      summaryKey: "bank_accruals" as keyof CashFlowSummary,
-      monthKey: "BankAccural" as keyof CashFlowMonth,
-      bgClass: "bg-white",
-    },
-    {
-      label: "Add: Opening Balance",
-      summaryKey: "opening_balance" as keyof CashFlowSummary,
-      monthKey: "OpeningBalance" as keyof CashFlowMonth,
-      bgClass: "bg-white",
-    },
-    {
-      label: "Closing Balance",
-      summaryKey: "closing_balance" as keyof CashFlowSummary,
-      monthKey: "ClosingBalance" as keyof CashFlowMonth,
-      bgClass: "bg-white",
-    },
-  ];
+
 
   return (
     <div className="p-8 max-w-[1400px] mx-auto animate-fade-in relative min-h-[calc(100vh-4rem)]">
@@ -388,22 +286,30 @@ export default function CashFlow() {
                 </thead>
                 <tbody>
                   {rows.map((row, index) => (
-                    <tr key={index} className={`border-b border-black/10 ${row.bgClass}`}>
-                      <td className="px-4 py-2.5 border border-black/20 font-medium text-gray-800 bg-gray-200/50">
+                    <tr key={index} className={cn("border-b border-black/10 bg-white hover:bg-gray-50 transition-colors", row.rowClass)}>
+                      <td className={cn("px-4 py-2.5 border border-black/20 whitespace-nowrap", row.labelClass)}>
                         {row.label}
                       </td>
-                      <td className="px-4 py-2.5 border border-black/20 text-right font-medium">
-                        {formatCurrency(data.summary[row.summaryKey])}
+                      <td className={cn("px-4 py-2.5 border border-black/20 text-right", row.valueClass)}>
+                        {row.summaryKey ? formatCurrency(data.summary[row.summaryKey] as number) : ""}
                       </td>
-                      <td className="px-4 py-2.5 border border-black/20 text-right text-gray-500">
-                        {/* Total % is typically blank or computed differently, keeping blank as per reference */}
+                      <td className={cn("px-4 py-2.5 border border-black/20 text-right", row.valueClass)}>
+                        {/* Total % could go here if available in summary data */}
                       </td>
                       {expectedMonths.map((month, monthIndex) => {
-                        // Match month data by index since API returns an array in chronological order
                         const monthData = data.monthly_breakdown[monthIndex];
+                        let cellContent = "-";
+                        if (monthData && row.monthKey) {
+                          const rawVal = monthData[row.monthKey];
+                          if (row.isPercent) {
+                            cellContent = rawVal !== undefined && rawVal !== null ? `${rawVal}%` : "-";
+                          } else {
+                            cellContent = formatCurrency(rawVal as number);
+                          }
+                        }
                         return (
-                          <td key={month} className="px-4 py-2.5 border border-black/20 text-right">
-                            {monthData ? formatCurrency(monthData[row.monthKey]) : "-"}
+                          <td key={month} className={cn("px-4 py-2.5 border border-black/20 text-right", row.valueClass)}>
+                            {cellContent}
                           </td>
                         );
                       })}

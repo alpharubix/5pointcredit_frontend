@@ -13,21 +13,16 @@ import { Calendar } from "@/components/ui/calendar";
 
 interface MonthlyBreakdown {
   month: string;
-  inflows_value: { total_receipt_inflows_value: number };
-  inflows_no: { total_receipt_inflows_no: number };
-  outflows_value: { total_payments_outflows_value: number };
-  outflows_no: { total_payments_outflows_no: number };
+  inflows_value: any;
+  inflows_no: any;
+  outflows_value: any;
+  outflows_no: any;
 }
 
 interface SummaryData {
   _id: string;
   monthly_breakdown: MonthlyBreakdown[];
-  total: {
-    total_receipt_inflows_value: number;
-    total_receipt_inflows_no: number;
-    total_payments_outflows_value: number;
-    total_payments_outflows_no: number;
-  };
+  total: any;
 }
 
 export default function SummeryOfDebitAndCredit() {
@@ -159,6 +154,34 @@ export default function SummeryOfDebitAndCredit() {
     });
   }
 
+  const renderRow = (
+    label: string,
+    totalValue: number | undefined,
+    getValueForMonth: (monthData: MonthlyBreakdown) => number | undefined,
+    isCurrency: boolean = false,
+    isBold: boolean = false
+  ) => {
+    return (
+      <tr className="hover:bg-blue-50/30 transition-colors">
+        <td className={cn("px-4 py-2 border border-gray-300 whitespace-nowrap sticky left-0 z-10", isBold ? "font-bold bg-gray-100" : "bg-white")}>
+          {label}
+        </td>
+        <td className={cn("px-4 py-2 text-right border border-gray-300", isBold && "font-bold bg-gray-50")}>
+          {totalValue ? (isCurrency ? formatCurrency(totalValue) : totalValue) : "-"}
+        </td>
+        {expectedMonths.map((month) => {
+          const monthData = dataMap.get(month);
+          const val = monthData ? getValueForMonth(monthData) : undefined;
+          return (
+            <td key={month} className={cn("px-4 py-2 text-right border border-gray-300", isBold && "font-bold bg-gray-50")}>
+              {val ? (isCurrency ? formatCurrency(val) : val) : "-"}
+            </td>
+          );
+        })}
+      </tr>
+    );
+  };
+
   return (
     <div className="p-8 max-w-7xl mx-auto animate-fade-in relative min-h-[calc(100vh-4rem)]">
       <div className="flex items-center gap-4 mb-8">
@@ -289,61 +312,72 @@ export default function SummeryOfDebitAndCredit() {
               <Button onClick={() => refetch()} variant="outline" className="mt-4">Try Again</Button>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm text-left">
-                <thead className="text-xs text-gray-700 uppercase bg-gray-100/80 border-b">
-                  <tr className="bg-[#1f4e78] text-white text-xs">
-                    <th scope="col" className="px-6 py-4 font-semibold">Month</th>
-                    <th scope="col" className="px-6 py-4 font-semibold text-right">Inflows (Receipts) - (No.)</th>
-                    <th scope="col" className="px-6 py-4 font-semibold text-right">Inflows (Receipts) - (Val.)</th>
-                    <th scope="col" className="px-6 py-4 font-semibold text-right">Outflows (Payments) - (No.)</th>
-                    <th scope="col" className="px-6 py-4 font-semibold text-right">Outflows (Payments) - (Val.)</th>
+            <div className="overflow-x-auto pb-4">
+              <table className="w-full text-sm text-left border-collapse border border-gray-300">
+                <thead className="text-xs text-white bg-[#1f4e78]">
+                  <tr>
+                    <th className="px-4 py-3 font-semibold border border-gray-400 w-48 sticky left-0 bg-[#1f4e78] z-20">Months</th>
+                    <th className="px-4 py-3 font-semibold text-right border border-gray-400 min-w-[120px]">Total</th>
+                    {expectedMonths.map((month) => (
+                      <th key={month} className="px-4 py-3 font-semibold text-right border border-gray-400 capitalize min-w-[120px]">
+                        {month}
+                      </th>
+                    ))}
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {expectedMonths.map((month) => {
-                    const monthData = dataMap.get(month);
+                <tbody className="bg-white">
+                  {/* Inflows (Value) */}
+                  <tr className="bg-gray-400 text-white">
+                    <td colSpan={expectedMonths.length + 2} className="px-4 py-1.5 font-semibold text-center border border-gray-400">
+                      Inflows (Value)
+                    </td>
+                  </tr>
+                  {renderRow("Cash Deposit", data?.total?.inflows_value_breakdown?.cash_deposit, m => m?.inflows_value?.inflows_value_breakdown?.cash_deposit, true)}
+                  {renderRow("Cheque Receipt", data?.total?.inflows_value_breakdown?.cheque_receipt, m => m?.inflows_value?.inflows_value_breakdown?.cheque_receipt, true)}
+                  {renderRow("Online Receipt", data?.total?.inflows_value_breakdown?.online_receipt, m => m?.inflows_value?.inflows_value_breakdown?.online_receipt, true)}
+                  {renderRow("Other Receipt", data?.total?.inflows_value_breakdown?.other_receipt, m => m?.inflows_value?.inflows_value_breakdown?.other_receipt, true)}
+                  {renderRow("Inhouse Receipt", data?.total?.inflows_value_breakdown?.inhouse_receipt, m => m?.inflows_value?.inflows_value_breakdown?.inhouse_receipt, true)}
+                  {renderRow("Total Receipt (Inflows)", data?.total?.total_receipt_inflows_value, m => m?.inflows_value?.total_receipt_inflows_value, true, true)}
 
-                    return (
-                      <tr key={month} className="hover:bg-blue-50/30 transition-colors">
-                        <td className="px-6 py-4 font-medium text-gray-900 capitalize">
-                          {month}
-                        </td>
-                        <td className="px-6 py-4 text-right text-gray-600">
-                          {monthData ? monthData.inflows_no.total_receipt_inflows_no : "-"}
-                        </td>
-                        <td className="px-6 py-4 text-right font-medium text-green-600">
-                          {monthData ? formatCurrency(monthData.inflows_value.total_receipt_inflows_value) : "-"}
-                        </td>
-                        <td className="px-6 py-4 text-right text-gray-600">
-                          {monthData ? monthData.outflows_no.total_payments_outflows_no : "-"}
-                        </td>
-                        <td className="px-6 py-4 text-right font-medium text-red-600">
-                          {monthData ? formatCurrency(monthData.outflows_value.total_payments_outflows_value) : "-"}
-                        </td>
-                      </tr>
-                    );
-                  })}
+                  {/* Inflows (No.) */}
+                  <tr className="bg-gray-400 text-white">
+                    <td colSpan={expectedMonths.length + 2} className="px-4 py-1.5 font-semibold text-center border border-gray-400">
+                      Inflows (No.)
+                    </td>
+                  </tr>
+                  {renderRow("Cash Deposit", data?.total?.inflows_no_breakdown?.cash_deposit ?? data?.total?.inflows_no_breakdown?.cash_deposit_no, m => m?.inflows_no?.inflows_no_breakdown?.cash_deposit ?? m?.inflows_no?.inflows_no_breakdown?.cash_deposit_no, false)}
+                  {renderRow("Cheque Receipt", data?.total?.inflows_no_breakdown?.cheque_receipt ?? data?.total?.inflows_no_breakdown?.cheque_receipt_no, m => m?.inflows_no?.inflows_no_breakdown?.cheque_receipt ?? m?.inflows_no?.inflows_no_breakdown?.cheque_receipt_no, false)}
+                  {renderRow("Online Receipt", data?.total?.inflows_no_breakdown?.online_receipt ?? data?.total?.inflows_no_breakdown?.online_receipt_no, m => m?.inflows_no?.inflows_no_breakdown?.online_receipt ?? m?.inflows_no?.inflows_no_breakdown?.online_receipt_no, false)}
+                  {renderRow("Other Receipt", data?.total?.inflows_no_breakdown?.other_receipt ?? data?.total?.inflows_no_breakdown?.other_receipt_no, m => m?.inflows_no?.inflows_no_breakdown?.other_receipt ?? m?.inflows_no?.inflows_no_breakdown?.other_receipt_no, false)}
+                  {renderRow("Inhouse Receipt", data?.total?.inflows_no_breakdown?.inhouse_receipt ?? data?.total?.inflows_no_breakdown?.inhouse_receipt_no, m => m?.inflows_no?.inflows_no_breakdown?.inhouse_receipt ?? m?.inflows_no?.inflows_no_breakdown?.inhouse_receipt_no, false)}
+                  {renderRow("Total Receipt (Inflows)", data?.total?.total_receipt_inflows_no, m => m?.inflows_no?.total_receipt_inflows_no, false, true)}
+
+                  {/* Outflows (Value) */}
+                  <tr className="bg-gray-400 text-white">
+                    <td colSpan={expectedMonths.length + 2} className="px-4 py-1.5 font-semibold text-center border border-gray-400">
+                      Outflows (Value)
+                    </td>
+                  </tr>
+                  {renderRow("Cash Withdrawal", data?.total?.outflows_value_breakdown?.cash_withdrawal, m => m?.outflows_value?.outflows_value_breakdown?.cash_withdrawal, true)}
+                  {renderRow("Cheque Payment", data?.total?.outflows_value_breakdown?.cheque_payment, m => m?.outflows_value?.outflows_value_breakdown?.cheque_payment, true)}
+                  {renderRow("Online Payment", data?.total?.outflows_value_breakdown?.online_payment, m => m?.outflows_value?.outflows_value_breakdown?.online_payment, true)}
+                  {renderRow("Other Payment", data?.total?.outflows_value_breakdown?.other_payment, m => m?.outflows_value?.outflows_value_breakdown?.other_payment, true)}
+                  {renderRow("Inhouse Payment", data?.total?.outflows_value_breakdown?.inhouse_payment, m => m?.outflows_value?.outflows_value_breakdown?.inhouse_payment, true)}
+                  {renderRow("Total Payments (Outflows)", data?.total?.total_payments_outflows_value, m => m?.outflows_value?.total_payments_outflows_value, true, true)}
+
+                  {/* Outflows (No.) */}
+                  <tr className="bg-gray-400 text-white">
+                    <td colSpan={expectedMonths.length + 2} className="px-4 py-1.5 font-semibold text-center border border-gray-400">
+                      Outflows (No.)
+                    </td>
+                  </tr>
+                  {renderRow("Cash Withdrawal", data?.total?.outflows_no_breakdown?.cash_withdrawal ?? data?.total?.outflows_no_breakdown?.cash_withdrawal_no, m => m?.outflows_no?.outflows_no_breakdown?.cash_withdrawal ?? m?.outflows_no?.outflows_no_breakdown?.cash_withdrawal_no, false)}
+                  {renderRow("Cheque Payment", data?.total?.outflows_no_breakdown?.cheque_payment ?? data?.total?.outflows_no_breakdown?.cheque_payment_no, m => m?.outflows_no?.outflows_no_breakdown?.cheque_payment ?? m?.outflows_no?.outflows_no_breakdown?.cheque_payment_no, false)}
+                  {renderRow("Online Payment", data?.total?.outflows_no_breakdown?.online_payment ?? data?.total?.outflows_no_breakdown?.online_payment_no, m => m?.outflows_no?.outflows_no_breakdown?.online_payment ?? m?.outflows_no?.outflows_no_breakdown?.online_payment_no, false)}
+                  {renderRow("Other Payment", data?.total?.outflows_no_breakdown?.other_payment ?? data?.total?.outflows_no_breakdown?.other_payment_no, m => m?.outflows_no?.outflows_no_breakdown?.other_payment ?? m?.outflows_no?.outflows_no_breakdown?.other_payment_no, false)}
+                  {renderRow("Inhouse Payment", data?.total?.outflows_no_breakdown?.inhouse_payment ?? data?.total?.outflows_no_breakdown?.inhouse_payment_no, m => m?.outflows_no?.outflows_no_breakdown?.inhouse_payment ?? m?.outflows_no?.outflows_no_breakdown?.inhouse_payment_no, false)}
+                  {renderRow("Total Payments (Outflows)", data?.total?.total_payments_outflows_no, m => m?.outflows_no?.total_payments_outflows_no, false, true)}
                 </tbody>
-                {data?.total && (
-                  <tfoot className="bg-blue-50/50 font-bold border-t-2 border-[#000080]/20">
-                    <tr>
-                      <td className="px-6 py-4 text-[#000080]">Total</td>
-                      <td className="px-6 py-4 text-right text-gray-800">
-                        {data.total.total_receipt_inflows_no}
-                      </td>
-                      <td className="px-6 py-4 text-right text-green-700">
-                        {formatCurrency(data.total.total_receipt_inflows_value)}
-                      </td>
-                      <td className="px-6 py-4 text-right text-gray-800">
-                        {data.total.total_payments_outflows_no}
-                      </td>
-                      <td className="px-6 py-4 text-right text-red-700">
-                        {formatCurrency(data.total.total_payments_outflows_value)}
-                      </td>
-                    </tr>
-                  </tfoot>
-                )}
               </table>
             </div>
           )}

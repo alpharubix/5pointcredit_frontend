@@ -123,42 +123,60 @@ type RowConfig = {
 };
 
 const ROWS: RowConfig[] = [
-  { label: "Average Credit Tranx", overallKey: ["overview", "average_credit_tranx"], monthKey: "AverageCreditTranx", isCurrency: false },
+  { label: "Average Credit Tranx", overallKey: ["overview", "average_credit_tranx"], monthKey: "AverageCreditTranx", isCurrency: false, isBold: true },
   { label: "Total Credit (Nos.)", overallKey: ["overview", "total_credit_nos"], monthKey: "TotalCreditNo", isCurrency: false, isRed: true, isItalic: true },
-  { label: "Average Debit Tranx", overallKey: ["overview", "average_debit_tranx"], monthKey: "AverageDebitTranx", isCurrency: false },
+  { label: "Average Debit Tranx", overallKey: ["overview", "average_debit_tranx"], monthKey: "AverageDebitTranx", isCurrency: false, isBold: true },
   { label: "Total Debit (Nos.)", overallKey: ["overview", "total_debit_nos"], monthKey: "TotalDebitNo", isCurrency: false, isRed: true, isItalic: true },
   { label: "", isSeparator: true },
-  { label: "Gross Credits", extraLabel: "(E= A-B-C-D)", overallKey: ["cash_inflow", "gross_credits_e"], monthKey: "GrossCredits", isCurrency: true, isGreyBg: true },
-  { label: "Net Credits", extraLabel: "(H= E-F-G)", overallKey: null, monthKey: "NetCredits", isCurrency: true, isGreyBg: true },
-  { label: "Net Cash Inflow", extraLabel: "(H-I)", overallKey: null, monthKey: "NetCashInflow", isCurrency: true, isGreyBg: true },
+  
+  { label: "Gross Credits (E = A-B-C-D)", overallKey: ["cash_inflow", "gross_credits_e"], monthKey: "GrossCredits", isCurrency: true, isGreyBg: true, isBold: true },
+  { label: "Contra (F)", overallKey: null, monthKey: "Contra", isCurrency: true, isRed: true },
+  { label: "Loan Received (G)", overallKey: null, monthKey: "LoanReceived", isCurrency: true, isRed: true },
+  { label: "Net Credits (H = E-F-G)", overallKey: null, monthKey: "NetCredits", isCurrency: true, isGreyBg: true, isBold: true },
+  { label: "Inhouse Credit (I)", overallKey: null, monthKey: "InhouseCredit", isCurrency: true, isRed: true },
+  { label: "Net Cash Inflow (H-I)", overallKey: null, monthKey: "NetCashInflow", isCurrency: true, isGreyBg: true, isBold: true },
   { label: "", isSeparator: true },
-  { label: "Gross Debits", extraLabel: "(E= A-B-C-D)", overallKey: ["cash_outflow", "gross_debits_e"], monthKey: "GrossDebit", isCurrency: true, isGreyBg: true },
-  { label: "Net Debits", extraLabel: "(G= E-F)", overallKey: ["cash_outflow", "net_debits_g"], monthKey: "NetDebit", isCurrency: true, isGreyBg: true },
-  { label: "Net Cash Outflow", extraLabel: "(G-H)", overallKey: ["cash_outflow", "net_cash_outflow"], monthKey: "NetCashOutFlow", isCurrency: true, isGreyBg: true },
+
+  { label: "Gross Debits (E = A-B-C-D)", overallKey: ["cash_outflow", "gross_debits_e"], monthKey: "GrossDebit", isCurrency: true, isGreyBg: true, isBold: true },
+  { label: "Contra (F)", overallKey: ["cash_outflow", "contra_f"], monthKey: "ContraDebit", isCurrency: true, isRed: true },
+  { label: "Net Debits (G=E-F)", overallKey: ["cash_outflow", "net_debits_g"], monthKey: "NetDebit", isCurrency: true, isGreyBg: true, isBold: true },
+  { label: "Inhouse Debit (H)", overallKey: ["cash_outflow", "inhouse_debit_h"], monthKey: "InhouseDebit", isCurrency: true, isRed: true },
+  { label: "Net Cash Outflow (G-H)", overallKey: ["cash_outflow", "net_cash_outflow"], monthKey: "NetCashOutFlow", isCurrency: true, isGreyBg: true, isBold: true },
   { label: "", isSeparator: true },
+
   { label: "Inward Cheque Return (Nos.)", overallKey: ["returns", "inward_cheque_return_nos"], monthKey: "InwardChequeReturnNos", isCurrency: false, isRed: true, isItalic: true },
+  { label: "Inward Cheque Return/Total Cheques Received (%)", overallKey: ["returns", "inward_cheque_return_percent"], monthKey: "InwardChequeReturnToTotalChequeReceivedInPercent", isCurrency: false, isPercent: true, isBold: true },
   { label: "Outward Cheque Return (Nos.)", overallKey: ["returns", "outward_cheque_return_nos"], monthKey: "OutwardChequeReturnNo", isCurrency: false, isRed: true, isItalic: true },
+  { label: "Outward Cheque Return/Total Cheques Paid (%)", overallKey: ["returns", "outward_cheque_return_percent"], monthKey: "OutwardChequeReturnToTotalChequePaidInPercent", isCurrency: false, isPercent: true, isBold: true },
   { label: "Inward Online Return (Nos.)", overallKey: ["returns", "inward_online_return_nos"], monthKey: "InwardOnlineReturnNo", isCurrency: false, isRed: true, isItalic: true },
+  { label: "Inward Online Return/Total Online Credits (%)", overallKey: ["returns", "inward_online_return_percent"], monthKey: "InwardOnlineReturnTototalOnlineCreditInPercent", isCurrency: false, isPercent: true, isBold: true },
   { label: "Outward Online Return (Nos.)", overallKey: ["returns", "outward_online_return_nos"], monthKey: "OutwardOnlineReturnNo", isCurrency: false, isRed: true, isItalic: true },
+  { label: "Outward Online Return/Total Online Debits (%)", overallKey: ["returns", "outward_online_return_percent"], monthKey: "OutwardOnlineReturnToTotalOnlineDebitInPercent", isCurrency: false, isPercent: true, isBold: true },
   { label: "ECS Return (Credit Nos.)", overallKey: ["returns", "ecs_return_nos"], monthKey: "EcsReturnNo", isCurrency: false, isRed: true, isItalic: true },
+  { label: "ECS Return/Total ECS Payments (%)", overallKey: ["returns", "ecs_return_percent"], monthKey: "EcsReturnToTotalEcsPaymentInPercent", isCurrency: false, isPercent: true, isBold: true },
   { label: "", isSeparator: true },
+
   { label: "Inhouse Credit (Nos.)", overallKey: null, monthKey: "InhouseCreditNos", isCurrency: false, isRed: true, isItalic: true },
+  { label: "Inhouse Credit/Total Credits (%)", overallKey: null, monthKey: "InhouseCreditToTotalCreditInPercent", isCurrency: false, isPercent: true, isBold: true },
   { label: "Inhouse Debit (Nos.)", overallKey: null, monthKey: "InhouseDebitNos", isCurrency: false, isRed: true, isItalic: true },
+  { label: "Inhouse Debit/Total Debits (%)", overallKey: null, monthKey: "InhouseDebitToTotalDebitInPercent", isCurrency: false, isPercent: true, isBold: true },
   { label: "", isSeparator: true },
+
   { label: "Average EOD", overallKey: null, monthKey: "AverageEod", isCurrency: true, isBold: true },
   { label: "OD/CC Sanction Limit", overallKey: null, monthKey: "odccLimit", isCurrency: true, isBold: true },
   { label: "OD/CC Drawing Power Limit", overallKey: null, monthKey: "odccDrawingLimit", isCurrency: true, isBold: true },
-  { label: "No. of days limit over-drawn", overallKey: null, monthKey: "NoOfdaysLimitOverDrawn", isCurrency: false },
-  { label: "No. of times limit over-drawn", overallKey: null, monthKey: "NoOfTimesLimitOverDrawn", isCurrency: false },
-  { label: "Overdrawn Amount in Rs. Mn. (for all days)", overallKey: null, monthKey: "OverDrawnAnountInRsMn", isCurrency: true },
-  { label: "Overdrawn Average Amount in Rs. Mn.", overallKey: null, monthKey: "OverDrawnAverageinRsMn", isCurrency: true },
-  { label: "Overdrawn Average as a %age of OD/CC Limit", overallKey: null, monthKey: "OverDrawnAverageAsPercentOfOdCCLimit", isCurrency: false, isPercent: true },
-  { label: "Peak overdrawing amount", overallKey: null, monthKey: "PeakOverDrawingAmount", isCurrency: true },
-  { label: "Peak overdrawing date", overallKey: null, monthKey: "PeakOverDrawingDate", isCurrency: false },
+  { label: "No. of days limit over-drawn", overallKey: null, monthKey: "NoOfdaysLimitOverDrawn", isCurrency: false, isBold: true },
+  { label: "No. of times limit over-drawn", overallKey: null, monthKey: "NoOfTimesLimitOverDrawn", isCurrency: false, isBold: true },
+  { label: "Overdrawn Amount in Rs. Mn. (for all days)", overallKey: null, monthKey: "OverDrawnAnountInRsMn", isCurrency: true, isBold: true },
+  { label: "Overdrawn Average Amount in Rs. Mn.", overallKey: null, monthKey: "OverDrawnAverageinRsMn", isCurrency: true, isBold: true },
+  { label: "Overdrawn Average as a %age of OD/CC Limit", overallKey: null, monthKey: "OverDrawnAverageAsPercentOfOdCCLimit", isCurrency: false, isPercent: true, isBold: true },
+  { label: "Peak overdrawing amount", overallKey: null, monthKey: "PeakOverDrawingAmount", isCurrency: true, isBold: true },
+  { label: "Peak overdrawing date", overallKey: null, monthKey: "PeakOverDrawingDate", isCurrency: false, isBold: true },
   { label: "", isSeparator: true },
-  { label: "Loan Repaid", overallKey: null, monthKey: "LoanRepaid", isCurrency: true, isRed: true, isItalic: true, isBold: true },
-  { label: "ECS Payment", overallKey: null, monthKey: "EcsPayment", isCurrency: true, isRed: true, isItalic: true, isBold: true },
-  { label: "No. of Unique ECS/EMI's", overallKey: null, monthKey: "NoOfUniqueEcs", isCurrency: false, isRed: true, isItalic: true, isBold: true },
+
+  { label: "Loan Repaid", overallKey: null, monthKey: "LoanRepaid", isCurrency: true, isRed: true, isItalic: true },
+  { label: "ECS Payment", overallKey: null, monthKey: "EcsPayment", isCurrency: true, isRed: true, isItalic: true },
+  { label: "No. of Unique ECS/EMI's", overallKey: null, monthKey: "NoOfUniqueEcs", isCurrency: false, isRed: true, isItalic: true },
   { label: "Interest Paid", overallKey: null, monthKey: "InterestPaid", isCurrency: true, isBold: true },
 ];
 
@@ -451,7 +469,7 @@ export default function OverviewMonthlyWise() {
                 <thead>
                   <tr className="bg-[#1f4e78] text-white text-xs">
                     <th className="px-4 py-3 border border-black/20 font-medium whitespace-nowrap min-w-[300px]">Particulars</th>
-                    <th className="px-4 py-3 border border-black/20 font-bold whitespace-nowrap text-right bg-[#153a5b]">Overall/Total</th>
+                    <th className="px-4 py-3 border border-black/20 font-bold whitespace-nowrap text-right">Overall/Total</th>
                     {expectedMonths.map((month) => (
                       <th key={month} className="px-4 py-3 border border-black/20 font-bold whitespace-nowrap text-center capitalize">
                         {month}
@@ -481,10 +499,10 @@ export default function OverviewMonthlyWise() {
 
                     return (
                       <tr key={index} className={`hover:bg-blue-50/30 transition-colors ${bgClass}`}>
-                        <td className={`px-4 py-2.5 border border-black/20 font-medium ${row.isGreyBg ? 'bg-gray-300/60' : 'bg-blue-50/30'}`}>
+                        <td className={`px-4 py-2.5 border border-black/20 ${row.isBold ? 'font-bold' : 'font-medium'} ${row.isGreyBg ? 'bg-gray-300/60' : 'bg-blue-50/30'}`}>
                           {labelContent}
                         </td>
-                        <td className={`text-right ${cellClass} bg-gray-100/80 font-bold`}>
+                        <td className={`text-right ${cellClass} font-bold`}>
                           {formatValue(getOverallValue(data, row.overallKey || null), !!row.isCurrency, !!row.isPercent)}
                         </td>
                         {expectedMonths.map((month) => {
