@@ -14,6 +14,7 @@ import {
   type ResetPasswordPayload,
 } from "@/api/auth";
 import { useAuthContext } from "@/contexts/AuthContext";
+import { getMe } from "@/api/user";
 import axios from "axios";
 
 // Helper to extract a readable error message from Axios errors
@@ -48,11 +49,16 @@ export function useLogin() {
   const { setUser } = useAuthContext();
   return useMutation({
     mutationFn: (data: LoginPayload) => loginUser(data),
-    onSuccess: (data) => {
-      // Cookie is set automatically by the browser from the server response.
-      // We only cache optional display info (name, email) for the UI.
-      const user = data?.user || data?.data?.user || data?.data || {};
-      setUser(user);
+    onSuccess: async (data) => {
+      // Explicitly call the /user/me endpoint after login
+      try {
+        const userProfile = await getMe();
+        setUser(userProfile);
+      } catch (err) {
+        // Fallback in case /user/me fails, use data from login response
+        const user = data?.user || data?.data?.user || data?.data || {};
+        setUser(user);
+      }
       navigate("/home/dashboard");
     },
   });
