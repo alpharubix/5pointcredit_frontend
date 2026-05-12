@@ -1,8 +1,9 @@
 import axios from "axios";
 import { toast } from "sonner";
+import { ENV } from "@/conf";
 
 const apiClient = axios.create({
-  baseURL: "http://localhost:8080/v1",
+  baseURL: ENV.VITE_BACKEND_BASE_URL,
   headers: {
     "Content-Type": "application/json",
   },
