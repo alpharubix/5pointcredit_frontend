@@ -188,7 +188,7 @@ export default function SignupPage() {
                     <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#000080]/40" />
                     <Input
                       id="signup-phone"
-                      type="tel"
+                      type="number"
                       placeholder="8104106108"
                       maxLength={10}
                       className={`pl-10 ${errors.phone_no ? "border-red-400 focus-visible:ring-red-300" : ""}`}
