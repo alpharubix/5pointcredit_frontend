@@ -8,7 +8,7 @@ import SignupPage from "@/pages/SignupPage";
 import ForgotPasswordPage from "@/pages/ForgotPasswordPage";
 import DashboardLayout from "@/layouts/DashboardLayout";
 import ProtectedRoute from "@/components/ProtectedRoute";
-import SummeryOfDebitAndCredit from "./pages/summeryOfDebitAndCredit";
+import SummeryOfDebitAndCredit from "./pages/SummeryOfDebitAndCredit";
 
 function App() {
   return (
