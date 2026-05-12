@@ -12,6 +12,5 @@ export interface UserProfile {
 
 export const getMe = async (): Promise<UserProfile> => {
   const response = await apiClient.get("/user/me");
-  // Handle both { data: {...} } and flat response shapes
   return response.data?.data ?? response.data;
 };
