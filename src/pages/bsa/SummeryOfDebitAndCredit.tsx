@@ -292,7 +292,12 @@ export default function SummeryOfDebitAndCredit() {
           <div>
             <CardTitle className="text-xl text-[#000080]">Monthly Overview</CardTitle>
             <CardDescription>
-              {appliedFromDate && appliedToDate ? `From ${appliedFromDate} to ${appliedToDate}` : "Select a date range"}
+              {dateRangeData?.from_date && dateRangeData?.to_date && (
+                <>
+                  From {format(new Date(dateRangeData.from_date + "T00:00:00"), "PPP")}{" "}
+                  To {format(new Date(dateRangeData.to_date + "T00:00:00"), "PPP")}
+                </>
+              )}
             </CardDescription>
           </div>
           <Button variant="outline" onClick={() => refetch()} disabled={isLoading} className="gap-2">
@@ -311,7 +316,7 @@ export default function SummeryOfDebitAndCredit() {
               <p>Error loading data: {(error as any)?.message || "Unknown error"}</p>
               <Button onClick={() => refetch()} variant="outline" className="mt-4">Try Again</Button>
             </div>
-          ) : (
+          ) : data ? (
             <div className="overflow-x-auto pb-4">
               <table className="w-full text-sm text-left border-collapse border border-gray-300">
                 <thead className="text-xs text-white bg-[#1f4e78]">
@@ -379,6 +384,10 @@ export default function SummeryOfDebitAndCredit() {
                   {renderRow("Total Payments (Outflows)", data?.total?.total_payments_outflows_no, m => m?.outflows_no?.total_payments_outflows_no, false, true)}
                 </tbody>
               </table>
+            </div>
+          ) : (
+            <div className="p-8 text-center text-gray-500">
+              No data available for the selected date range.
             </div>
           )}
         </CardContent>

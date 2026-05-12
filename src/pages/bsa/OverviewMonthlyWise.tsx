@@ -128,7 +128,7 @@ const ROWS: RowConfig[] = [
   { label: "Average Debit Tranx", overallKey: ["overview", "average_debit_tranx"], monthKey: "AverageDebitTranx", isCurrency: false, isBold: true },
   { label: "Total Debit (Nos.)", overallKey: ["overview", "total_debit_nos"], monthKey: "TotalDebitNo", isCurrency: false, isRed: true, isItalic: true },
   { label: "", isSeparator: true },
-  
+
   { label: "Gross Credits (E = A-B-C-D)", overallKey: ["cash_inflow", "gross_credits_e"], monthKey: "GrossCredits", isCurrency: true, isGreyBg: true, isBold: true },
   { label: "Contra (F)", overallKey: null, monthKey: "Contra", isCurrency: true, isRed: true },
   { label: "Loan Received (G)", overallKey: null, monthKey: "LoanReceived", isCurrency: true, isRed: true },
@@ -444,7 +444,12 @@ export default function OverviewMonthlyWise() {
           <div>
             <CardTitle className="text-xl text-[#000080]">Overview Details</CardTitle>
             <CardDescription>
-              {appliedFromDate && appliedToDate ? `From ${appliedFromDate} to ${appliedToDate}` : "Select a date range"}
+              {dateRangeData?.from_date && dateRangeData?.to_date && (
+                <>
+                  From {format(new Date(dateRangeData.from_date + "T00:00:00"), "PPP")}{" "}
+                  To {format(new Date(dateRangeData.to_date + "T00:00:00"), "PPP")}
+                </>
+              )}
             </CardDescription>
           </div>
           <Button variant="outline" onClick={() => refetch()} disabled={isLoading} className="gap-2">
@@ -468,7 +473,7 @@ export default function OverviewMonthlyWise() {
               <table className="w-full text-sm text-left border-collapse min-w-[1200px]">
                 <thead>
                   <tr className="bg-[#1f4e78] text-white text-xs">
-                    <th className="px-4 py-3 border border-black/20 font-medium whitespace-nowrap min-w-[300px]">Particulars</th>
+                    <th className="px-4 py-3 border border-black/20 font-medium whitespace-nowrap min-w-[300px]">Particulars (In Lakhs)</th>
                     <th className="px-4 py-3 border border-black/20 font-bold whitespace-nowrap text-right">Overall/Total</th>
                     {expectedMonths.map((month) => (
                       <th key={month} className="px-4 py-3 border border-black/20 font-bold whitespace-nowrap text-center capitalize">

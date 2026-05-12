@@ -1,11 +1,12 @@
 import React, {
   createContext,
   useContext,
-  useState,
   useCallback,
   useEffect,
 } from "react";
 import { useNavigate } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
+import { useMe } from "@/hooks/useUser";
 
 interface AuthUser {
   email_id?: string;
@@ -16,6 +17,7 @@ interface AuthUser {
 interface AuthContextValue {
   user: AuthUser | null;
   isAuthenticated: boolean;
+  isLoading: boolean;
   setUser: (user: AuthUser) => void;
   clearAuth: () => void;
 }
@@ -23,28 +25,18 @@ interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  // Store only lightweight user info (display name etc.) — NOT a token.
-  // The real session lives in the HttpOnly cookie managed by the browser.
-  const [user, setUserState] = useState<AuthUser | null>(() => {
-    const stored = localStorage.getItem("auth_user");
-    try {
-      return stored ? JSON.parse(stored) : null;
-    } catch {
-      return null;
-    }
-  });
-
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+
+  const { data: user, isLoading, isError } = useMe();
 
   const setUser = useCallback((newUser: AuthUser) => {
-    localStorage.setItem("auth_user", JSON.stringify(newUser));
-    setUserState(newUser);
-  }, []);
+    queryClient.setQueryData(["user", "me"], newUser);
+  }, [queryClient]);
 
   const clearAuth = useCallback(() => {
-    localStorage.removeItem("auth_user");
-    setUserState(null);
-  }, []);
+    queryClient.setQueryData(["user", "me"], null);
+  }, [queryClient]);
 
   // Listen for 401 events dispatched by the axios interceptor
   useEffect(() => {
@@ -56,11 +48,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener("auth:unauthorized", handle);
   }, [clearAuth, navigate]);
 
+  useEffect(() => {
+    if (isError) {
+      clearAuth();
+    }
+  }, [isError, clearAuth]);
+
   return (
     <AuthContext.Provider
       value={{
-        user,
+        user: (user as AuthUser) || null,
         isAuthenticated: !!user,
+        isLoading,
         setUser,
         clearAuth,
       }}

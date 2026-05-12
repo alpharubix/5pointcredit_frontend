@@ -249,7 +249,12 @@ export default function CashFlow() {
           <div>
             <CardTitle className="text-xl text-[#000080]">Cash Flow Statement</CardTitle>
             <CardDescription>
-              {appliedFromDate && appliedToDate ? `From ${appliedFromDate} to ${appliedToDate}` : "Select a date range"}
+              {dateRangeData?.from_date && dateRangeData?.to_date && (
+                <>
+                  From {format(new Date(dateRangeData.from_date + "T00:00:00"), "PPP")}{" "}
+                  To {format(new Date(dateRangeData.to_date + "T00:00:00"), "PPP")}
+                </>
+              )}
             </CardDescription>
           </div>
           <Button variant="outline" onClick={() => refetch()} disabled={isLoading} className="gap-2">
@@ -275,8 +280,7 @@ export default function CashFlow() {
 
                   <tr className="bg-[#1f4e78] text-white text-xs">
                     <th className="px-4 py-3 border border-black/20 font-medium whitespace-nowrap min-w-[200px]">Particulars</th>
-                    <th className="px-4 py-3 border border-black/20 font-medium whitespace-nowrap text-right">Total (Amount)</th>
-                    <th className="px-4 py-3 border border-black/20 font-medium whitespace-nowrap text-right">Total (%)</th>
+                    <th className="px-4 py-3 border border-black/20 font-medium whitespace-nowrap text-right">Overall/Total</th>
                     {expectedMonths.map((month) => (
                       <th key={month} className="px-4 py-3 border border-black/20 font-medium whitespace-nowrap text-right capitalize">
                         {month}
@@ -292,9 +296,6 @@ export default function CashFlow() {
                       </td>
                       <td className={cn("px-4 py-2.5 border border-black/20 text-right", row.valueClass)}>
                         {row.summaryKey ? formatCurrency(data.summary[row.summaryKey] as number) : ""}
-                      </td>
-                      <td className={cn("px-4 py-2.5 border border-black/20 text-right", row.valueClass)}>
-                        {/* Total % could go here if available in summary data */}
                       </td>
                       {expectedMonths.map((month, monthIndex) => {
                         const monthData = data.monthly_breakdown[monthIndex];

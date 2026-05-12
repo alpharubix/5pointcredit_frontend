@@ -1,16 +1,8 @@
 import { Navigate, Outlet } from "react-router-dom";
-import { useMe } from "@/hooks/useUser";
 import { useAuthContext } from "@/contexts/AuthContext";
-import { useEffect } from "react";
-export default function ProtectedRoute() {
-  const { isLoading, isError } = useMe();
-  const { clearAuth } = useAuthContext();
 
-  useEffect(() => {
-    if (isError) {
-      clearAuth();
-    }
-  }, [isError, clearAuth]);
+export default function ProtectedRoute() {
+  const { isLoading, isAuthenticated } = useAuthContext();
 
   if (isLoading) {
     return (
@@ -22,7 +14,7 @@ export default function ProtectedRoute() {
     );
   }
 
-  if (isError) {
+  if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
 

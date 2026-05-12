@@ -18,7 +18,6 @@ apiClient.interceptors.response.use(
   },
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem("auth_user");
       window.dispatchEvent(new Event("auth:unauthorized"));
       // Fallback redirect in case the event listener is not active
       setTimeout(() => {
