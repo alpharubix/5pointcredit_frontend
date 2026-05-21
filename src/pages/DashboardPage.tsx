@@ -365,9 +365,9 @@ export default function DashboardPage() {
                         {isLoadingBanks ? (
                           <option disabled>Loading banks...</option>
                         ) : (
-                          banks?.map((bank) => (
-                            <option key={bank.code} value={bank.code}>
-                              {bank.bankName} ({bank.code})
+                          banks?.map((bank, idx) => (
+                            <option key={idx} value={bank.code}>
+                              {bank.bankName}
                             </option>
                           ))
                         )}

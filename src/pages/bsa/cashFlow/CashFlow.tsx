@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import apiClient from "@/lib/axios";
 import { useQuery } from "@tanstack/react-query";
+import { useDateRange } from "@/hooks/useDateRange";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Loader2, RefreshCcw, Filter, X, CalendarIcon } from "lucide-react";
@@ -18,13 +19,8 @@ export default function CashFlow() {
   const [appliedFromDate, setAppliedFromDate] = useState("");
   const [appliedToDate, setAppliedToDate] = useState("");
 
-  const { data: dateRangeData } = useQuery({
-    queryKey: ["report-date-range"],
-    queryFn: async () => {
-      const response = await apiClient.get("/bsa/report-date-range");
-      return response.data?.data as { from_date: string; to_date: string };
-    },
-  });
+  const { data: dateRangeData } = useDateRange();
+
 
   useEffect(() => {
     if (dateRangeData && !appliedFromDate && !appliedToDate) {
@@ -148,7 +144,7 @@ export default function CashFlow() {
       </div>
 
       {/* Date Filter Card */}
-      <Card className="mb-8 shadow-sm border-[#000080]/10 bg-white">
+      {dateRangeData && < Card className="mb-8 shadow-sm border-[#000080]/10 bg-white">
         <CardContent className="p-4">
           <div className="flex flex-col md:flex-row gap-4 items-end">
             <div className="flex-1 space-y-1">
@@ -242,7 +238,7 @@ export default function CashFlow() {
             )}
           </div>
         </CardContent>
-      </Card>
+      </Card>}
 
       <Card className="shadow-lg border-[#000080]/10 bg-white overflow-hidden">
         <CardHeader className="flex flex-row items-center justify-between bg-gray-50/50 border-b pb-4">
@@ -257,10 +253,10 @@ export default function CashFlow() {
               )}
             </CardDescription>
           </div>
-          <Button variant="outline" onClick={() => refetch()} disabled={isLoading} className="gap-2">
+          {dateRangeData && <Button variant="outline" onClick={() => refetch()} disabled={isLoading} className="gap-2">
             <RefreshCcw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
             Refresh
-          </Button>
+          </Button>}
         </CardHeader>
         <CardContent className="p-0">
           {isLoading ? (
@@ -320,12 +316,19 @@ export default function CashFlow() {
               </table>
             </div>
           ) : (
-            <div className="p-8 text-center text-gray-500">
-              No data available for the selected date range.
-            </div>
+            dateRangeData ? (
+              <div className="p-8 text-center text-gray-500">
+                Select date range and apply filter
+              </div>
+            ) : (
+              <div className="p-8 text-center text-gray-500">
+                <Loader2 className="item-center m-auto h-8 w-8 animate-spin text-[#000080] mb-4" />
+                <p className="text-gray-500">No data available yet. Please upload a bank statement, or wait while your uploaded statement is being processed.</p>
+              </div>
+            )
           )}
         </CardContent>
       </Card>
-    </div>
+    </div >
   );
 }
