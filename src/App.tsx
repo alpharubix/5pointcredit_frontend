@@ -16,6 +16,7 @@ const SummeryOfDebitAndCredit = lazy(() => import("@/pages/bsa/SummeryOfDebitAnd
 const DashboardPage = lazy(() => import("@/pages/DashboardPage"))
 const CashFlow = lazy(() => import("@/pages/bsa/cashFlow/CashFlow"))
 const OverviewMonthlyWise = lazy(() => import("@/pages/bsa/OverviewMonthlyWise"))
+const NotF = lazy(() => import("@/pages/404"))
 
 function App() {
   return (
@@ -33,6 +34,7 @@ function App() {
                     <Route path="/forgot-password" element={<ForgotPasswordPage />} />
                   </Route>
 
+                  {/* Protected routes */}
                   <Route element={<ProtectedRoute />}>
                     <Route element={<DashboardLayout />}>
                       <Route path="/home/dashboard" element={<DashboardPage />} />
@@ -44,7 +46,7 @@ function App() {
 
                   {/* Default redirect */}
                   <Route path="/" element={<Navigate to="/login" replace />} />
-                  <Route path="*" element={<Navigate to="/login" replace />} />
+                  <Route path="*" element={<NotF />} />
                 </Routes>
               </Suspense>
             </ErrorBoundary>

@@ -35,7 +35,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [queryClient]);
 
   const clearAuth = useCallback(() => {
-    queryClient.setQueryData(["user", "me"], null);
+    queryClient.clear();
   }, [queryClient]);
 
   // Listen for 401 events dispatched by the axios interceptor
