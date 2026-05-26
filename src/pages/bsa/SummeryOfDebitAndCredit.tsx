@@ -162,14 +162,14 @@ export default function SummeryOfDebitAndCredit() {
           {label}
         </td>
         <td className={cn("px-4 py-2 text-right border border-gray-300", isBold && "font-bold bg-gray-50")}>
-          {totalValue ? (isCurrency ? formatCurrency(totalValue) : totalValue) : "-"}
+          {(isCurrency ? formatCurrency(totalValue) : totalValue)}
         </td>
         {expectedMonths.map((month) => {
           const monthData = dataMap.get(month);
           const val = monthData ? getValueForMonth(monthData) : undefined;
           return (
             <td key={month} className={cn("px-4 py-2 text-right border border-gray-300", isBold && "font-bold bg-gray-50")}>
-              {val ? (isCurrency ? formatCurrency(val) : val) : "-"}
+              {(isCurrency ? formatCurrency(val) : val)}
             </td>
           );
         })}
@@ -178,7 +178,7 @@ export default function SummeryOfDebitAndCredit() {
   };
 
   return (
-    <div className="p-8 max-w-7xl mx-auto animate-fade-in relative min-h-[calc(100vh-4rem)]">
+    <div className="p-8 animate-fade-in relative min-h-[calc(100vh-4rem)]">
       <div className="flex items-center gap-4 mb-8">
         <div>
           <h1 className="text-3xl font-bold text-[#000080] mb-2">Summary of Debit and Credit</h1>

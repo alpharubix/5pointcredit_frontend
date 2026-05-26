@@ -218,7 +218,7 @@ export default function DashboardPage() {
   ];
 
   return (
-    <div className="p-8 max-w-7xl mx-auto animate-fade-in relative min-h-[calc(100vh-4rem)]">
+    <div className="p-8 animate-fade-in relative min-h-[calc(100vh-4rem)]">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-[#000080] mb-2">Dashboard</h1>
         <p className="text-gray-600">

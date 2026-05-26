@@ -135,7 +135,7 @@ export default function CashFlow() {
 
 
   return (
-    <div className="p-8 max-w-[1400px] mx-auto animate-fade-in relative min-h-[calc(100vh-4rem)]">
+    <div className="p-8 animate-fade-in relative min-h-[calc(100vh-4rem)]">
       <div className="flex items-center gap-4 mb-8">
         <div>
           <h1 className="text-3xl font-bold text-[#000080] mb-2">Cash Flow</h1>
