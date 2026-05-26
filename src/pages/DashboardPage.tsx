@@ -1,6 +1,7 @@
 import { useState } from "react";
 import apiClient from "@/lib/axios";
 import { useMutation, useQuery } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import {
   Card,
@@ -79,6 +80,7 @@ export default function DashboardPage() {
   const [modalStep, setModalStep] = useState<ModalStep>("form");
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [uploadResult, setUploadResult] = useState<ParsedUploadResult | null>(null);
+  const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
     entityName: "",
@@ -187,10 +189,13 @@ export default function DashboardPage() {
       disabled: false,
     },
     {
-      title: "GSTR-3b",
-      description: "GST Return Document",
+      title: "GSTR Analysis",
+      description: "Analize GSTR",
       icon: <FileText className="h-8 w-8 text-[#000080]" />,
-      disabled: true,
+      onClick: () => {
+        navigate("/gst/analysis");
+      },
+      disabled: false,
     },
     {
       title: "ITR",
@@ -391,7 +396,7 @@ export default function DashboardPage() {
                           }}
                           className="cursor-pointer file:cursor-pointer file:bg-[#000080]/5 file:text-[#000080] file:border-0 file:rounded-md file:mr-4 file:px-4 file:py-1 hover:file:bg-[#000080]/10 transition-all"
                         />
-                        
+
                         {selectedFiles.length > 0 && (
                           <div className="mt-3 space-y-2 max-h-40 overflow-y-auto pr-2">
                             {selectedFiles.map((file, index) => (

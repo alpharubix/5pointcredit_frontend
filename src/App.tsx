@@ -17,6 +17,8 @@ const DashboardPage = lazy(() => import("@/pages/DashboardPage"))
 const CashFlow = lazy(() => import("@/pages/bsa/cashFlow/CashFlow"))
 const OverviewMonthlyWise = lazy(() => import("@/pages/bsa/OverviewMonthlyWise"))
 const NotF = lazy(() => import("@/pages/404"))
+const GstAnalysisPage = lazy(() => import("@/pages/gst/GstAnalysisPage"))
+const GstHistoryPage = lazy(() => import("@/pages/gst/GstHistoryPage"))
 
 function App() {
   return (
@@ -41,6 +43,8 @@ function App() {
                       <Route path="/bsa/summary-of-debit-and-credit" element={<SummeryOfDebitAndCredit />} />
                       <Route path="/bsa/cash-flow" element={<CashFlow />} />
                       <Route path="/bsa/overview-monthly-wise" element={<OverviewMonthlyWise />} />
+                      <Route path="/gst/analysis" element={<GstAnalysisPage />} />
+                      <Route path="/gst/history" element={<GstHistoryPage />} />
                     </Route>
                   </Route>
 
