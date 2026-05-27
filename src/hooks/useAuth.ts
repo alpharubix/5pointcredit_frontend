@@ -50,12 +50,10 @@ export function useLogin() {
   return useMutation({
     mutationFn: (data: LoginPayload) => loginUser(data),
     onSuccess: async (data) => {
-      // Explicitly call the /user/me endpoint after login
       try {
         const userProfile = await getMe();
         setUser(userProfile);
       } catch (err) {
-        // Fallback in case /user/me fails, use data from login response
         const user = data?.user || data?.data?.user || data?.data || {};
         setUser(user);
       }

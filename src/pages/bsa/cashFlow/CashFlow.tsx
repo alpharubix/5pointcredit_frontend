@@ -94,7 +94,9 @@ export default function CashFlow() {
     queryKey: ["cashflow", appliedFromDate, appliedToDate],
     queryFn: async () => {
       const response = await apiClient.get(
-        `/bsa/cashflow?from_month=${appliedFromDate}&to_month=${appliedToDate}`
+        `/bsa/cashflow?from_month=${appliedFromDate}&to_month=${appliedToDate}`, {
+        errorMessage: "Failed to load cashflow. Please try again."
+      }
       );
       return response.data?.data as CashFlowData;
     },

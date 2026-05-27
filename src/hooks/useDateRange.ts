@@ -10,7 +10,9 @@ export function useDateRange() {
   return useQuery<DateRange>({
     queryKey: ["report-date-range"],
     queryFn: async () => {
-      const response = await apiClient.get("/bsa/report-date-range");
+      const response = await apiClient.get("/bsa/report-date-range", {
+        errorMessage: "Failed to load date range. Please try again.",
+      });
       return response.data?.data as DateRange;
     },
     staleTime: 1000 * 60 * 5,

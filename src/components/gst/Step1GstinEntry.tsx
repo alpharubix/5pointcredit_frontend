@@ -18,8 +18,9 @@ export default function Step1GstinEntry({ onNext }: Step1Props) {
   useEffect(() => {
     if (gstinData?.is_found && gstinData.gst_number) {
       setGstinInput(gstinData.gst_number);
+      onNext(gstinData.gst_number);
     }
-  }, [gstinData]);
+  }, [gstinData, onNext]);
 
   const updateMutation = useMutation({
     mutationFn: updateGstin,

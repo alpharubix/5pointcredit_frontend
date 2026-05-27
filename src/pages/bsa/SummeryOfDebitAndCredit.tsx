@@ -107,7 +107,10 @@ export default function SummeryOfDebitAndCredit() {
     queryKey: ["summary-of-debit-and-credit", appliedFromDate, appliedToDate],
     queryFn: async () => {
       const response = await apiClient.get(
-        `/bsa/summary-of-debit-and-credit_monthwise?from_date=${appliedFromDate}&to_date=${appliedToDate}`
+        `/bsa/summary-of-debit-and-credit_monthwise?from_date=${appliedFromDate}&to_date=${appliedToDate}`,
+        {
+          errorMessage: "Failed to load summary of debit and credit. Please try again.",
+        }
       );
       return response.data?.data as SummaryData;
     },
@@ -134,12 +137,12 @@ export default function SummeryOfDebitAndCredit() {
 
   const expectedMonths = generateMonthsRange(appliedFromDate, appliedToDate);
 
-  const formatCurrency = (value: number) => {
+  const formatCurrency = (value: number | undefined) => {
     return new Intl.NumberFormat('en-IN', {
       style: 'currency',
       currency: 'INR',
       minimumFractionDigits: 2,
-    }).format(value);
+    }).format(value ?? 0);
   };
 
   const dataMap = new Map<string, MonthlyBreakdown>();

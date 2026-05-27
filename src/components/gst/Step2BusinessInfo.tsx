@@ -1,16 +1,19 @@
 import { useState, useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { fetchBasicInfo, generateOtp } from "@/api/gst";
+import { fetchBasicInfo, submitGst } from "@/api/gst";
 import { toast } from "sonner";
 
 interface Step2Props {
   gstin: string;
-  onNext: (userName: string, otpReferenceId: string) => void;
+  onSuccessSubmit: (gstReferenceId: string) => void;
+  onRequiresAuth: (fromMonth: string, toMonth: string) => void;
   onBack: () => void;
 }
 
-export default function Step2BusinessInfo({ gstin, onNext, onBack }: Step2Props) {
-  const [userName, setUserName] = useState("");
+export default function Step2BusinessInfo({ gstin, onSuccessSubmit, onRequiresAuth, onBack }: Step2Props) {
+  const [fromMonth, setFromMonth] = useState("");
+  const [toMonth, setToMonth] = useState("");
+  const [needsAuth, setNeedsAuth] = useState(false);
 
   const infoMutation = useMutation({
     mutationFn: fetchBasicInfo,
@@ -19,15 +22,23 @@ export default function Step2BusinessInfo({ gstin, onNext, onBack }: Step2Props)
     }
   });
 
-  const otpMutation = useMutation({
-    mutationFn: generateOtp,
+  const submitMutation = useMutation({
+    mutationFn: submitGst,
     onSuccess: (res) => {
-      toast.success("OTP sent successfully");
-      onNext(userName, res.data.otp_reference_id);
+      toast.success("Analysis started successfully!");
+      onSuccessSubmit(res.data.gst_reference_id);
     },
     onError: (error: any) => {
-      const msg = error.response?.data?.detail?.message || "Failed to generate OTP";
-      toast.error(msg);
+      const detail = error.response?.data?.detail;
+      const responseCode = detail?.responseCode;
+      const message = detail?.message || error.response?.data?.message || "Failed to start analysis";
+
+      if (responseCode === "EOA048" || responseCode === "EAE052") {
+        setNeedsAuth(true);
+        toast.error("GST Portal authentication required.");
+      } else {
+        toast.error(message);
+      }
     }
   });
 
@@ -40,11 +51,15 @@ export default function Step2BusinessInfo({ gstin, onNext, onBack }: Step2Props)
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!userName.trim()) {
-      toast.error("Please enter your GST Portal username");
+
+    // basic mmYYYY regex
+    const dateRegex = /^(0[1-9]|1[0-2])\d{4}$/;
+    if (!dateRegex.test(fromMonth) || !dateRegex.test(toMonth)) {
+      toast.error("Date must be in MMYYYY format (e.g. 012024)");
       return;
     }
-    otpMutation.mutate({ gstin, user_name: userName });
+
+    submitMutation.mutate({ gstin, from_month: fromMonth, to_month: toMonth });
   };
 
   const businessData = infoMutation.data?.data;
@@ -61,9 +76,6 @@ export default function Step2BusinessInfo({ gstin, onNext, onBack }: Step2Props)
   return (
     <div className="max-w-2xl mx-auto p-6 bg-white rounded-lg shadow-sm border border-gray-100">
       <div className="flex items-center mb-6">
-        <button onClick={onBack} className="text-gray-500 hover:text-gray-800 mr-3">
-          ← Back
-        </button>
         <h2 className="text-2xl font-semibold text-gray-800">Business Details</h2>
       </div>
 
@@ -106,36 +118,71 @@ export default function Step2BusinessInfo({ gstin, onNext, onBack }: Step2Props)
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="border-t border-gray-100 pt-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-2">GST Portal Authentication</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Select Duration</h3>
               <p className="text-gray-500 text-sm mb-4">
-                Please enter your username registered on the GST portal to trigger an OTP to your registered mobile number.
+                Specify the period you would like to run the analysis for.
               </p>
 
-              <div className="mb-4 max-w-sm">
-                <label htmlFor="userName" className="block text-sm font-medium text-gray-700 mb-1">
-                  GST Portal Username
-                </label>
-                <input
-                  id="userName"
-                  type="text"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-[#000080] focus:border-[#000080]"
-                  placeholder="e.g. your_username"
-                  value={userName}
-                  onChange={(e) => setUserName(e.target.value)}
-                  required
-                />
+              <div className="grid grid-cols-2 gap-4 mb-6">
+                <div>
+                  <label htmlFor="fromMonth" className="block text-sm font-medium text-gray-700 mb-1">
+                    From Month
+                  </label>
+                  <input
+                    id="fromMonth"
+                    type="text"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-[#000080] focus:border-[#000080]"
+                    placeholder="MMYYYY"
+                    value={fromMonth}
+                    onChange={(e) => setFromMonth(e.target.value)}
+                    required
+                    maxLength={6}
+                  />
+                </div>
+                <div>
+                  <label htmlFor="toMonth" className="block text-sm font-medium text-gray-700 mb-1">
+                    To Month
+                  </label>
+                  <input
+                    id="toMonth"
+                    type="text"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-[#000080] focus:border-[#000080]"
+                    placeholder="MMYYYY"
+                    value={toMonth}
+                    onChange={(e) => setToMonth(e.target.value)}
+                    required
+                    maxLength={6}
+                  />
+                </div>
               </div>
 
-              <button
-                type="submit"
-                disabled={otpMutation.isPending}
-                className="bg-[#000080] hover:bg-[#000060] text-white font-medium py-2 px-6 rounded-md transition-colors disabled:opacity-70 flex justify-center items-center"
-              >
-                {otpMutation.isPending ? (
-                  <span className="h-4 w-4 rounded-full border-2 border-white/20 border-t-white animate-spin mr-2" />
-                ) : null}
-                {otpMutation.isPending ? "Generating OTP..." : "Generate OTP"}
-              </button>
+              {needsAuth ? (
+                <div className="space-y-4">
+                  <div className="bg-amber-50 border-l-4 border-amber-400 p-4 rounded-md">
+                    <p className="text-sm text-amber-700 font-medium">
+                      Authentication required. Please complete the OTP verification with the GST Portal to proceed.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => onRequiresAuth(fromMonth, toMonth)}
+                    className="w-full bg-[#000080] hover:bg-[#000060] text-white font-medium py-3 px-6 rounded-md transition-colors flex justify-center items-center shadow-sm"
+                  >
+                    Authenticate with OTP
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="submit"
+                  disabled={submitMutation.isPending}
+                  className="bg-[#000080] hover:bg-[#000060] text-white font-medium py-2 px-6 rounded-md transition-colors disabled:opacity-70 flex justify-center items-center shadow-sm"
+                >
+                  {submitMutation.isPending ? (
+                    <span className="h-4 w-4 rounded-full border-2 border-white/20 border-t-white animate-spin mr-2" />
+                  ) : null}
+                  {submitMutation.isPending ? "Starting Analysis..." : "Start Analysis"}
+                </button>
+              )}
             </form>
           )}
         </div>

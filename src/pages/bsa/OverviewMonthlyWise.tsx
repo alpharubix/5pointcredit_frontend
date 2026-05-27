@@ -295,7 +295,9 @@ export default function OverviewMonthlyWise() {
     queryKey: ["month-wise-overview", appliedFromDate, appliedToDate],
     queryFn: async () => {
       const response = await apiClient.get(
-        `/bsa/month-wise-overview?from_date=${appliedFromDate}&to_date=${appliedToDate}`
+        `/bsa/month-wise-overview?from_date=${appliedFromDate}&to_date=${appliedToDate}`, {
+        errorMessage: "Failed to load overview monthlywise. Please try again."
+      }
       );
       return response.data?.data as OverviewData;
     },

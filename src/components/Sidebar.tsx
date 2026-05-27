@@ -47,6 +47,13 @@ const navItems = [
       { label: "Overview Monthly Wise", path: "/bsa/overview-monthly-wise" }
     ]
   },
+  {
+    icon: ClipboardList,
+    label: "GST",
+    subItems: [
+      { label: "GST History", path: "/gst/history" }
+    ]
+  },
 ];
 
 

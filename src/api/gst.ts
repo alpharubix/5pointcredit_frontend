@@ -102,41 +102,61 @@ export interface GstHistoryResponse {
 // ─── API Functions ────────────────────────────────────────────────────────────
 
 export const getGstin = async (): Promise<GstinResponse> => {
-  const response = await apiClient.get("/gst/gstin");
+  const response = await apiClient.get("/gst/gstin", {
+    errorMessage: "Failed to fetch GSTIN. Please try again.",
+  });
   return response.data;
 };
 
 export const updateGstin = async (data: SaveGstinPayload): Promise<SaveGstinResponse> => {
-  const response = await apiClient.patch("/gst/gstin", data);
+  const response = await apiClient.patch("/gst/gstin", data, {
+    successMessage: "GSTIN updated successfully.",
+    errorMessage: "Failed to update GSTIN. Please try again.",
+  });
   return response.data;
 };
 
 export const fetchBasicInfo = async (data: BasicInfoPayload): Promise<BasicInfoResponse> => {
-  const response = await apiClient.post("/gst/gstin-basic-info", data);
+  const response = await apiClient.post("/gst/gstin-basic-info", data, {
+    errorMessage: "Could not fetch GST basic info. Please verify your GSTIN.",
+  });
   return response.data;
 };
 
 export const generateOtp = async (data: GenerateOtpPayload): Promise<GenerateOtpResponse> => {
-  const response = await apiClient.post("/gst/generate-otp", data);
+  const response = await apiClient.post("/gst/generate-otp", data, {
+    successMessage: "OTP sent to your registered mobile number.",
+    errorMessage: "Failed to generate OTP. Please try again.",
+  });
   return response.data;
 };
 
 export const validateOtp = async (data: ValidateOtpPayload): Promise<ValidateOtpResponse> => {
-  const response = await apiClient.post("/gst/validate-otp", data);
+  const response = await apiClient.post("/gst/validate-otp", data, {
+    successMessage: "OTP verified successfully.",
+    errorMessage: "Invalid or expired OTP. Please try again.",
+  });
   return response.data;
 };
 
 export const submitGst = async (data: SubmitGstPayload): Promise<SubmitGstResponse> => {
-  const response = await apiClient.post("/gst/post-gstin", data);
+  const response = await apiClient.post("/gst/post-gstin", data, {
+    successMessage: "GST data submitted successfully.",
+    errorMessage: "GST submission failed. Please try again.",
+  });
   return response.data;
 };
 
 export const getGstRefStatus = async (data: GstStatusPayload): Promise<GstStatusResponse> => {
-  const response = await apiClient.post("/gst/get-gst-ref-status", data);
+  const response = await apiClient.post("/gst/get-gst-ref-status", data, {
+    errorMessage: "Failed to fetch GST status. Please try again.",
+  });
   return response.data;
 };
 
 export const getGstHistory = async (): Promise<GstHistoryResponse> => {
-  const response = await apiClient.get("/gst/users-ref-ids");
+  const response = await apiClient.get("/gst/users-ref-ids", {
+    errorMessage: "Failed to load GST history. Please try again.",
+  });
   return response.data;
 };

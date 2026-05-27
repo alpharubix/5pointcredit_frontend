@@ -38,13 +38,9 @@ export default function Step4Processing({ gstReferenceId, onRetry }: Step4Props)
 
   useEffect(() => {
     if (currentStatus === "COMPLETED") {
-      // In a real app, this might navigate to a specific report page for this ID
-      // navigate(`/gst/report/${gstReferenceId}`);
-      setTimeout(() => {
-        navigate("/gst/history");
-      }, 2000);
+      localStorage.removeItem("gst_reference_id");
     }
-  }, [currentStatus, navigate]);
+  }, [currentStatus]);
 
   const hasTimedOut = pollCount >= MAX_POLLS;
   const hasFailed = currentStatus === "FAILED" || isError;
@@ -60,7 +56,13 @@ export default function Step4Processing({ gstReferenceId, onRetry }: Step4Props)
             </svg>
           </div>
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Analysis Complete!</h2>
-          <p className="text-gray-500">Your GST data has been successfully processed. Redirecting to results...</p>
+          <p className="text-gray-500 mb-6 font-medium">Your GST data has been successfully processed.</p>
+          <button
+            onClick={() => navigate("/gst/history")}
+            className="bg-[#000080] hover:bg-[#000060] text-white font-medium py-2 px-6 rounded-md transition-colors shadow-md"
+          >
+            View History
+          </button>
         </div>
       ) : hasFailed ? (
         <div className="animate-in fade-in duration-300">
@@ -92,7 +94,10 @@ export default function Step4Processing({ gstReferenceId, onRetry }: Step4Props)
             The analysis is taking longer than usual. You can safely close this page and check your history later.
           </p>
           <button
-            onClick={() => navigate("/gst/history")}
+            onClick={() => {
+              localStorage.removeItem("gst_reference_id");
+              navigate("/gst/history");
+            }}
             className="bg-gray-100 text-gray-800 px-6 py-2 rounded-md hover:bg-gray-200 transition-colors"
           >
             Go to History
@@ -104,7 +109,7 @@ export default function Step4Processing({ gstReferenceId, onRetry }: Step4Props)
             <div className="absolute inset-0 rounded-full border-4 border-gray-100"></div>
             <div className="absolute inset-0 rounded-full border-4 border-[#000080] border-t-transparent animate-spin"></div>
             <div className="absolute inset-0 flex items-center justify-center text-[#000080] font-semibold text-sm">
-              {Math.min(100, Math.round((pollCount / 10) * 100))}%
+              {Math.min(90, Math.round((pollCount / 10) * 100))}%
             </div>
           </div>
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Analyzing Data</h2>

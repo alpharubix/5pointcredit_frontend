@@ -7,9 +7,9 @@ import Step4Processing from "./Step4Processing";
 export default function GstWorkflow() {
   const [currentStep, setCurrentStep] = useState<number>(1);
   const [gstin, setGstin] = useState<string>("");
-  const [userName, setUserName] = useState<string>("");
-  const [otpReferenceId, setOtpReferenceId] = useState<string>("");
   const [gstReferenceId, setGstReferenceId] = useState<string>("");
+  const [fromMonth, setFromMonth] = useState<string>("");
+  const [toMonth, setToMonth] = useState<string>("");
 
   useEffect(() => {
     // Check if there's an ongoing processing session in localStorage
@@ -25,9 +25,15 @@ export default function GstWorkflow() {
     setCurrentStep(2);
   };
 
-  const handleStep2Next = (uName: string, otpRefId: string) => {
-    setUserName(uName);
-    setOtpReferenceId(otpRefId);
+  const handleStep2Success = (gstRefId: string) => {
+    setGstReferenceId(gstRefId);
+    localStorage.setItem("gst_reference_id", gstRefId);
+    setCurrentStep(4);
+  };
+
+  const handleStep2RequiresAuth = (fMonth: string, tMonth: string) => {
+    setFromMonth(fMonth);
+    setToMonth(tMonth);
     setCurrentStep(3);
   };
 
@@ -82,8 +88,8 @@ export default function GstWorkflow() {
               </div>
               <span className={`text-xs mt-2 font-medium ${currentStep >= step ? "text-[#000080]" : "text-gray-400"}`}>
                 {step === 1 && "GSTIN"}
-                {step === 2 && "Business"}
-                {step === 3 && "Auth & Date"}
+                {step === 2 && "Business & Date"}
+                {step === 3 && "Authentication"}
                 {step === 4 && "Analysis"}
               </span>
             </div>
@@ -99,7 +105,8 @@ export default function GstWorkflow() {
         {currentStep === 2 && (
           <Step2BusinessInfo
             gstin={gstin}
-            onNext={handleStep2Next}
+            onSuccessSubmit={handleStep2Success}
+            onRequiresAuth={handleStep2RequiresAuth}
             onBack={() => setCurrentStep(1)}
           />
         )}
@@ -107,11 +114,10 @@ export default function GstWorkflow() {
         {currentStep === 3 && (
           <Step3OtpValidation
             gstin={gstin}
-            userName={userName}
-            otpReferenceId={otpReferenceId}
+            fromMonth={fromMonth}
+            toMonth={toMonth}
             onNext={handleStep3Next}
             onBack={() => setCurrentStep(2)}
-            onUpdateOtpRef={(newRef) => setOtpReferenceId(newRef)}
           />
         )}
 
