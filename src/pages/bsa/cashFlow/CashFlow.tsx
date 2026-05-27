@@ -94,7 +94,9 @@ export default function CashFlow() {
     queryKey: ["cashflow", appliedFromDate, appliedToDate],
     queryFn: async () => {
       const response = await apiClient.get(
-        `/bsa/cashflow?from_month=${appliedFromDate}&to_month=${appliedToDate}`
+        `/bsa/cashflow?from_month=${appliedFromDate}&to_month=${appliedToDate}`, {
+        errorMessage: "Failed to load cashflow. Please try again."
+      }
       );
       return response.data?.data as CashFlowData;
     },
@@ -135,7 +137,7 @@ export default function CashFlow() {
 
 
   return (
-    <div className="p-8 max-w-[1400px] mx-auto animate-fade-in relative min-h-[calc(100vh-4rem)]">
+    <div className="p-8 animate-fade-in relative min-h-[calc(100vh-4rem)]">
       <div className="flex items-center gap-4 mb-8">
         <div>
           <h1 className="text-3xl font-bold text-[#000080] mb-2">Cash Flow</h1>

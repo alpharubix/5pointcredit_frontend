@@ -36,6 +36,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const clearAuth = useCallback(() => {
     queryClient.clear();
+    localStorage.removeItem("gst_reference_id");
   }, [queryClient]);
 
   // Listen for 401 events dispatched by the axios interceptor

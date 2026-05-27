@@ -81,6 +81,11 @@ interface OverviewData {
       reversal_inward_cheque_return_c: number;
       reversal_online_return_d: number;
       gross_credits_e: number;
+      contra_f: number;
+      loan_received_g: number;
+      net_credits_h: number;
+      inhouse_credit_i: number;
+      net_cash_inflow_j: number;
     };
     cash_outflow: {
       total_debits_a: number;
@@ -104,6 +109,27 @@ interface OverviewData {
       outward_online_return_percent: number;
       ecs_return_nos: number;
       ecs_return_percent: number;
+    };
+    other_calculations: {
+      inhouse_credit_nos: number;
+      "inhouse_credit/total_percent": number;
+      inhouse_debit_nos: number;
+      "inhouse_debit/total_percent": number;
+      average_eod: number;
+      od_cc_sanction_limit: number;
+      "od/cc_drawing_power_limit": number;
+      "average_od_&_cc_utilization_percent": number;
+      no_of_days_limit_overdrawn: number;
+      no_of_times_limit_overdrawn: number;
+      overdrawn_amount_in_rs_mn_for_all_days: number;
+      overdrawn_average_amount_in_rs_mn: number;
+      "overdrawn_average_as_percent_of_od/cc_limit": number;
+      peak_overdrawing_amount: number;
+      peak_overdrawing_date: string;
+      loan_repaid: number;
+      ecs_payment: number;
+      "no_of_unique_ecs/emis": number;
+      interest_paid: number;
     };
   };
   monthly_breakdown: MonthlyBreakdown[];
@@ -130,14 +156,22 @@ const ROWS: RowConfig[] = [
   { label: "Total Debit (Nos.)", overallKey: ["overview", "total_debit_nos"], monthKey: "TotalDebitNo", isCurrency: false, isRed: true, isItalic: true },
   { label: "", isSeparator: true },
 
+  { label: "Total Credits (A)", overallKey: ["cash_inflow", "total_credits_a"], monthKey: "TotalCredit", isCurrency: true },
+  { label: "Outward Cheque Return (B)", overallKey: ["cash_inflow", "outward_cheque_return_b"], monthKey: "OutwardChequeReturn", isCurrency: true, isRed: true },
+  { label: "Reversal of Inward Cheque Return (C)", overallKey: ["cash_inflow", "reversal_inward_cheque_return_c"], monthKey: "ReversalOfInwardChequeReturn", isCurrency: true, isRed: true },
+  { label: "Reversal of Online Return (D)", overallKey: ["cash_inflow", "reversal_online_return_d"], monthKey: "ReversalOfOnlineReturn", isCurrency: true, isRed: true },
   { label: "Gross Credits (E = A-B-C-D)", overallKey: ["cash_inflow", "gross_credits_e"], monthKey: "GrossCredits", isCurrency: true, isGreyBg: true, isBold: true },
-  { label: "Contra (F)", overallKey: null, monthKey: "Contra", isCurrency: true, isRed: true },
-  { label: "Loan Received (G)", overallKey: null, monthKey: "LoanReceived", isCurrency: true, isRed: true },
-  { label: "Net Credits (H = E-F-G)", overallKey: null, monthKey: "NetCredits", isCurrency: true, isGreyBg: true, isBold: true },
-  { label: "Inhouse Credit (I)", overallKey: null, monthKey: "InhouseCredit", isCurrency: true, isRed: true },
-  { label: "Net Cash Inflow (H-I)", overallKey: null, monthKey: "NetCashInflow", isCurrency: true, isGreyBg: true, isBold: true },
+  { label: "Contra (F)", overallKey: ["cash_inflow", "contra_f"], monthKey: "Contra", isCurrency: true, isRed: true },
+  { label: "Loan Received (G)", overallKey: ["cash_inflow", "loan_received_g"], monthKey: "LoanReceived", isCurrency: true, isRed: true },
+  { label: "Net Credits (H = E-F-G)", overallKey: ["cash_inflow", "net_credits_h"], monthKey: "NetCredits", isCurrency: true, isGreyBg: true, isBold: true },
+  { label: "Inhouse Credit (I)", overallKey: ["cash_inflow", "inhouse_credit_i"], monthKey: "InhouseCredit", isCurrency: true, isRed: true },
+  { label: "Net Cash Inflow (H-I)", overallKey: ["cash_inflow", "net_cash_inflow_j"], monthKey: "NetCashInflow", isCurrency: true, isGreyBg: true, isBold: true },
   { label: "", isSeparator: true },
 
+  { label: "Total Debits (A)", overallKey: ["cash_outflow", "total_debits_a"], monthKey: "TotalDebit", isCurrency: true },
+  { label: "Inward Cheque Return (B)", overallKey: ["cash_outflow", "inward_cheque_return_b"], monthKey: "InwardChequeReturn", isCurrency: true, isRed: true },
+  { label: "Reversal of Outward Cheque Return (C)", overallKey: ["cash_outflow", "reversal_outward_cheque_return_c"], monthKey: "ReversalOfOutwardChequeReturn", isCurrency: true, isRed: true },
+  { label: "Online Return (D)", overallKey: ["cash_outflow", "online_return_d"], monthKey: "OnlineReturn", isCurrency: true, isRed: true },
   { label: "Gross Debits (E = A-B-C-D)", overallKey: ["cash_outflow", "gross_debits_e"], monthKey: "GrossDebit", isCurrency: true, isGreyBg: true, isBold: true },
   { label: "Contra (F)", overallKey: ["cash_outflow", "contra_f"], monthKey: "ContraDebit", isCurrency: true, isRed: true },
   { label: "Net Debits (G=E-F)", overallKey: ["cash_outflow", "net_debits_g"], monthKey: "NetDebit", isCurrency: true, isGreyBg: true, isBold: true },
@@ -157,28 +191,28 @@ const ROWS: RowConfig[] = [
   { label: "ECS Return/Total ECS Payments (%)", overallKey: ["returns", "ecs_return_percent"], monthKey: "EcsReturnToTotalEcsPaymentInPercent", isCurrency: false, isPercent: true, isBold: true },
   { label: "", isSeparator: true },
 
-  { label: "Inhouse Credit (Nos.)", overallKey: null, monthKey: "InhouseCreditNos", isCurrency: false, isRed: true, isItalic: true },
-  { label: "Inhouse Credit/Total Credits (%)", overallKey: null, monthKey: "InhouseCreditToTotalCreditInPercent", isCurrency: false, isPercent: true, isBold: true },
-  { label: "Inhouse Debit (Nos.)", overallKey: null, monthKey: "InhouseDebitNos", isCurrency: false, isRed: true, isItalic: true },
-  { label: "Inhouse Debit/Total Debits (%)", overallKey: null, monthKey: "InhouseDebitToTotalDebitInPercent", isCurrency: false, isPercent: true, isBold: true },
+  { label: "Inhouse Credit (Nos.)", overallKey: ["other_calculations", "inhouse_credit_nos"], monthKey: "InhouseCreditNos", isCurrency: false, isRed: true, isItalic: true },
+  { label: "Inhouse Credit/Total Credits (%)", overallKey: ["other_calculations", "inhouse_credit/total_percent"], monthKey: "InhouseCreditToTotalCreditInPercent", isCurrency: false, isPercent: true, isBold: true },
+  { label: "Inhouse Debit (Nos.)", overallKey: ["other_calculations", "inhouse_debit_nos"], monthKey: "InhouseDebitNos", isCurrency: false, isRed: true, isItalic: true },
+  { label: "Inhouse Debit/Total Debits (%)", overallKey: ["other_calculations", "inhouse_debit/total_percent"], monthKey: "InhouseDebitToTotalDebitInPercent", isCurrency: false, isPercent: true, isBold: true },
   { label: "", isSeparator: true },
 
-  { label: "Average EOD", overallKey: null, monthKey: "AverageEod", isCurrency: true, isBold: true },
-  { label: "OD/CC Sanction Limit", overallKey: null, monthKey: "odccLimit", isCurrency: true, isBold: true },
-  { label: "OD/CC Drawing Power Limit", overallKey: null, monthKey: "odccDrawingLimit", isCurrency: true, isBold: true },
-  { label: "No. of days limit over-drawn", overallKey: null, monthKey: "NoOfdaysLimitOverDrawn", isCurrency: false, isBold: true },
-  { label: "No. of times limit over-drawn", overallKey: null, monthKey: "NoOfTimesLimitOverDrawn", isCurrency: false, isBold: true },
-  { label: "Overdrawn Amount in Rs. Mn. (for all days)", overallKey: null, monthKey: "OverDrawnAnountInRsMn", isCurrency: true, isBold: true },
-  { label: "Overdrawn Average Amount in Rs. Mn.", overallKey: null, monthKey: "OverDrawnAverageinRsMn", isCurrency: true, isBold: true },
-  { label: "Overdrawn Average as a %age of OD/CC Limit", overallKey: null, monthKey: "OverDrawnAverageAsPercentOfOdCCLimit", isCurrency: false, isPercent: true, isBold: true },
-  { label: "Peak overdrawing amount", overallKey: null, monthKey: "PeakOverDrawingAmount", isCurrency: true, isBold: true },
-  { label: "Peak overdrawing date", overallKey: null, monthKey: "PeakOverDrawingDate", isCurrency: false, isBold: true },
+  { label: "Average EOD", overallKey: ["other_calculations", "average_eod"], monthKey: "AverageEod", isCurrency: true, isBold: true },
+  { label: "OD/CC Sanction Limit", overallKey: ["other_calculations", "od_cc_sanction_limit"], monthKey: "odccLimit", isCurrency: true, isBold: true },
+  { label: "OD/CC Drawing Power Limit", overallKey: ["other_calculations", "od/cc_drawing_power_limit"], monthKey: "odccDrawingLimit", isCurrency: true, isBold: true },
+  { label: "No. of days limit over-drawn", overallKey: ["other_calculations", "no_of_days_limit_overdrawn"], monthKey: "NoOfdaysLimitOverDrawn", isCurrency: false, isBold: true },
+  { label: "No. of times limit over-drawn", overallKey: ["other_calculations", "no_of_times_limit_overdrawn"], monthKey: "NoOfTimesLimitOverDrawn", isCurrency: false, isBold: true },
+  { label: "Overdrawn Amount in Rs. Mn. (for all days)", overallKey: ["other_calculations", "overdrawn_amount_in_rs_mn_for_all_days"], monthKey: "OverDrawnAnountInRsMn", isCurrency: true, isBold: true },
+  { label: "Overdrawn Average Amount in Rs. Mn.", overallKey: ["other_calculations", "overdrawn_average_amount_in_rs_mn"], monthKey: "OverDrawnAverageinRsMn", isCurrency: true, isBold: true },
+  { label: "Overdrawn Average as a %age of OD/CC Limit", overallKey: ["other_calculations", "overdrawn_average_as_percent_of_od/cc_limit"], monthKey: "OverDrawnAverageAsPercentOfOdCCLimit", isCurrency: false, isPercent: true, isBold: true },
+  { label: "Peak overdrawing amount", overallKey: ["other_calculations", "peak_overdrawing_amount"], monthKey: "PeakOverDrawingAmount", isCurrency: true, isBold: true },
+  { label: "Peak overdrawing date", overallKey: ["other_calculations", "peak_overdrawing_date"], monthKey: "PeakOverDrawingDate", isCurrency: false, isBold: true },
   { label: "", isSeparator: true },
 
-  { label: "Loan Repaid", overallKey: null, monthKey: "LoanRepaid", isCurrency: true, isRed: true, isItalic: true },
-  { label: "ECS Payment", overallKey: null, monthKey: "EcsPayment", isCurrency: true, isRed: true, isItalic: true },
-  { label: "No. of Unique ECS/EMI's", overallKey: null, monthKey: "NoOfUniqueEcs", isCurrency: false, isRed: true, isItalic: true },
-  { label: "Interest Paid", overallKey: null, monthKey: "InterestPaid", isCurrency: true, isBold: true },
+  { label: "Loan Repaid", overallKey: ["other_calculations", "loan_repaid"], monthKey: "LoanRepaid", isCurrency: true, isRed: true, isItalic: true },
+  { label: "ECS Payment", overallKey: ["other_calculations", "ecs_payment"], monthKey: "EcsPayment", isCurrency: true, isRed: true, isItalic: true },
+  { label: "No. of Unique ECS/EMI's", overallKey: ["other_calculations", "no_of_unique_ecs/emis"], monthKey: "NoOfUniqueEcs", isCurrency: false, isRed: true, isItalic: true },
+  { label: "Interest Paid", overallKey: ["other_calculations", "interest_paid"], monthKey: "InterestPaid", isCurrency: true, isBold: true },
 ];
 
 export default function OverviewMonthlyWise() {
@@ -261,7 +295,9 @@ export default function OverviewMonthlyWise() {
     queryKey: ["month-wise-overview", appliedFromDate, appliedToDate],
     queryFn: async () => {
       const response = await apiClient.get(
-        `/bsa/month-wise-overview?from_date=${appliedFromDate}&to_date=${appliedToDate}`
+        `/bsa/month-wise-overview?from_date=${appliedFromDate}&to_date=${appliedToDate}`, {
+        errorMessage: "Failed to load overview monthlywise. Please try again."
+      }
       );
       return response.data?.data as OverviewData;
     },
@@ -330,7 +366,7 @@ export default function OverviewMonthlyWise() {
   }
 
   return (
-    <div className="p-8 max-w-[1400px] mx-auto animate-fade-in relative min-h-[calc(100vh-4rem)]">
+    <div className="p-8 animate-fade-in relative min-h-[calc(100vh-4rem)]">
       <div className="flex items-center gap-4 mb-8">
         <div>
           <h1 className="text-3xl font-bold text-[#000080] mb-2">Month-Wise Overview</h1>

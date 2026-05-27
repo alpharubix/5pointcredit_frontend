@@ -20,7 +20,7 @@ const totalValueClass = "font-bold bg-gray-200/60";
 const rows: RowConfig[] = [
   {
     label: "Total Inflow (%)",
-    summaryKey: null,
+    summaryKey: "total_inflows_percent",
     monthKey: "TotalInflowPercentage",
     labelClass: headerLabelClass,
     valueClass: totalValueClass,

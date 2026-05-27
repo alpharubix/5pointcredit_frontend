@@ -107,7 +107,10 @@ export default function SummeryOfDebitAndCredit() {
     queryKey: ["summary-of-debit-and-credit", appliedFromDate, appliedToDate],
     queryFn: async () => {
       const response = await apiClient.get(
-        `/bsa/summary-of-debit-and-credit_monthwise?from_date=${appliedFromDate}&to_date=${appliedToDate}`
+        `/bsa/summary-of-debit-and-credit_monthwise?from_date=${appliedFromDate}&to_date=${appliedToDate}`,
+        {
+          errorMessage: "Failed to load summary of debit and credit. Please try again.",
+        }
       );
       return response.data?.data as SummaryData;
     },
@@ -134,12 +137,12 @@ export default function SummeryOfDebitAndCredit() {
 
   const expectedMonths = generateMonthsRange(appliedFromDate, appliedToDate);
 
-  const formatCurrency = (value: number) => {
+  const formatCurrency = (value: number | undefined) => {
     return new Intl.NumberFormat('en-IN', {
       style: 'currency',
       currency: 'INR',
       minimumFractionDigits: 2,
-    }).format(value);
+    }).format(value ?? 0);
   };
 
   const dataMap = new Map<string, MonthlyBreakdown>();
@@ -162,14 +165,14 @@ export default function SummeryOfDebitAndCredit() {
           {label}
         </td>
         <td className={cn("px-4 py-2 text-right border border-gray-300", isBold && "font-bold bg-gray-50")}>
-          {totalValue ? (isCurrency ? formatCurrency(totalValue) : totalValue) : "-"}
+          {(isCurrency ? formatCurrency(totalValue) : totalValue)}
         </td>
         {expectedMonths.map((month) => {
           const monthData = dataMap.get(month);
           const val = monthData ? getValueForMonth(monthData) : undefined;
           return (
             <td key={month} className={cn("px-4 py-2 text-right border border-gray-300", isBold && "font-bold bg-gray-50")}>
-              {val ? (isCurrency ? formatCurrency(val) : val) : "-"}
+              {(isCurrency ? formatCurrency(val) : val)}
             </td>
           );
         })}
@@ -178,7 +181,7 @@ export default function SummeryOfDebitAndCredit() {
   };
 
   return (
-    <div className="p-8 max-w-7xl mx-auto animate-fade-in relative min-h-[calc(100vh-4rem)]">
+    <div className="p-8 animate-fade-in relative min-h-[calc(100vh-4rem)]">
       <div className="flex items-center gap-4 mb-8">
         <div>
           <h1 className="text-3xl font-bold text-[#000080] mb-2">Summary of Debit and Credit</h1>
