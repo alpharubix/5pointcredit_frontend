@@ -91,18 +91,34 @@ export default function GstOverviewTab({
       {/* Account Details */}
       {accountDetails && (
         <div className="bg-white rounded-md shadow-sm border border-gray-200">
-          <SectionTitle>Customer Profile</SectionTitle>
-          <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-            {Object.entries(accountDetails).map(([key, value]) => (
-              <div key={key} className="flex border-b border-gray-100 pb-2">
-                <span className="font-semibold text-[#000080] w-1/2">
-                  {key}
-                </span>
-                <span className="text-gray-700 w-1/2 break-all">
-                  {value as React.ReactNode}
-                </span>
-              </div>
-            ))}
+          <h3 className="text-lg font-semibold text-white bg-[#e67e22] px-4 py-2 rounded-t-md text-center">
+            Customer Profile
+          </h3>
+          <div className="p-4 grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-center">
+            <div className="border border-gray-200 rounded-md p-2">
+               <span className="font-semibold text-[#000080] block mb-1">Company Name</span>
+               <span className="text-gray-700">{accountDetails["GSTR Analysis Report  - "] || "N/A"}</span>
+            </div>
+            <div className="border border-gray-200 rounded-md p-2">
+               <span className="font-semibold text-[#000080] block mb-1">GSTIN</span>
+               <span className="text-gray-700">{accountDetails["GSTIN"]}</span>
+            </div>
+             <div className="border border-gray-200 rounded-md p-2">
+               <span className="font-semibold text-[#000080] block mb-1">PAN</span>
+               <span className="text-gray-700">{accountDetails["PAN"]}</span>
+            </div>
+             <div className="border border-gray-200 rounded-md p-2">
+               <span className="font-semibold text-[#000080] block mb-1">State</span>
+               <span className="text-gray-700">{accountDetails["State of Operations(based on max. gross sales)"]}</span>
+            </div>
+             <div className="border border-gray-200 rounded-md p-2">
+               <span className="font-semibold text-[#000080] block mb-1">Period From</span>
+               <span className="text-gray-700">{accountDetails["periodFrom"]}</span>
+            </div>
+             <div className="border border-gray-200 rounded-md p-2">
+               <span className="font-semibold text-[#000080] block mb-1">Period To</span>
+               <span className="text-gray-700">{accountDetails["periodTo"]}</span>
+            </div>
           </div>
         </div>
       )}
