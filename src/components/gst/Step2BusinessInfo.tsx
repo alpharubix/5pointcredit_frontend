@@ -10,7 +10,7 @@ interface Step2Props {
   onBack: () => void;
 }
 
-export default function Step2BusinessInfo({ gstin, onSuccessSubmit, onRequiresAuth, onBack }: Step2Props) {
+export default function Step2BusinessInfo({ gstin, onSuccessSubmit, onRequiresAuth }: Step2Props) {
   const [fromMonth, setFromMonth] = useState("");
   const [toMonth, setToMonth] = useState("");
   const [needsAuth, setNeedsAuth] = useState(false);

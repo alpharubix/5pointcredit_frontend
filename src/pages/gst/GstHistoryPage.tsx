@@ -98,7 +98,10 @@ export default function GstHistoryPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       {item.gst_reference_id_status === "COMPLETED" ? (
-                        <button className="text-[#000080] hover:text-[#000060]">
+                        <button 
+                          onClick={() => navigate("/gst/reports", { state: { gst_reference_id: item.reference_id } })}
+                          className="text-[#000080] hover:text-[#000060]"
+                        >
                           View Report
                         </button>
                       ) : (

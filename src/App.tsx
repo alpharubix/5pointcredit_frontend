@@ -19,6 +19,7 @@ const OverviewMonthlyWise = lazy(() => import("@/pages/bsa/OverviewMonthlyWise")
 const NotF = lazy(() => import("@/pages/404"))
 const GstAnalysisPage = lazy(() => import("@/pages/gst/GstAnalysisPage"))
 const GstHistoryPage = lazy(() => import("@/pages/gst/GstHistoryPage"))
+const GstReportPage = lazy(() => import("@/components/gstReportPage"))
 
 function App() {
   return (
@@ -45,6 +46,7 @@ function App() {
                       <Route path="/bsa/overview-monthly-wise" element={<OverviewMonthlyWise />} />
                       <Route path="/gst/analysis" element={<GstAnalysisPage />} />
                       <Route path="/gst/history" element={<GstHistoryPage />} />
+                      <Route path="/gst/reports" element={<GstReportPage />} />
                     </Route>
                   </Route>
 

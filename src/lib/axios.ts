@@ -32,19 +32,6 @@ apiClient.interceptors.response.use(
     return response;
   },
   (error) => {
-    const responseCode = error.response?.data?.detail?.responseCode;
-    const isGstAuthError = responseCode === "EOA048" || responseCode === "EAE052";
-
-    if (error.response?.status === 401 && !isGstAuthError) {
-      window.dispatchEvent(new Event("auth:unauthorized"));
-
-      setTimeout(() => {
-        if (window.location.pathname !== "/login") {
-          window.location.href = "/login";
-        }
-      }, 500);
-    }
-
     const errorMessage = error.config?.errorMessage;
     if (errorMessage) {
       toast.error(errorMessage);

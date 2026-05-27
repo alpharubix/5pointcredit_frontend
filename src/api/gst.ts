@@ -160,3 +160,45 @@ export const getGstHistory = async (): Promise<GstHistoryResponse> => {
   });
   return response.data;
 };
+
+// ─── GST Reports APIs ────────────────────────────────────────────────────────
+
+export interface GstReportPayload {
+  gst_reference_id: string;
+}
+
+export interface GstOverviewResponse {
+  message: string;
+  data: any[];
+}
+
+export interface GstTopSuppliersCustomersResponse {
+  message: string;
+  data: any[];
+}
+
+export interface GstMonthlySummaryResponse {
+  message: string;
+  data: any;
+}
+
+export const getGstOverview = async (data: GstReportPayload): Promise<GstOverviewResponse> => {
+  const response = await apiClient.post("/gst/overview", data, {
+    errorMessage: "Failed to fetch GST Overview. Please try again.",
+  });
+  return response.data;
+};
+
+export const getGstTopSuppliersCustomers = async (data: GstReportPayload): Promise<GstTopSuppliersCustomersResponse> => {
+  const response = await apiClient.post("/gst/top-suppliers-and-customers", data, {
+    errorMessage: "Failed to fetch Top Suppliers and Customers. Please try again.",
+  });
+  return response.data;
+};
+
+export const getGstMonthlySummary = async (data: GstReportPayload): Promise<GstMonthlySummaryResponse> => {
+  const response = await apiClient.post("/gst/monthly-sales-purchase-summary", data, {
+    errorMessage: "Failed to fetch Monthly Sales and Purchase Summary. Please try again.",
+  });
+  return response.data;
+};

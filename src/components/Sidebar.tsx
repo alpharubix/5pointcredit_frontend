@@ -51,7 +51,9 @@ const navItems = [
     icon: ClipboardList,
     label: "GST",
     subItems: [
-      { label: "GST History", path: "/gst/history" }
+      { label: "GST Analysis", path: "/gst/analysis" },
+      { label: "GST Analysis History", path: "/gst/history" },
+      { label: "GST Reports", path: "/gst/reports" }
     ]
   },
 ];
