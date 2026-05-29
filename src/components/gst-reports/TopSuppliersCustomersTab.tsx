@@ -69,8 +69,10 @@ export default function TopSuppliersCustomersTab({ gstReferenceId }: { gstRefere
                 <tr key={idx} className="hover:bg-gray-50">
                   {headers.map((header) => {
                     const isNumber = !isNaN(Number(row[header])) && row[header] !== '';
+                    const rawVal = row[header];
+                    const isNegative = typeof rawVal === 'number' ? rawVal < 0 : (typeof rawVal === 'string' && rawVal.trim().startsWith('-'));
                     return (
-                      <td key={header} className={`px-4 py-2 border border-gray-200 ${isNumber && header !== 'S.No' && header !== 'Sl. no.' ? 'text-right' : 'text-center'}`}>
+                      <td key={header} className={`px-4 py-2 border border-gray-200 ${isNumber && header !== 'S.No' && header !== 'Sl. no.' ? 'text-right' : 'text-center'} ${isNegative ? 'text-red-600' : ''}`}>
                         {header.toLowerCase().includes('amount') ? `₹ ${Number(row[header]).toLocaleString('en-IN')}` : row[header]}
                       </td>
                     );

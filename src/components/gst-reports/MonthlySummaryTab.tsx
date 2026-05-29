@@ -56,27 +56,35 @@ export default function MonthlySummaryTab({ gstReferenceId }: { gstReferenceId: 
               </tr>
             </thead>
             <tbody>
-              {tableData.length > 0 ? tableData.map((row: any, idx: number) => (
+              {tableData.length > 0 ? tableData.map((row: any, idx: number) => {
+                const taxableVal = Number(row["Taxable Value"] || 0);
+                const taxVal = Number(row["Tax"] || 0);
+                return (
                 <tr key={idx} className="hover:bg-gray-50">
                   <td className="px-4 py-2 border border-gray-200 text-center font-medium">{row.Month}</td>
-                  <td className="px-4 py-2 border border-gray-200 text-right">₹ {Number(row["Taxable Value"] || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
-                  <td className="px-4 py-2 border border-gray-200 text-right">₹ {Number(row["Tax"] || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                  <td className={`px-4 py-2 border border-gray-200 text-right ${taxableVal < 0 ? 'text-red-600' : ''}`}>₹ {taxableVal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                  <td className={`px-4 py-2 border border-gray-200 text-right ${taxVal < 0 ? 'text-red-600' : ''}`}>₹ {taxVal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
                 </tr>
-              )) : (
+                );
+              }) : (
                 <tr>
                   <td colSpan={3} className="px-4 py-4 text-center text-gray-500">No data available</td>
                 </tr>
               )}
             </tbody>
-            {totalData && (
+            {totalData && (() => {
+              const totalTaxable = Number(totalData["Taxable Value"] || 0);
+              const totalTax = Number(totalData["Tax"] || 0);
+              return (
               <tfoot className="bg-[#e67e22] text-white font-bold">
                 <tr>
                   <td className="px-4 py-2 border border-[#d35400] text-center">Total</td>
-                  <td className="px-4 py-2 border border-[#d35400] text-right">₹ {Number(totalData["Taxable Value"] || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
-                  <td className="px-4 py-2 border border-[#d35400] text-right">₹ {Number(totalData["Tax"] || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                  <td className={`px-4 py-2 border border-[#d35400] text-right ${totalTaxable < 0 ? 'text-red-900 bg-white/20' : ''}`}>₹ {totalTaxable.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                  <td className={`px-4 py-2 border border-[#d35400] text-right ${totalTax < 0 ? 'text-red-900 bg-white/20' : ''}`}>₹ {totalTax.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
                 </tr>
               </tfoot>
-            )}
+              );
+            })()}
           </table>
         </div>
       </div>

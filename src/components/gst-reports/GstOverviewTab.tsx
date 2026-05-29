@@ -154,18 +154,22 @@ export default function GstOverviewTab({
                             {sectionName}
                           </td>
                         </tr>
-                        {Object.entries(sectionData).map(([key, value], i) => (
+                        {Object.entries(sectionData).map(([key, value], i) => {
+                          const rawVal = value;
+                          const isNegative = typeof rawVal === 'number' ? rawVal < 0 : (typeof rawVal === 'string' && rawVal.trim().startsWith('-'));
+                          return (
                           <tr key={i} className="hover:bg-gray-50">
                             <td
                               className={`px-4 py-2 border border-gray-200 ${key.startsWith('Gross') || key.startsWith('Profit') || key.includes('Liability') || key.includes('Available') ? 'font-semibold text-[#c0392b]' : 'text-gray-700'}`}
                             >
                               {key}
                             </td>
-                            <td className="px-4 py-2 border border-gray-200 text-right font-medium">
+                            <td className={`px-4 py-2 border border-gray-200 text-right font-medium ${isNegative ? 'text-red-600' : ''}`}>
                               {value as string}
                             </td>
                           </tr>
-                        ))}
+                          );
+                        })}
                       </React.Fragment>
                     );
                   })}
@@ -207,16 +211,20 @@ export default function GstOverviewTab({
                             </td>
                           </tr>
                           {Object.entries(sectionData).map(
-                            ([key, value], i) => (
+                            ([key, value], i) => {
+                              const rawVal = value;
+                              const isNegative = typeof rawVal === 'number' ? rawVal < 0 : (typeof rawVal === 'string' && rawVal.trim().startsWith('-'));
+                              return (
                               <tr key={i} className="hover:bg-gray-50">
                                 <td className="px-4 py-2 border border-gray-200 text-gray-700">
                                   {key}
                                 </td>
-                                <td className="px-4 py-2 border border-gray-200 text-right font-medium">
+                                <td className={`px-4 py-2 border border-gray-200 text-right font-medium ${isNegative ? 'text-red-600' : ''}`}>
                                   {value as string}
                                 </td>
                               </tr>
-                            )
+                              );
+                            }
                           )}
                         </React.Fragment>
                       );
@@ -242,16 +250,20 @@ export default function GstOverviewTab({
                   </tr>
                 </thead>
                 <tbody>
-                  {Object.entries(averages).map(([key, value], idx) => (
+                  {Object.entries(averages).map(([key, value], idx) => {
+                    const rawVal = value;
+                    const isNegative = typeof rawVal === 'number' ? rawVal < 0 : (typeof rawVal === 'string' && rawVal.trim().startsWith('-'));
+                    return (
                     <tr key={idx} className="hover:bg-gray-50">
                       <td className="px-4 py-2 border border-gray-200 text-gray-700 font-medium">
                         {key}
                       </td>
-                      <td className="px-4 py-2 border border-gray-200 text-right font-semibold">
+                      <td className={`px-4 py-2 border border-gray-200 text-right font-semibold ${isNegative ? 'text-red-600' : ''}`}>
                         {value as string}
                       </td>
                     </tr>
-                  ))}
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -288,16 +300,20 @@ export default function GstOverviewTab({
                             {cleanTitle}
                           </td>
                         </tr>
-                        {Object.entries(sectionData).map(([key, value], i) => (
+                        {Object.entries(sectionData).map(([key, value], i) => {
+                          const rawVal = value;
+                          const isNegative = typeof rawVal === 'number' ? rawVal < 0 : (typeof rawVal === 'string' && rawVal.trim().startsWith('-'));
+                          return (
                           <tr key={i} className="hover:bg-gray-50">
                             <td className="px-4 py-2 border border-gray-200 text-gray-700 w-2/3">
                               {key}
                             </td>
-                            <td className="px-4 py-2 border border-gray-200 text-right font-medium w-1/3">
+                            <td className={`px-4 py-2 border border-gray-200 text-right font-medium w-1/3 ${isNegative ? 'text-red-600' : ''}`}>
                               {value as string}
                             </td>
                           </tr>
-                        ))}
+                          );
+                        })}
                       </React.Fragment>
                     );
                   })}
