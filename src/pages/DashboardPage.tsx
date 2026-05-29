@@ -111,7 +111,7 @@ export default function DashboardPage() {
       setModalStep("confirmation");
     },
     onError: (error: any) => {
-      toast.error(`${error.message}`);
+      toast.error(`${error.response?.data?.detail?.message}`);
     },
   });
 
@@ -125,7 +125,7 @@ export default function DashboardPage() {
       handleCloseModal();
     },
     onError: (error: any) => {
-      toast.error(`${error.message}`);
+      toast.error(`${error.response?.data?.detail?.message}`);
     },
   });
 
@@ -179,8 +179,8 @@ export default function DashboardPage() {
 
   const dashboardItems = [
     {
-      title: "Bank Statement analyze",
-      description: "Upload & Analyze",
+      title: "Bank Statement Analysis",
+      description: "Upload & Analysis",
       icon: <Building2 className="h-8 w-8 text-[#000080]" />,
       onClick: () => {
         setModalStep("form");
@@ -190,7 +190,7 @@ export default function DashboardPage() {
     },
     {
       title: "GSTR Analysis",
-      description: "Analize GSTR",
+      description: "Analysis GSTR",
       icon: <FileText className="h-8 w-8 text-[#000080]" />,
       onClick: () => {
         navigate("/gst/analysis");
@@ -300,13 +300,13 @@ export default function DashboardPage() {
                           <SelectContent>
                             <SelectGroup>
                               <SelectLabel>Company Type</SelectLabel>
-                              <SelectItem value="Individual">Individual</SelectItem>
-                              <SelectItem value="Company">Company</SelectItem>
-                              <SelectItem value="Sole Proprietorship">
+                              <SelectItem value="individual">Individual</SelectItem>
+                              <SelectItem value="company">Company</SelectItem>
+                              <SelectItem value="sole_proprietorship">
                                 Sole Proprietorship
                               </SelectItem>
-                              <SelectItem value="Trust">Trust</SelectItem>
-                              <SelectItem value="Partnership">Partnership</SelectItem>
+                              <SelectItem value="trust">Trust</SelectItem>
+                              <SelectItem value="partnership">Partnership</SelectItem>
                             </SelectGroup>
                           </SelectContent>
                         </Select>

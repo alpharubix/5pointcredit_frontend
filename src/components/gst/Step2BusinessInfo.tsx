@@ -104,6 +104,10 @@ export default function Step2BusinessInfo({ gstin, onSuccessSubmit, onRequiresAu
               <span className="block text-gray-500 mb-1">Date of Registration</span>
               <strong className="text-gray-900">{businessData.dateOfRegistration}</strong>
             </div>
+            <div>
+              <span className="block text-gray-500 mb-1">Constitution of Business</span>
+              <strong className="text-gray-900">{businessData.constitutionOfBusiness}</strong>
+            </div>
           </div>
 
           {businessData.gstinStatus.toLowerCase() !== 'active' ? (
