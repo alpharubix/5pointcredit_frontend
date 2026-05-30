@@ -96,28 +96,52 @@ export default function GstOverviewTab({
           </h3>
           <div className="p-4 grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-center">
             <div className="border border-gray-200 rounded-md p-2">
-               <span className="font-semibold text-[#000080] block mb-1">Company Name</span>
-               <span className="text-gray-700">{accountDetails["GSTR Analysis Report  - "] || "N/A"}</span>
+              <span className="font-semibold text-[#000080] block mb-1">
+                Company Name
+              </span>
+              <span className="text-gray-700">
+                {accountDetails['GSTR Analysis Report  - '] || 'N/A'}
+              </span>
             </div>
             <div className="border border-gray-200 rounded-md p-2">
-               <span className="font-semibold text-[#000080] block mb-1">GSTIN</span>
-               <span className="text-gray-700">{accountDetails["GSTIN"]}</span>
+              <span className="font-semibold text-[#000080] block mb-1">
+                GSTIN
+              </span>
+              <span className="text-gray-700">{accountDetails['GSTIN']}</span>
             </div>
-             <div className="border border-gray-200 rounded-md p-2">
-               <span className="font-semibold text-[#000080] block mb-1">PAN</span>
-               <span className="text-gray-700">{accountDetails["PAN"]}</span>
+            <div className="border border-gray-200 rounded-md p-2">
+              <span className="font-semibold text-[#000080] block mb-1">
+                PAN
+              </span>
+              <span className="text-gray-700">{accountDetails['PAN']}</span>
             </div>
-             <div className="border border-gray-200 rounded-md p-2">
-               <span className="font-semibold text-[#000080] block mb-1">State</span>
-               <span className="text-gray-700">{accountDetails["State of Operations(based on max. gross sales)"]}</span>
+            <div className="border border-gray-200 rounded-md p-2">
+              <span className="font-semibold text-[#000080] block mb-1">
+                State
+              </span>
+              <span className="text-gray-700">
+                {
+                  accountDetails[
+                    'State of Operations(based on max. gross sales)'
+                  ]
+                }
+              </span>
             </div>
-             <div className="border border-gray-200 rounded-md p-2">
-               <span className="font-semibold text-[#000080] block mb-1">Period From</span>
-               <span className="text-gray-700">{accountDetails["periodFrom"]}</span>
+            <div className="border border-gray-200 rounded-md p-2">
+              <span className="font-semibold text-[#000080] block mb-1">
+                Period From
+              </span>
+              <span className="text-gray-700">
+                {accountDetails['periodFrom']}
+              </span>
             </div>
-             <div className="border border-gray-200 rounded-md p-2">
-               <span className="font-semibold text-[#000080] block mb-1">Period To</span>
-               <span className="text-gray-700">{accountDetails["periodTo"]}</span>
+            <div className="border border-gray-200 rounded-md p-2">
+              <span className="font-semibold text-[#000080] block mb-1">
+                Period To
+              </span>
+              <span className="text-gray-700">
+                {accountDetails['periodTo']}
+              </span>
             </div>
           </div>
         </div>
@@ -156,11 +180,15 @@ export default function GstOverviewTab({
                         </tr>
                         {Object.entries(sectionData).map(([key, value], i) => {
                           const rawVal = value;
-                          const isNegative = typeof rawVal === 'number' ? rawVal < 0 : (typeof rawVal === 'string' && rawVal.trim().startsWith('-'));
+                          const isNegative =
+                            typeof rawVal === 'number'
+                              ? rawVal < 0
+                              : typeof rawVal === 'string' &&
+                                rawVal.trim().startsWith('-');
                           return (
                           <tr key={i} className="hover:bg-gray-50">
                             <td
-                              className={`px-4 py-2 border border-gray-200 ${key.startsWith('Gross') || key.startsWith('Profit') || key.includes('Liability') || key.includes('Available') ? 'font-semibold text-[#c0392b]' : 'text-gray-700'}`}
+                              className={`px-4 py-2 border border-gray-200 ${key.startsWith('Gross') || key.startsWith('Profit') || key.includes('Liability') || key.includes('Available') ? 'font-semibold text-[#000080]' : 'text-gray-700'}`}
                             >
                               {key}
                             </td>
@@ -213,16 +241,22 @@ export default function GstOverviewTab({
                           {Object.entries(sectionData).map(
                             ([key, value], i) => {
                               const rawVal = value;
-                              const isNegative = typeof rawVal === 'number' ? rawVal < 0 : (typeof rawVal === 'string' && rawVal.trim().startsWith('-'));
+                              const isNegative =
+                                typeof rawVal === 'number'
+                                  ? rawVal < 0
+                                  : typeof rawVal === 'string' &&
+                                    rawVal.trim().startsWith('-');
                               return (
-                              <tr key={i} className="hover:bg-gray-50">
-                                <td className="px-4 py-2 border border-gray-200 text-gray-700">
-                                  {key}
-                                </td>
-                                <td className={`px-4 py-2 border border-gray-200 text-right font-medium ${isNegative ? 'text-red-600' : ''}`}>
-                                  {value as string}
-                                </td>
-                              </tr>
+                                <tr key={i} className="hover:bg-gray-50">
+                                  <td className="px-4 py-2 border border-gray-200 text-gray-700">
+                                    {key}
+                                  </td>
+                                  <td
+                                    className={`px-4 py-2 border border-gray-200 text-right font-medium ${isNegative ? 'text-red-600' : ''}`}
+                                  >
+                                    {value as string}
+                                  </td>
+                                </tr>
                               );
                             }
                           )}
@@ -252,16 +286,22 @@ export default function GstOverviewTab({
                 <tbody>
                   {Object.entries(averages).map(([key, value], idx) => {
                     const rawVal = value;
-                    const isNegative = typeof rawVal === 'number' ? rawVal < 0 : (typeof rawVal === 'string' && rawVal.trim().startsWith('-'));
+                    const isNegative =
+                      typeof rawVal === 'number'
+                        ? rawVal < 0
+                        : typeof rawVal === 'string' &&
+                          rawVal.trim().startsWith('-');
                     return (
-                    <tr key={idx} className="hover:bg-gray-50">
-                      <td className="px-4 py-2 border border-gray-200 text-gray-700 font-medium">
-                        {key}
-                      </td>
-                      <td className={`px-4 py-2 border border-gray-200 text-right font-semibold ${isNegative ? 'text-red-600' : ''}`}>
-                        {value as string}
-                      </td>
-                    </tr>
+                      <tr key={idx} className="hover:bg-gray-50">
+                        <td className="px-4 py-2 border border-gray-200 text-gray-700 font-medium">
+                          {key}
+                        </td>
+                        <td
+                          className={`px-4 py-2 border border-gray-200 text-right font-semibold ${isNegative ? 'text-red-600' : ''}`}
+                        >
+                          {value as string}
+                        </td>
+                      </tr>
                     );
                   })}
                 </tbody>
@@ -302,16 +342,22 @@ export default function GstOverviewTab({
                         </tr>
                         {Object.entries(sectionData).map(([key, value], i) => {
                           const rawVal = value;
-                          const isNegative = typeof rawVal === 'number' ? rawVal < 0 : (typeof rawVal === 'string' && rawVal.trim().startsWith('-'));
+                          const isNegative =
+                            typeof rawVal === 'number'
+                              ? rawVal < 0
+                              : typeof rawVal === 'string' &&
+                                rawVal.trim().startsWith('-');
                           return (
-                          <tr key={i} className="hover:bg-gray-50">
-                            <td className="px-4 py-2 border border-gray-200 text-gray-700 w-2/3">
-                              {key}
-                            </td>
-                            <td className={`px-4 py-2 border border-gray-200 text-right font-medium w-1/3 ${isNegative ? 'text-red-600' : ''}`}>
-                              {value as string}
-                            </td>
-                          </tr>
+                            <tr key={i} className="hover:bg-gray-50">
+                              <td className="px-4 py-2 border border-gray-200 text-gray-700 w-2/3">
+                                {key}
+                              </td>
+                              <td
+                                className={`px-4 py-2 border border-gray-200 text-right font-medium w-1/3 ${isNegative ? 'text-red-600' : ''}`}
+                              >
+                                {value as string}
+                              </td>
+                            </tr>
                           );
                         })}
                       </React.Fragment>

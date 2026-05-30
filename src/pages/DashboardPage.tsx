@@ -76,14 +76,39 @@ function parseUploadResponse(raw: UploadResponse['data']): ParsedUploadResult {
 type ModalStep = 'form' | 'confirmation';
 
 type ITRState =
+  | 'INITIALIZING'
   | 'EMAIL_INPUT'
   | 'AWAITING_CREDENTIAL_SUBMISSION'
   | 'PROCESSING'
   | 'SUCCESS'
   | 'TIMEOUT'
-  | 'ERROR'
-  | 'INITIALIZING';
+  | 'ERROR';
 
+const mapResponseCodeToState = (code?: string): ITRState => {
+  switch (code) {
+    case 'ENC220':
+      return 'AWAITING_CREDENTIAL_SUBMISSION';
+
+    case 'RNP020':
+      return 'PROCESSING';
+
+    case 'SRC001':
+      return 'SUCCESS';
+
+    case 'ECR214':
+      return 'TIMEOUT';
+
+    case 'ENR029':
+      return 'EMAIL_INPUT';
+
+    case 'EBF017':
+    case 'EIP018':
+      return 'ERROR';
+
+    default:
+      return 'EMAIL_INPUT';
+  }
+};
 export default function DashboardPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalStep, setModalStep] = useState<ModalStep>('form');
@@ -95,12 +120,8 @@ export default function DashboardPage() {
   const [isItrModalOpen, setIsItrModalOpen] = useState(false);
   const [itrState, setItrState] = useState<ITRState>('INITIALIZING');
   const [itrEmail, setItrEmail] = useState('');
-  const [itrReferenceId, setItrReferenceId] = useState<string | null>(
-    localStorage.getItem('itr_reference_id')
-  );
-  const [itrLinkUrl, setItrLinkUrl] = useState<string | null>(
-    localStorage.getItem('itr_link_url')
-  );
+  const [itrReferenceId, setItrReferenceId] = useState<string | null>();
+  const [itrLinkUrl, setItrLinkUrl] = useState<string | null>();
 
   const navigate = useNavigate();
 
@@ -167,6 +188,12 @@ export default function DashboardPage() {
     });
   };
 
+  const handleCloseItrModal = () => {
+    setIsItrModalOpen(false);
+    setItrState('INITIALIZING');
+    setItrEmail('');
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (selectedFiles.length === 0) {
@@ -204,49 +231,31 @@ export default function DashboardPage() {
   const { data: itrPrecheckData } = useQuery({
     queryKey: ['itr-data-precheck'],
     queryFn: async () => {
-      try {
-        const response = await apiClient.get('/itr/link-precheck');
-        return response.data;
-      } catch (error: any) {
-        if (error.response?.status === 409) {
-          return error.response.data.detail;
-        }
-        throw error;
-      }
+      const response = await apiClient.get('/itr/link-precheck');
+      return response.data;
     },
     enabled: isItrModalOpen,
   });
 
   useEffect(() => {
-    const payload = itrPrecheckData?.detail?.data || itrPrecheckData?.data;
+    const payload = itrPrecheckData?.data;
 
-    if (payload) {
-      const { is_proceed, itr_reference_id, link_url } = payload;
-
-      if (itr_reference_id) {
-        setItrReferenceId(itr_reference_id);
-        localStorage.setItem('itr_reference_id', itr_reference_id);
-      }
-
-      if (link_url) {
-        setItrLinkUrl(link_url);
-        localStorage.setItem('itr_link_url', link_url);
-      }
-
-      if (itr_reference_id) {
-        setItrState('PROCESSING');
-      } else if (is_proceed) {
-        setItrState('EMAIL_INPUT');
-      } else {
-        setItrState('EMAIL_INPUT');
-      }
-    } else if (
-      itrPrecheckData &&
-      !itrPrecheckData.data &&
-      !itrPrecheckData.detail
-    ) {
+    if (!payload) {
       setItrState('EMAIL_INPUT');
+      return;
     }
+
+    const { itr_reference_id, itr_link_response_code, link_url } = payload;
+
+    setItrReferenceId(itr_reference_id ?? null);
+    setItrLinkUrl(link_url ?? null);
+
+    if (!itr_link_response_code) {
+      setItrState('EMAIL_INPUT');
+      return;
+    }
+
+    setItrState(mapResponseCodeToState(itr_link_response_code));
   }, [itrPrecheckData]);
 
   const { data: itrPollingData } = useQuery({
@@ -262,32 +271,24 @@ export default function DashboardPage() {
       !!itrReferenceId &&
       (itrState === 'AWAITING_CREDENTIAL_SUBMISSION' ||
         itrState === 'PROCESSING'),
-    refetchInterval: 5000,
+    refetchInterval: 15000,
   });
 
   useEffect(() => {
-    if (itrPollingData?.data) {
-      const { link_response_code } = itrPollingData.data;
-      if (link_response_code === 'SRC001') {
-        setItrState('SUCCESS');
-      } else if (link_response_code === 'ECR214') {
-        setItrState('TIMEOUT');
-      } else if (link_response_code === 'ENR029') {
-        setItrState('EMAIL_INPUT');
-        setItrReferenceId(null);
-        localStorage.removeItem('itr_reference_id');
-        toast.error('Session not found');
-      } else if (
-        link_response_code === 'EBF017' ||
-        link_response_code === 'EIP018'
-      ) {
-        setItrState('ERROR');
-        toast.error('Invalid request');
-      } else if (link_response_code === 'RNP020') {
-        setItrState('PROCESSING');
-      } else if (link_response_code === 'ENC220') {
-        setItrState('AWAITING_CREDENTIAL_SUBMISSION');
-      }
+    if (!itrPollingData?.data) return;
+
+    const code = itrPollingData.data.link_response_code;
+
+    setItrState(mapResponseCodeToState(code));
+
+    if (code === 'ENR029') {
+      setItrReferenceId(null);
+      setItrLinkUrl(null);
+      toast.error('Session not found');
+    }
+
+    if (code === 'EBF017' || code === 'EIP018') {
+      toast.error('Invalid request');
     }
   }, [itrPollingData]);
 
@@ -304,11 +305,9 @@ export default function DashboardPage() {
 
       if (refId) {
         setItrReferenceId(refId);
-        localStorage.setItem('itr_reference_id', refId);
       }
       if (link_url) {
         setItrLinkUrl(link_url);
-        localStorage.setItem('itr_link_url', link_url);
         setItrState('AWAITING_CREDENTIAL_SUBMISSION');
       }
     },
@@ -446,15 +445,15 @@ export default function DashboardPage() {
                           <SelectContent>
                             <SelectGroup>
                               <SelectLabel>Company Type</SelectLabel>
-                              <SelectItem value="individual">
+                              <SelectItem value="Individual">
                                 Individual
                               </SelectItem>
-                              <SelectItem value="company">Company</SelectItem>
-                              <SelectItem value="sole_proprietorship">
+                              <SelectItem value="Company">Company</SelectItem>
+                              <SelectItem value="Sole_Proprietorship">
                                 Sole Proprietorship
                               </SelectItem>
-                              <SelectItem value="trust">Trust</SelectItem>
-                              <SelectItem value="partnership">
+                              <SelectItem value="Trust">Trust</SelectItem>
+                              <SelectItem value="Partnership">
                                 Partnership
                               </SelectItem>
                             </SelectGroup>
@@ -480,10 +479,10 @@ export default function DashboardPage() {
                               <SelectLabel>Account Type</SelectLabel>
                               <SelectItem value="CURRENT">CURRENT</SelectItem>
                               <SelectItem value="SAVINGS">SAVINGS</SelectItem>
-                              <SelectItem value="Over Draft(OD)">
+                              <SelectItem value="OVER_DRAFT">
                                 Over Draft(OD)
                               </SelectItem>
-                              <SelectItem value="Cash Credit(CC)">
+                              <SelectItem value="CASH_CREDIT">
                                 Cash Credit(CC)
                               </SelectItem>
                             </SelectGroup>
@@ -701,7 +700,7 @@ export default function DashboardPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
           <Card className="w-full max-w-md shadow-2xl relative animate-scale-in">
             <button
-              onClick={() => setIsItrModalOpen(false)}
+              onClick={handleCloseItrModal}
               className="absolute right-4 top-4 text-gray-400 hover:text-gray-600 transition-colors"
             >
               <X className="h-5 w-5" />
@@ -761,18 +760,14 @@ export default function DashboardPage() {
                     Please click the button below to verify your ITR
                     credentials.
                   </p>
-                  <Button
-                    className="w-full bg-[#000080] hover:bg-[#000060]"
-                    onClick={() => {
-                      if (itrLinkUrl) {
-                        window.open(itrLinkUrl, '_blank');
-                      } else {
-                        toast.error('Verification link not found.');
-                      }
-                    }}
-                  >
-                    Verify ITR
-                  </Button>
+                  {itrLinkUrl && (
+                    <Button
+                      className="w-full bg-[#000080] hover:bg-[#000060]"
+                      onClick={() => window.open(itrLinkUrl, '_blank')}
+                    >
+                      Continue Verification
+                    </Button>
+                  )}
                 </div>
               )}
 
@@ -819,10 +814,14 @@ export default function DashboardPage() {
                     Verification session expired
                   </p>
                   <Button
-                    className="w-full bg-[#000080] hover:bg-[#000060] mt-4"
-                    onClick={() => setItrState('EMAIL_INPUT')}
+                    onClick={() => {
+                      setItrReferenceId(null);
+                      setItrLinkUrl(null);
+                      setItrEmail('');
+                      setItrState('EMAIL_INPUT');
+                    }}
                   >
-                    Regenerate Link
+                    Generate New Link
                   </Button>
                 </div>
               )}

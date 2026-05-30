@@ -22,7 +22,7 @@ export default function RatioAnalysis() {
   if (isError || !data || !data.data) {
     return (
       <div className="p-8 text-center text-red-500 bg-white rounded-lg shadow-sm border border-gray-100 mt-6 max-w-7xl mx-auto">
-        Failed to load Ratio Analysis data.
+        No Data to load Ratio Analysis.
       </div>
     );
   }

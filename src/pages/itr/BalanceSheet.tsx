@@ -21,7 +21,7 @@ export default function BalanceSheet() {
   if (isError || !data || !data.data) {
     return (
       <div className="p-8 text-center text-red-500 bg-white rounded-lg shadow-sm border border-gray-100 mt-6 max-w-7xl mx-auto">
-        Failed to load Balance Sheet data.
+        No Data to load Balance Sheet.
       </div>
     );
   }
