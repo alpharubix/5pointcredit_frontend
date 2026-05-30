@@ -155,9 +155,7 @@ export const getGstRefStatus = async (data: GstStatusPayload): Promise<GstStatus
 };
 
 export const getGstHistory = async (): Promise<GstHistoryResponse> => {
-  const response = await apiClient.get("/gst/users-ref-ids", {
-    errorMessage: "Failed to load GST history. Please try again.",
-  });
+  const response = await apiClient.get("/gst/users-ref-ids");
   return response.data;
 };
 
@@ -201,4 +199,4 @@ export const getGstMonthlySummary = async (data: GstReportPayload): Promise<GstM
     errorMessage: "Failed to fetch Monthly Sales and Purchase Summary. Please try again.",
   });
   return response.data;
-};
+};

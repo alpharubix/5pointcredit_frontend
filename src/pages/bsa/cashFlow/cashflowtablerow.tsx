@@ -13,9 +13,9 @@ export type RowConfig = {
   isPercent?: boolean;
 };
 
-const headerLabelClass = "font-bold bg-gray-200/60 pl-2";
+const headerLabelClass = "font-bold bg-gray-100 pl-2";
 const subLabelClass = "font-medium text-gray-800";
-const totalValueClass = "font-bold bg-gray-200/60";
+const totalValueClass = "font-bold bg-gray-100";
 
 const rows: RowConfig[] = [
   {

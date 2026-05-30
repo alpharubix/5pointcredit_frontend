@@ -56,6 +56,16 @@ const navItems = [
       { label: "GST Reports", path: "/gst/reports" }
     ]
   },
+  {
+    icon: ClipboardList,
+    label: "ITR",
+    subItems: [
+      { label: "Tax Calculation", path: "/itr/itr-tax-calculation" },
+      { label: "Balance Sheet", path: "/itr/balance-sheet" },
+      { label: "Profit and Loss Statement", path: "/itr/profit-and-loss-statement" },
+      { label: "Ratio Analysis", path: "/itr/ratio-analysis" },
+    ]
+  },
 ];
 
 

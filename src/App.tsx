@@ -20,6 +20,10 @@ const NotF = lazy(() => import("@/pages/404"))
 const GstAnalysisPage = lazy(() => import("@/pages/gst/GstAnalysisPage"))
 const GstHistoryPage = lazy(() => import("@/pages/gst/GstHistoryPage"))
 const GstReportPage = lazy(() => import("@/components/gstReportPage"))
+const ITRTaxCalculationPage = lazy(() => import("@/pages/itr/TaxCalculation"))
+const ITRBalanceSheetPage = lazy(() => import("@/pages/itr/BalanceSheet"))
+const ITRProfitAndLossStatementPage = lazy(() => import("@/pages/itr/ProfitAndLossStatement"))
+const ITRRatioAnalysisPage = lazy(() => import("@/pages/itr/RatioAnalysis"))
 
 function App() {
   return (
@@ -47,6 +51,10 @@ function App() {
                       <Route path="/gst/analysis" element={<GstAnalysisPage />} />
                       <Route path="/gst/history" element={<GstHistoryPage />} />
                       <Route path="/gst/reports" element={<GstReportPage />} />
+                      <Route path="/itr/itr-tax-calculation" element={<ITRTaxCalculationPage />} />
+                      <Route path="/itr/balance-sheet" element={<ITRBalanceSheetPage />} />
+                      <Route path="/itr/profit-and-loss-statement" element={<ITRProfitAndLossStatementPage />} />
+                      <Route path="/itr/ratio-analysis" element={<ITRRatioAnalysisPage />} />
                     </Route>
                   </Route>
 
