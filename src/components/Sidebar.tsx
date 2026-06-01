@@ -8,6 +8,9 @@ import {
   ChevronDown,
   Loader2,
   LayoutDashboard,
+  Building2,
+  FileText,
+  PieChart,
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useMe } from "@/hooks/useUser";
@@ -39,7 +42,7 @@ export function SidebarProvider({ children }: { children: React.ReactNode }) {
 const navItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/home/dashboard" },
   {
-    icon: ClipboardList,
+    icon: Building2,
     label: "BSA Reports",
     subItems: [
       { label: "Summary of Debit and Credit", path: "/bsa/summary-of-debit-and-credit" },
@@ -48,7 +51,7 @@ const navItems = [
     ]
   },
   {
-    icon: ClipboardList,
+    icon: FileText,
     label: "GST",
     subItems: [
       { label: "GST Analysis", path: "/gst/analysis" },
@@ -57,7 +60,7 @@ const navItems = [
     ]
   },
   {
-    icon: ClipboardList,
+    icon: PieChart,
     label: "ITR",
     subItems: [
       { label: "Tax Calculation", path: "/itr/itr-tax-calculation" },

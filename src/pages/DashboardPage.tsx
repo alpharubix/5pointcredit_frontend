@@ -120,8 +120,7 @@ export default function DashboardPage() {
   const [isItrModalOpen, setIsItrModalOpen] = useState(false);
   const [itrState, setItrState] = useState<ITRState>('INITIALIZING');
   const [itrEmail, setItrEmail] = useState('');
-  const [itrReferenceId, setItrReferenceId] = useState<string | null>();
-  const [itrLinkUrl, setItrLinkUrl] = useState<string | null>();
+  const [itrReferenceId, setItrReferenceId] = useState<string | null>(null);
 
   const navigate = useNavigate();
 
@@ -130,7 +129,7 @@ export default function DashboardPage() {
     companyType: '',
     accountNumber: '',
     accountType: '',
-    bankCode: '',
+    bankCode: '', 
   });
 
   const { data: banks, isLoading: isLoadingBanks } = useQuery({
@@ -235,6 +234,9 @@ export default function DashboardPage() {
       return response.data;
     },
     enabled: isItrModalOpen,
+    staleTime: 0,
+    gcTime: 0,
+    refetchOnMount: 'always',
   });
 
   useEffect(() => {
@@ -245,10 +247,12 @@ export default function DashboardPage() {
       return;
     }
 
-    const { itr_reference_id, itr_link_response_code, link_url } = payload;
+    const { itr_reference_id, itr_link_response_code } = payload;
+
+    console.log('response code', itr_link_response_code);
+    console.log('mapped state', mapResponseCodeToState(itr_link_response_code));
 
     setItrReferenceId(itr_reference_id ?? null);
-    setItrLinkUrl(link_url ?? null);
 
     if (!itr_link_response_code) {
       setItrState('EMAIL_INPUT');
@@ -277,13 +281,12 @@ export default function DashboardPage() {
   useEffect(() => {
     if (!itrPollingData?.data) return;
 
-    const code = itrPollingData.data.link_response_code;
+    const code = itrPollingData.data.itr_link_response_code;
 
     setItrState(mapResponseCodeToState(code));
 
     if (code === 'ENR029') {
       setItrReferenceId(null);
-      setItrLinkUrl(null);
       toast.error('Session not found');
     }
 
@@ -300,16 +303,15 @@ export default function DashboardPage() {
       return res.data;
     },
     onSuccess: (data) => {
-      const { link_url } = data;
       const refId = data.data?.itr_reference_id;
 
       if (refId) {
         setItrReferenceId(refId);
-      }
-      if (link_url) {
-        setItrLinkUrl(link_url);
         setItrState('AWAITING_CREDENTIAL_SUBMISSION');
       }
+      toast.success(
+        'Verification email sent successfully. Please check your inbox.'
+      );
     },
     onError: (error: any) => {
       toast.error(
@@ -754,20 +756,12 @@ export default function DashboardPage() {
                     <Loader2 className="h-8 w-8 animate-spin text-[#000080]" />
                   </div>
                   <p className="text-center font-medium text-[#000080]">
-                    Waiting for credential submission
+                    Verification email sent successfully.
                   </p>
                   <p className="text-center text-sm text-gray-500 mb-4">
-                    Please click the button below to verify your ITR
-                    credentials.
+                    Please check your email and complete the verification
+                    process.
                   </p>
-                  {itrLinkUrl && (
-                    <Button
-                      className="w-full bg-[#000080] hover:bg-[#000060]"
-                      onClick={() => window.open(itrLinkUrl, '_blank')}
-                    >
-                      Continue Verification
-                    </Button>
-                  )}
                 </div>
               )}
 
@@ -816,7 +810,6 @@ export default function DashboardPage() {
                   <Button
                     onClick={() => {
                       setItrReferenceId(null);
-                      setItrLinkUrl(null);
                       setItrEmail('');
                       setItrState('EMAIL_INPUT');
                     }}
