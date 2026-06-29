@@ -24,7 +24,7 @@ const apiClient = axios.create({
 apiClient.interceptors.response.use(
   (response) => {
     const successMessage = response.config.successMessage;
-    console.log(successMessage)
+    // console.log(successMessage)
     if (successMessage) {
       toast.success(successMessage);
     }

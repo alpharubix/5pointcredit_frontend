@@ -35,6 +35,7 @@ import {
   SelectLabel,
   SelectValue,
 } from '@/components/ui/select';
+import { KycModal } from '@/components/KycModal';
 
 interface Bank {
   srNo: number;
@@ -118,6 +119,7 @@ export default function DashboardPage() {
   );
 
   const [isItrModalOpen, setIsItrModalOpen] = useState(false);
+  const [isKycModalOpen, setIsKycModalOpen] = useState(false);
   const [itrState, setItrState] = useState<ITRState>('INITIALIZING');
   const [itrEmail, setItrEmail] = useState('');
   const [itrReferenceId, setItrReferenceId] = useState<string | null>(null);
@@ -129,7 +131,7 @@ export default function DashboardPage() {
     companyType: '',
     accountNumber: '',
     accountType: '',
-    bankCode: '', 
+    bankCode: '',
   });
 
   const { data: banks, isLoading: isLoadingBanks } = useQuery({
@@ -189,7 +191,6 @@ export default function DashboardPage() {
 
   const handleCloseItrModal = () => {
     setIsItrModalOpen(false);
-    setItrState('INITIALIZING');
     setItrEmail('');
   };
 
@@ -350,15 +351,18 @@ export default function DashboardPage() {
       },
     },
     {
-      title: 'CIBIL Score',
-      description: 'Credit Report',
-      icon: <CreditCard className="h-8 w-8 text-[#000080]" />,
-      disabled: true,
-    },
-    {
       title: 'KYC',
       description: 'Identity Verification',
       icon: <ShieldCheck className="h-8 w-8 text-[#000080]" />,
+      disabled: false,
+      onClick: () => {
+        setIsKycModalOpen(true);
+      },
+    },
+    {
+      title: 'CIBIL Score',
+      description: 'Credit Report',
+      icon: <CreditCard className="h-8 w-8 text-[#000080]" />,
       disabled: true,
     },
   ];
@@ -840,6 +844,8 @@ export default function DashboardPage() {
           </Card>
         </div>
       )}
+      {/* Kyc Modal */}
+      <KycModal isOpen={isKycModalOpen} onClose={() => setIsKycModalOpen(false)} />
     </div>
   );
 }

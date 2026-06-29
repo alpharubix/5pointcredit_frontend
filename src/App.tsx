@@ -67,7 +67,7 @@ function App() {
           </AuthProvider>
         </BrowserRouter>
       </QueryClientProvider>
-      <Toaster position="top-right" richColors />
+      <Toaster position="top-center" richColors />
     </>
   );
 }

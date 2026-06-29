@@ -189,7 +189,7 @@ export default function SignupPage() {
                     <Input
                       id="signup-phone"
                       type="number"
-                      placeholder="8104106108"
+                      placeholder="1234567890"
                       maxLength={10}
                       className={`pl-10 ${errors.phone_no ? "border-red-400 focus-visible:ring-red-300" : ""}`}
                       autoComplete="tel"

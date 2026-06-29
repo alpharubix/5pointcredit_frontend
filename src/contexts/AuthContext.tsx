@@ -36,6 +36,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const clearAuth = useCallback(() => {
     queryClient.clear();
+    queryClient.setQueryData(["user", "me"], null);
     localStorage.removeItem("gst_reference_id");
   }, [queryClient]);
 
