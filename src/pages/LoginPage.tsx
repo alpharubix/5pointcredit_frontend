@@ -31,10 +31,12 @@ export default function LoginPage() {
   });
 
   const onSubmit = (values: LoginFormValues) => {
-    loginMutation.mutate(values);
-  };
+  loginMutation.mutate(values);
+};
 
-  return (
+console.log("loginMutation.error =", loginMutation.error);
+
+return (
     <div className="min-h-screen flex">
       {/* Left Panel */}
       <div className="hidden lg:flex w-1/2 bg-[#000080] flex-col items-center justify-center p-12 relative overflow-hidden">
@@ -83,12 +85,11 @@ export default function LoginPage() {
                 id="login-form"
               >
                 {/* API Error */}
-                {loginMutation.isError && (
-                  <div className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-600 animate-fade-in">
-                    {getApiError(loginMutation.error)}
-                  </div>
-                )}
-
+             {/* {loginMutation.isError && (
+  <div className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-600">
+    TEST MESSAGE
+  </div>
+)} */}
                 {/* Email */}
                 <div className="space-y-2">
                   <Label htmlFor="login-email">Email Address</Label>

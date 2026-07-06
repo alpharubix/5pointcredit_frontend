@@ -707,7 +707,6 @@ export default function DashboardPage() {
             >
               <X className="h-5 w-5" />
             </button>
-
             <CardHeader>
               <CardTitle className="text-2xl text-[#000080] flex items-center gap-2">
                 <PieChart className="h-6 w-6" />
