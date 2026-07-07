@@ -27,7 +27,7 @@ console.log("Base URL:", ENV.VITE_BACKEND_BASE_URL);
 apiClient.interceptors.response.use(
   (response) => {
     const successMessage = response.config.successMessage;
-    console.log(successMessage)
+    // console.log(successMessage)
     if (successMessage) {
       toast.success(successMessage);
     }

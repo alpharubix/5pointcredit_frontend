@@ -105,11 +105,8 @@ export const getDocumentUrl = async (
     document_uri,
     document_type,
   });
-
-  console.log("Full Response:", response.data);
-
   return response.data?.data;
-};  
+};
 
 // 8. DigiLocker Document Precheck
 export const documentPrecheck = async (): Promise<DigiLockerPrecheckResponse> => {
