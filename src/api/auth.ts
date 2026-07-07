@@ -57,9 +57,10 @@ export const logoutUser = async () => {
 
 export const forgotPassword = async (data: ForgotPasswordPayload) => {
   const response = await apiClient.post("/auth/forgot_password", data, {
-    successMessage: "OTP sent to your email address.",
+    successMessage: "OTP sent successfully.",
     errorMessage: "Could not send OTP. Please try again.",
   });
+
   return response.data;
 };
 

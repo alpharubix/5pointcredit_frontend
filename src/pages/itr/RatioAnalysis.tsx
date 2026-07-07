@@ -1,14 +1,14 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { getItrRatioAnalysis } from '@/api/itr';
+import { getItrTaxCalculation } from '@/api/itr';
 import CustomerProfile from '@/components/itr/CustomerProfile';
-import { renderYearlyTable } from '@/components/itr/ItrTableHelper';
+import { renderYearlyTable, renderDataTable } from '@/components/itr/ItrTableHelper';
 import { Loader2 } from 'lucide-react';
 
-export default function RatioAnalysis() {
+export default function TaxCalculation() {
   const { data, isLoading, isError } = useQuery({
-    queryKey: ['itrRatioAnalysis'],
-    queryFn: getItrRatioAnalysis,
+    queryKey: ['itrTaxCalculation'],
+    queryFn: getItrTaxCalculation,
   });
 
   if (isLoading) {
@@ -22,37 +22,45 @@ export default function RatioAnalysis() {
   if (isError || !data || !data.data) {
     return (
       <div className="p-8 text-center text-red-500 bg-white rounded-lg shadow-sm border border-gray-100 mt-6 max-w-7xl mx-auto">
-        No Data to load Ratio Analysis.
+        No Data to load Tax Calculation.
       </div>
     );
   }
 
-  const { customer_profile, ratio_analysis } = data.data;
-
-  // The order of sections based on the typical presentation or JSON structure
-  const sections = [
-    "Liquidity Analysis",
-    "Asset Management",
-    "Leverage Ratios",
-    "Coverage Ratios",
-    "Profitability Ratios",
-    "Growth in Cashflow Margin"
-  ];
+  const { customer_profile, tax_calculation = {} } = data.data;
 
   return (
     <div className="p-6 space-y-6">
       <CustomerProfile profile={customer_profile} />
-      
-      {sections.map(section => {
-        if (ratio_analysis[section]) {
-          return (
-            <React.Fragment key={section}>
-              {renderYearlyTable(section, ratio_analysis[section])}
-            </React.Fragment>
-          );
-        }
-        return null;
-      })}
+
+      {tax_calculation["Tax Calculation"] && renderYearlyTable("Tax Calculation", tax_calculation["Tax Calculation"])}
+      {tax_calculation["Computation of Tax Liability on Total Income"] && renderYearlyTable("Computation of Tax Liability on Total Income", tax_calculation["Computation of Tax Liability on Total Income"])}
+
+      {tax_calculation["Tax Deducted At Source"] && Object.keys(tax_calculation["Tax Deducted At Source"]).length > 0 && (
+        <div className="bg-white rounded-md shadow-sm border border-gray-200 mb-6 overflow-hidden animate-in fade-in duration-500">
+          <div className="bg-[#e67e22] text-white px-4 py-2 text-center rounded-t-md font-semibold">
+            Tax Deducted At Source
+          </div>
+          <div className="p-0">
+            {Object.entries(tax_calculation["Tax Deducted At Source"]).map(([key, val]) => (
+              <React.Fragment key={key}>
+                {renderDataTable(key, val as any[], true)}
+              </React.Fragment>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {tax_calculation["Tax Collected at Source"] && tax_calculation["Tax Collected at Source"].length > 0 && (
+        <div className="bg-white rounded-md shadow-sm border border-gray-200 mb-6 overflow-hidden animate-in fade-in duration-500">
+          <div className="bg-[#e67e22] text-white px-4 py-2 text-center rounded-t-md font-semibold">
+            Tax Collected at Source
+          </div>
+          <div className="p-0">
+            {renderDataTable("Tax Collected at Source", tax_calculation["Tax Collected at Source"], true)}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -969,11 +969,11 @@ export default function OverviewMonthlyWise() {
               </Button>
             </div>
           ) : data ? (
-            <div className="overflow-x-auto w-full">
+           <div className="overflow-x-auto overflow-y-auto max-h-[600px] w-full">
               <table className="w-full text-sm text-left border-collapse min-w-[1200px]">
-                <thead>
+               <thead className="sticky top-0 z-30">
                   <tr className="bg-[#1f4e78] text-white text-xs">
-                    <th className="px-4 py-3 border border-black/20 font-medium whitespace-nowrap min-w-[300px] sticky left-0 bg-[#1f4e78] z-20">
+                    <th className="sticky top-0 left-0 z-50 bg-[#1f4e78] px-4 py-3 border border-black/20 font-medium whitespace-nowrap min-w-[300px]">
                       Particulars (In Lakhs)
                     </th>
                     <th className="px-4 py-3 border border-black/20 font-bold whitespace-nowrap text-right">

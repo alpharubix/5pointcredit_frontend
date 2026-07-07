@@ -451,9 +451,9 @@ export default function SummeryOfDebitAndCredit() {
               </Button>
             </div>
           ) : data ? (
-            <div className="overflow-x-auto pb-4">
+           <div className="overflow-auto h-[700px]">
               <table className="w-full text-sm text-left border-collapse border border-gray-300">
-                <thead className="text-xs text-white bg-[#1f4e78]">
+                <thead className="sticky top-0 z-30 text-xs text-white bg-[#1f4e78]">
                   <tr>
                     <th className="px-4 py-3 font-semibold border border-gray-400 w-48 sticky left-0 bg-[#1f4e78] z-20">
                       Months

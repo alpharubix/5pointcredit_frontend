@@ -24,6 +24,7 @@ const ITRTaxCalculationPage = lazy(() => import("@/pages/itr/TaxCalculation"))
 const ITRBalanceSheetPage = lazy(() => import("@/pages/itr/BalanceSheet"))
 const ITRProfitAndLossStatementPage = lazy(() => import("@/pages/itr/ProfitAndLossStatement"))
 const ITRRatioAnalysisPage = lazy(() => import("@/pages/itr/RatioAnalysis"))
+const ProfilePage = lazy(() => import("@/pages/ProfileManagement"))
 
 function App() {
   return (
@@ -55,6 +56,7 @@ function App() {
                       <Route path="/itr/balance-sheet" element={<ITRBalanceSheetPage />} />
                       <Route path="/itr/profit-and-loss-statement" element={<ITRProfitAndLossStatementPage />} />
                       <Route path="/itr/ratio-analysis" element={<ITRRatioAnalysisPage />} />
+                      <Route path="/profile" element={<ProfilePage />} />
                     </Route>
                   </Route>
 
