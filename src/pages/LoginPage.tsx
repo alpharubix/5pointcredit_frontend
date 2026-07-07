@@ -14,7 +14,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { loginSchema, type LoginFormValues } from "@/lib/zod-schemas";
-import { useLogin, getApiError } from "@/hooks/useAuth";
+import { useLogin } from "@/hooks/useAuth";
 import FivePointCreditWhiteLogo from "../assets/5PontCreditWhiteLogo.svg";
 import FivePointCreditBlackLogo from "../assets/5PontCreditBlackLogo.svg";
 
