@@ -20,6 +20,9 @@ const apiClient = axios.create({
   },
   withCredentials: true,
 });
+ 
+console.log("Base URL:", ENV.VITE_BACKEND_BASE_URL);
+
 
 apiClient.interceptors.response.use(
   (response) => {

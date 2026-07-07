@@ -387,21 +387,30 @@ export default function CashFlow() {
               </Button>
             </div>
           ) : data ? (
-            <div className="overflow-x-auto w-full">
+            <div className="overflow-x-auto overflow-y-auto max-h-[600px] w-full">
               <table className="w-full text-sm text-left border-collapse min-w-[1000px]">
                 <thead>
                   <tr className="bg-[#1f4e78] text-white text-xs">
-                    <th className="px-4 py-3 border border-black/20 font-medium whitespace-nowrap min-w-[200px] sticky left-0 bg-[#1f4e78] z-20">
-                      Particulars
-                    </th>
-                    <th className="px-4 py-3 border border-black/20 font-medium whitespace-nowrap text-right">
-                      Overall/Total
-                    </th>
+                    <th
+  className="
+    sticky top-0 left-0
+    bg-[#1f4e78]
+    z-40
+    px-4 py-3
+    border border-black/20
+    min-w-[200px]
+  "
+>
+  Particulars
+</th>
+                   <th className="sticky top-0 z-30 bg-[#1f4e78] px-4 py-3 border border-black/20 font-medium whitespace-nowrap text-right">
+  Overall/Total
+</th>
                     {expectedMonths.map((month) => (
-                      <th
-                        key={month}
-                        className="px-4 py-3 border border-black/20 font-medium whitespace-nowrap text-right capitalize"
-                      >
+                    <th
+  key={month}
+  className="sticky top-0 z-30 bg-[#1f4e78] px-4 py-3 border border-black/20 font-medium whitespace-nowrap text-right capitalize"
+>
                         {month}
                       </th>
                     ))}

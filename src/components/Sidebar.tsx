@@ -252,7 +252,7 @@ export function AppSidebar() {
 
       {/* User Profile Card */}
       {!collapsed && (
-        <div className="border-t border-white/10 p-4 animate-fade-in">
+        <div className="border-t border-white/10 p-4 animate-fade-in cursor-pointer" onClick={() => navigate("/profile")}>
           <div className="flex items-center gap-3 rounded-xl bg-white/10 px-3 py-2.5 backdrop-blur-sm">
             {userLoading ? (
               <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/20">
@@ -263,7 +263,7 @@ export function AppSidebar() {
                 {initials}
               </div>
             )}
-            <div className="overflow-hidden">
+            <div className="overflow-hidden" >
               <p className="text-sm font-semibold text-white truncate">{displayName}</p>
               {displayCompany ? (
                 <p className="text-xs text-white/50 truncate">{displayCompany}</p>

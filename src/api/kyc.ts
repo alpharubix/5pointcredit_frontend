@@ -18,9 +18,17 @@ export interface DigiLockerSessionResponse {
 
 export interface DigiLockerDocument {
   documentType: string;
-  documentFormat: string;
-  documentUri: string;
+  fileFormat: string[];
+  uri: string;
   documentUrl?: string;
+  date?: string;
+  description?: string;
+  issuer?: string;
+  issuerId?: string;
+  name?: string;
+  parent?: string;
+  size?: string;
+  type?: string;
 }
 
 export interface DigiLockerPrecheckResponse {
@@ -90,7 +98,7 @@ export const getDocumentUrl = async (
   document_format: string,
   document_uri: string,
   document_type: string
-): Promise<DigiLockerDocumentUrlResponse> => {
+): Promise<any> => {
   const response = await apiClient.post("/kyc/digilocker/document-url", {
     kyc_flow_id,
     document_format,

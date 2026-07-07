@@ -74,30 +74,41 @@ const STEP_META: Record<Step, { title: string; description: string; step: number
 function EmailStep({
   onSuccess,
 }: {
-  onSuccess: (email: string) => void;
-}) {
+  onSuccess: (email: string, message: string) => void;
+}) {  
   const mutation = useForgotPassword();
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<ForgotPasswordFormValues>({
-    resolver: zodResolver(forgotPasswordSchema),
-  });
+
+const {
+  register,
+  handleSubmit,
+  formState: { errors },
+} = useForm<ForgotPasswordFormValues>({
+  resolver: zodResolver(forgotPasswordSchema),
+});
 
   const onSubmit = (values: ForgotPasswordFormValues) => {
-    mutation.mutate(values, {
-      onSuccess: () => onSuccess(values.email_id),
-    });
-  };
+  mutation.mutate(values, {
+    onSuccess: (data: any) => {
+      console.log(data);
 
+      onSuccess(values.email_id, data?.message ?? "");
+    },
+  });
+};
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" id="forgot-email-form">
-      {mutation.isError && (
-        <div className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-600 animate-fade-in">
-          {getApiError(mutation.error)}
-        </div>
-      )}
+   <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" id="forgot-email-form">
+
+  {/* {mutation.data?.message && (
+    <div className="rounded-lg bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-700 animate-fade-in">
+      {mutation.data.message}
+    </div>
+  )} */}
+
+  {mutation.isError && (
+    <div className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-600">
+      {getApiError(mutation.error)}
+    </div>
+  )}
 
       <div className="space-y-2">
         <Label htmlFor="forgot-email">Email Address</Label>
@@ -151,10 +162,12 @@ function EmailStep({
 // ─── Step 2: OTP ─────────────────────────────────────────────────────────────
 function OtpStep({
   email,
+  apiMessage,
   onSuccess,
   onBack,
 }: {
   email: string;
+  apiMessage: string;
   onSuccess: (resetToken: string) => void;
   onBack: () => void;
 }) {
@@ -184,13 +197,23 @@ function OtpStep({
     );
   };
 
-  return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" id="forgot-otp-form">
-      {mutation.isError && (
-        <div className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-600 animate-fade-in">
-          {getApiError(mutation.error)}
-        </div>
-      )}
+ return (
+  <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" id="forgot-otp-form">
+
+    {apiMessage && (
+      <div className="rounded-lg bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-700 animate-fade-in">
+        {apiMessage}
+      </div>
+    )}
+
+    {mutation.isError && (
+      <div className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-600 animate-fade-in">
+        {getApiError(mutation.error)}
+      </div>
+    )}
+
+    {/* Email badge */}
+    
 
       {/* Email badge */}
       <div className="rounded-lg bg-blue-50 border border-[#000080]/20 px-4 py-3 flex items-center gap-3">
@@ -410,6 +433,7 @@ export default function ForgotPasswordPage() {
   const [step, setStep] = useState<Step>("email");
   const [email, setEmail] = useState("");
   const [resetToken, setResetToken] = useState("");
+  const [apiMessage, setApiMessage] = useState("");
 
   const meta = STEP_META[step];
 
@@ -536,20 +560,22 @@ export default function ForgotPasswordPage() {
             <CardContent>
               {step === "email" && (
                 <EmailStep
-                  onSuccess={(e) => {
-                    setEmail(e);
-                    setStep("otp");
+                   onSuccess={(email, message) => {
+                setEmail(email);
+                setApiMessage(message);
+                 setStep("otp");
                   }}
-                />
+                  />
               )}
               {step === "otp" && (
-                <OtpStep
-                  email={email}
-                  onSuccess={(token) => {
-                    setResetToken(token);
-                    setStep("reset");
-                  }}
-                  onBack={() => setStep("email")}
+               <OtpStep
+               email={email}
+               apiMessage={apiMessage}
+               onSuccess={(token) => {
+                 setResetToken(token);
+                 setStep("reset");
+                 }}
+               onBack={() => setStep("email")}
                 />
               )}
               {step === "reset" && <ResetStep resetToken={resetToken} />}

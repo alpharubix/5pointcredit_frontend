@@ -242,28 +242,33 @@ export function KycModal({ isOpen, onClose }: KycModalProps) {
   };
 
   const fetchDocumentsList = async (flowId: string) => {
-    setState('FETCHING_DOCUMENTS');
-    try {
-      const res = await listDocuments(flowId);
-      const docs = res.document_list || [];
+  setState('FETCHING_DOCUMENTS');
 
-      if (docs.length === 0) {
-        toast.info('No documents found in DigiLocker.');
-        setDocuments([]);
-        setState('SHOW_DOCUMENTS');
-        return;
-      }
+  try {
+    const res = await listDocuments(flowId);
 
-      setDocuments(docs);
+    console.log("API Response:", res);
+    console.log("Document List:", res.document_list);
+
+    const docs = res.document_list || [];
+
+    if (docs.length === 0) {
+      toast.info('No documents found in DigiLocker.');
+      setDocuments([]);
       setState('SHOW_DOCUMENTS');
-    } catch (err: any) {
-      handleError(
-        err?.response?.data?.detail?.message ||
-          'Failed to fetch documents from DigiLocker',
-        err
-      );
+      return;
     }
-  };
+
+    setDocuments(docs);
+    setState('SHOW_DOCUMENTS');
+  } catch (err: any) {
+    handleError(
+      err?.response?.data?.detail?.message ||
+        'Failed to fetch documents from DigiLocker',
+      err
+    );
+  }
+};
 
   const handleError = (msg: string, err?: any) => {
     console.error(msg, err);
@@ -271,28 +276,38 @@ export function KycModal({ isOpen, onClose }: KycModalProps) {
     setState('ERROR');
   };
 
-  const viewDocumentMutation = useMutation({
-    mutationFn: async (doc: DigiLockerDocument) => {
-      return getDocumentUrl(
-        kycFlowId,
-        doc.documentFormat,
-        doc.documentUri,
-        doc.documentType
-      );
-    },
+ const viewDocumentMutation = useMutation({
+  mutationFn: async (doc: DigiLockerDocument) => {
+    console.log("DOC:", doc);
 
-    onSuccess: (data) => {
-      window.open(data.documentUrl, '_blank');
-    },
+    return getDocumentUrl(
+      kycFlowId,
+      "pdf",
+      doc.uri,
+      doc.documentType
+    );
+  },
 
-    onError: () => {
-      toast.error('Failed to open document');
-    },
-  });
+  onSuccess: (data) => {
+    console.log("API Response:", data);
 
-  const handleViewDocument = (doc: DigiLockerDocument) => {
-    viewDocumentMutation.mutate(doc);
-  };
+    if (!data || !data.documentUrl) {
+      toast.error("Document URL not found");
+      return;
+    }
+
+    window.open(data.documentUrl, "_blank");
+  },
+
+  onError: (error: any) => {
+    console.error("API Error:", error);
+    toast.error("Failed to open document");
+  },
+});
+
+const handleViewDocument = (doc: DigiLockerDocument) => {
+  viewDocumentMutation.mutate(doc);
+};
 
   if (!isOpen) return null;
 
@@ -457,8 +472,8 @@ export function KycModal({ isOpen, onClose }: KycModalProps) {
                               doc.documentType}
                           </p>
                           <p className="text-xs text-gray-500">
-                            {doc.documentFormat}
-                          </p>
+  {doc.fileFormat?.join(", ")}
+</p>
                         </div>
                       </div>
                       <Button
