@@ -22,4 +22,3 @@ export const updateProfile = async (data: Partial<UserProfile>) => {
   const response = await apiClient.put("/user/me", data);
   return response.data?.data ?? response.data;
 };
-
