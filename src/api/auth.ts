@@ -8,6 +8,7 @@ export interface RegisterPayload {
   phone_no: string;
   email_id: string;
   password: string;
+  site_code: string;
 }
 
 export interface LoginPayload {
@@ -32,7 +33,8 @@ export interface ResetPasswordPayload {
 // ─── API Functions ────────────────────────────────────────────────────────────
 
 export const registerUser = async (data: RegisterPayload) => {
-  const response = await apiClient.post("/auth/register", data, {
+  const payload = { ...data, site_code: "PCX01" };
+  const response = await apiClient.post("/auth/register", payload, {
     successMessage: "Account created successfully! Please log in.",
     errorMessage: "Registration failed. Please try again.",
   });
