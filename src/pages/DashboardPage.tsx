@@ -44,6 +44,7 @@ interface Bank {
 }
 
 interface UploadFileInfo {
+  bank_name: string | null;
   starting_date: string;
   ending_date: string;
 }
@@ -59,6 +60,7 @@ interface ParsedUploadResult {
   upload_ref_id: string;
   files: {
     name: string;
+    bank_name: string | null;
     starting_date: string;
     ending_date: string;
   }[];
@@ -68,6 +70,7 @@ function parseUploadResponse(raw: UploadResponse['data']): ParsedUploadResult {
   const { upload_ref_id, ...fileEntries } = raw;
   const files = Object.entries(fileEntries).map(([name, info]) => ({
     name,
+    bank_name: (info as UploadFileInfo).bank_name ?? null,
     starting_date: (info as UploadFileInfo).starting_date,
     ending_date: (info as UploadFileInfo).ending_date,
   }));
@@ -637,6 +640,15 @@ export default function DashboardPage() {
                         <FileText className="h-4 w-4 text-[#000080] shrink-0" />
                         <span className="text-sm font-semibold text-[#000080] truncate">
                           {file.name}
+                        </span>
+                      </div>
+
+                      {/* Bank name */}
+                      <div className="flex items-center gap-1.5 pl-1 text-sm">
+                        <Building2 className="h-4 w-4 text-[#000080]/60 shrink-0" />
+                        <span className="font-medium text-gray-500">Bank:</span>
+                        <span className="font-semibold text-gray-800">
+                          {file.bank_name ?? ''}
                         </span>
                       </div>
 
