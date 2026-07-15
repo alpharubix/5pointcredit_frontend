@@ -61,7 +61,7 @@ export default function SignupPage() {
 
   const onSubmit = (values: RegisterFormValues) => {
     const { confirm_password: _, ...payload } = values;
-    registerMutation.mutate(payload);
+    registerMutation.mutate({ ...payload, site_code: "PCX01" });
   };
 
   return (
