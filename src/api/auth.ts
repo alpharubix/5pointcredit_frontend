@@ -8,6 +8,7 @@ export interface RegisterPayload {
   phone_no: string;
   email_id: string;
   password: string;
+  site_code: string;
 }
 
 export interface LoginPayload {
@@ -32,31 +33,51 @@ export interface ResetPasswordPayload {
 // ─── API Functions ────────────────────────────────────────────────────────────
 
 export const registerUser = async (data: RegisterPayload) => {
-  const response = await apiClient.post("/auth/register", data);
+  const payload = { ...data, site_code: "PCX01" };
+  const response = await apiClient.post("/auth/register", payload, {
+    successMessage: "Account created successfully! Please log in.",
+    errorMessage: "Registration failed. Please try again.",
+  });
   return response.data;
 };
 
 export const loginUser = async (data: LoginPayload) => {
-  const response = await apiClient.post("/auth/login", data);
+  const response = await apiClient.post("/auth/login", data, {
+    successMessage: "Login successfull!",
+    errorMessage: "Invalid email or password. Please try again.",
+  });
   return response.data;
 };
 
 export const logoutUser = async () => {
-  const response = await apiClient.post("/auth/logout");
+  const response = await apiClient.post("/auth/logout", undefined, {
+    successMessage: "You've been logged out successfully.",
+    errorMessage: "Logout failed. Please try again.",
+  });
   return response.data;
 };
 
 export const forgotPassword = async (data: ForgotPasswordPayload) => {
-  const response = await apiClient.post("/auth/forgot_password", data);
+  const response = await apiClient.post("/auth/forgot_password", data, {
+    successMessage: "OTP sent successfully.",
+    errorMessage: "Could not send OTP. Please try again.",
+  });
+
   return response.data;
 };
 
 export const validateOtp = async (data: ValidateOtpPayload) => {
-  const response = await apiClient.post("/auth/validate-otp", data);
+  const response = await apiClient.post("/auth/validate-otp", data, {
+    successMessage: "OTP verified successfully.",
+    errorMessage: "Invalid or expired OTP. Please try again.",
+  });
   return response.data;
 };
 
 export const resetPassword = async (data: ResetPasswordPayload) => {
-  const response = await apiClient.post("/auth/reset_password", data);
+  const response = await apiClient.post("/auth/reset_password", data, {
+    successMessage: "Password reset successfully. Please log in.",
+    errorMessage: "Failed to reset password. Your link may have expired.",
+  });
   return response.data;
 };
