@@ -39,7 +39,7 @@ export const registerUser = async (data: RegisterPayload) => {
     errorMessage: "Registration failed. Please try again.",
   });
   return response.data;
-};
+}; 
 
 export const loginUser = async (data: LoginPayload) => {
   const response = await apiClient.post("/auth/login", data, {
