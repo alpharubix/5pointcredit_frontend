@@ -366,7 +366,7 @@ export default function DashboardPage() {
       title: 'CIBIL Score',
       description: 'Credit Report',
       icon: <CreditCard className="h-8 w-8 text-[#000080]" />,
-      disabled: true,
+      disabled: false,
     },
   ];
 
@@ -383,11 +383,10 @@ export default function DashboardPage() {
         {dashboardItems.map((item, index) => (
           <Card
             key={index}
-            className={`transition-all duration-300 ${
-              item.disabled
-                ? 'opacity-60 cursor-not-allowed bg-gray-50'
-                : 'hover:shadow-xl hover:-translate-y-1 cursor-pointer border-[#000080]/20 hover:border-[#000080]/50 bg-white'
-            }`}
+            className={`transition-all duration-300 ${item.disabled
+              ? 'opacity-60 cursor-not-allowed bg-gray-50'
+              : 'hover:shadow-xl hover:-translate-y-1 cursor-pointer border-[#000080]/20 hover:border-[#000080]/50 bg-white'
+              }`}
             onClick={!item.disabled ? item.onClick : undefined}
           >
             <CardHeader className="flex flex-row items-center gap-4 pb-2">
