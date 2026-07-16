@@ -115,7 +115,7 @@ export default function CibilReportTabs({ referenceId }: { referenceId: string }
             <TabsTrigger
               key={tab.value}
               value={tab.value}
-              className="gap-2 rounded-sm px-4 py-2 data-[state=active]:bg-black data-[state=active]:text-white font-semibold text-slate-700"
+              className="gap-2 rounded-sm px-4 py-2 data-[state=active]:bg-[#000080] data-[state=active]:text-white font-semibold text-slate-700"
             >
               {tab.label}
               {tabStatuses[tab.value] ? (

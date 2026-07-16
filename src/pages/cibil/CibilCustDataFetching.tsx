@@ -12,11 +12,11 @@ export default function CibilCustDataFetching() {
       <div className="">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">CIBIL Score</h1>
+            <h1 className="text-3xl font-bold text-[#000080]">CIBIL Score</h1>
             <p className="text-gray-500 mt-1">
               Authenticate customer consent and process CIBIL report data
             </p>
-            <button className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" onClick={handleReports}>
+            <button className="mt-4 px-4 py-2 bg-[#000080] text-white rounded hover:bg-[#000080]/80 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#000080]" onClick={handleReports}>
               View Previous Reports
             </button>
           </div>

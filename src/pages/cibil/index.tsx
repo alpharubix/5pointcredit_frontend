@@ -56,15 +56,15 @@ export default function CibilWorkflow() {
                   className={`w-full h-1 ${step === 1
                       ? 'bg-transparent'
                       : currentStep >= step
-                        ? 'bg-black'
+                        ? 'bg-[#000080]'
                         : 'bg-gray-200'
                     }`}
                 />
                 <div
                   className={`flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full border-2 ${currentStep === step
-                      ? 'border-black bg-black text-white shadow-md'
+                      ? 'border-[#000080] bg-[#000080] text-white shadow-md'
                       : currentStep > step
-                        ? 'border-black bg-black text-white'
+                        ? 'border-[#000080] bg-[#000080] text-white'
                         : 'border-gray-300 bg-white text-gray-500'
                     } font-semibold text-sm transition-colors duration-300`}
                 >
@@ -90,13 +90,13 @@ export default function CibilWorkflow() {
                   className={`w-full h-1 ${step === 4
                       ? 'bg-transparent'
                       : currentStep > step
-                        ? 'bg-black'
+                        ? 'bg-[#000080]'
                         : 'bg-gray-200'
                     }`}
                 />
               </div>
               <span
-                className={`text-xs mt-2 font-medium ${currentStep >= step ? 'text-black' : 'text-gray-400'
+                className={`text-xs mt-2 font-medium ${currentStep >= step ? 'text-[#000080]' : 'text-gray-400'
                   }`}
               >
                 {stepLabels[step]}

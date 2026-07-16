@@ -6,6 +6,8 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { Toaster } from "sonner";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import PublicRoute from "@/components/PublicRoute";
+import ExistingReports from "./pages/cibil/ExistingReports";
+import ViewReport from "./pages/cibil/ViewReport";
 
 const LoginPage = lazy(() => import("@/pages/LoginPage"));
 const SignupPage = lazy(() => import("@/pages/SignupPage"));
@@ -24,6 +26,8 @@ const ITRTaxCalculationPage = lazy(() => import("@/pages/itr/TaxCalculation"));
 const ITRBalanceSheetPage = lazy(() => import("@/pages/itr/BalanceSheet"));
 const ITRProfitAndLossStatementPage = lazy(() => import("@/pages/itr/ProfitAndLossStatement"));
 const ITRRatioAnalysisPage = lazy(() => import("@/pages/itr/RatioAnalysis"));
+const CibilCustDataFetching = lazy(() => import("@/pages/cibil/CibilCustDataFetching"));
+
 
 function App() {
   return (
@@ -79,6 +83,9 @@ function App() {
                         path="/itr/ratio-analysis"
                         element={<ITRRatioAnalysisPage />}
                       />
+                      <Route path="/cibil" element={<CibilCustDataFetching />} />
+                      <Route path="/cibil/reports" element={<ExistingReports />} />
+                      <Route path="/cibil/view-report/:reference_id" element={<ViewReport />} />
                     </Route>
                   </Route>
 

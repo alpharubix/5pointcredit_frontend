@@ -367,6 +367,9 @@ export default function DashboardPage() {
       description: 'Credit Report',
       icon: <CreditCard className="h-8 w-8 text-[#000080]" />,
       disabled: false,
+      onClick: () => {
+        navigate('/cibil');
+      },
     },
   ];
 
@@ -392,7 +395,7 @@ export default function DashboardPage() {
             <CardHeader className="flex flex-row items-center gap-4 pb-2">
               <div
                 className={`p-3 rounded-xl ${item.disabled ? 'bg-gray-200' : 'bg-blue-50'}`}
-              >
+              > 
                 {item.icon}
               </div>
               <div>

@@ -88,7 +88,7 @@ export default function PaymentHistoryTab({ data }: { data: CibilPaymentHistoryD
               onClick={() => setHistorySegment(segment)}
               className={`rounded-lg px-6 py-2.5 text-sm font-bold transition-all ${
                 historySegment === segment
-                  ? 'bg-black text-white shadow-md'
+                  ? 'bg-[#000080] text-white shadow-md'
                   : 'text-slate-500 hover:text-slate-800'
               }`}
             >
@@ -118,7 +118,7 @@ export default function PaymentHistoryTab({ data }: { data: CibilPaymentHistoryD
                       <Landmark className="h-5 w-5" />
                     </div>
                     <div>
-                      <h4 className="font-bold text-slate-900">{loanType}</h4>
+                      <h4 className="font-bold text-[#000080]">{loanType}</h4>
                       <p className="text-xs text-slate-500">Acct No: <strong className="font-semibold text-slate-700">{accNo}</strong></p>
                     </div>
                   </div>
@@ -197,7 +197,7 @@ export default function PaymentHistoryTab({ data }: { data: CibilPaymentHistoryD
 
       {/* Visual Glossary / Appendix Legend */}
       <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h4 className="text-sm font-semibold uppercase tracking-wider text-slate-900 border-b border-slate-100 pb-3 mb-4">
+        <h4 className="text-sm font-semibold uppercase tracking-wider text-[#000080] border-b border-slate-100 pb-3 mb-4">
           CIBIL Legend & Abbreviations
         </h4>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

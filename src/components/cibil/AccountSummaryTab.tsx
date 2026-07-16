@@ -125,7 +125,7 @@ export default function AccountSummaryTab({ data }: { data: any }) {
               }}
               className={`rounded-lg px-6 py-2.5 text-sm font-bold transition-all ${
                 activeSegment === segment
-                  ? 'bg-black text-white shadow-md'
+                  ? 'bg-[#000080] text-white shadow-md'
                   : 'text-slate-500 hover:text-slate-800'
               }`}
             >
@@ -197,7 +197,7 @@ export default function AccountSummaryTab({ data }: { data: any }) {
                               <Landmark className="h-5 w-5" />
                             </div>
                             <div>
-                              <p className="font-bold text-slate-900 leading-tight">{acc.lender}</p>
+                              <p className="font-bold text-[#000080] leading-tight">{acc.lender}</p>
                               <div className="flex flex-wrap items-center gap-2 mt-1 text-xs text-slate-500">
                                 <span>Acct: <strong className="font-semibold text-slate-700">{acc.accountNo}</strong></span>
                                 <span>•</span>
@@ -210,7 +210,7 @@ export default function AccountSummaryTab({ data }: { data: any }) {
                           <div className="flex flex-wrap md:flex-nowrap items-center gap-3 w-full md:w-auto justify-between md:justify-end">
                             <div className="text-right">
                               <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide">Current Balance</p>
-                              <p className="font-bold text-slate-900">{formatINR(acc.currentBalance)}</p>
+                              <p className="font-bold text-[#000080]">{formatINR(acc.currentBalance)}</p>
                             </div>
                             
                             {/* Overdue indicator */}

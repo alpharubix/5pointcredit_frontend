@@ -79,7 +79,7 @@ export default function OTPVerification({
         >
           Back
         </button>
-        <h2 className="text-2xl font-semibold text-gray-800">
+        <h2 className="text-2xl font-semibold text-[#000080]">
           OTP Verification
         </h2>
       </div>
@@ -98,7 +98,7 @@ export default function OTPVerification({
             id="otp"
             type="text"
             inputMode="numeric"
-            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-[#000000] focus:border-[#000000] text-center tracking-widest text-lg"
+            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-[#000080] focus:border-[#000080] text-center tracking-widest text-lg"
             value={otp}
             onChange={(event) => setOtp(event.target.value)}
             placeholder="Enter OTP"
@@ -110,7 +110,7 @@ export default function OTPVerification({
         <button
           type="submit"
           disabled={verifyMutation.isPending}
-          className="w-full bg-[#000000] hover:bg-[#000000]/50 text-white font-medium py-2 px-4 rounded-md transition-colors disabled:opacity-70 flex justify-center items-center"
+          className="w-full bg-[#000080] hover:bg-[#000080]/50 text-white font-medium py-2 px-4 rounded-md transition-colors disabled:opacity-70 flex justify-center items-center"
         >
           {verifyMutation.isPending ? (
             <Loader2 className="h-5 w-5 animate-spin mr-2" />
@@ -124,7 +124,7 @@ export default function OTPVerification({
           type="button"
           onClick={() => resendMutation.mutate(otpFlowId)}
           disabled={secondsRemaining > 0 || resendMutation.isPending}
-          className="text-sm font-medium text-[#000000] hover:underline disabled:text-gray-400 disabled:no-underline"
+          className="text-sm font-medium text-[#000080] hover:underline disabled:text-gray-400 disabled:no-underline"
         >
           {resendMutation.isPending
             ? 'Resending...'

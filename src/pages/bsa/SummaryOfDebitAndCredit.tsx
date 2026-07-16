@@ -36,7 +36,7 @@ interface SummaryData {
   total: any;
 }
 
-export default function SummeryOfDebitAndCredit() {
+export default function SummaryOfDebitAndCredit() {
   // const navigate = useNavigate();
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
