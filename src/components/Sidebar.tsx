@@ -77,6 +77,7 @@ const navItems = [
       { label: "Previous Reports", path: "/cibil/reports" }
     ]
   },
+
 ];
 
 
