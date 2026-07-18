@@ -26,6 +26,8 @@ const ITRTaxCalculationPage = lazy(() => import("@/pages/itr/TaxCalculation"));
 const ITRBalanceSheetPage = lazy(() => import("@/pages/itr/BalanceSheet"));
 const ITRProfitAndLossStatementPage = lazy(() => import("@/pages/itr/ProfitAndLossStatement"));
 const ITRRatioAnalysisPage = lazy(() => import("@/pages/itr/RatioAnalysis"));
+const ProfilePage = lazy(() => import("@/pages/ProfileManagement"))
+const HelpCenterPage = lazy(() => import("@/pages/HelpCenter"));
 const CibilCustDataFetching = lazy(() => import("@/pages/cibil/CibilCustDataFetching"));
 
 
@@ -83,6 +85,11 @@ function App() {
                         path="/itr/ratio-analysis"
                         element={<ITRRatioAnalysisPage />}
                       />
+                      <Route
+                        path="/help-center"
+                        element={<HelpCenterPage />}
+                      />
+                      <Route path="/profile" element={<ProfilePage />} />
                       <Route path="/cibil" element={<CibilCustDataFetching />} />
                       <Route path="/cibil/reports" element={<ExistingReports />} />
                       <Route path="/cibil/view-report/:reference_id" element={<ViewReport />} />

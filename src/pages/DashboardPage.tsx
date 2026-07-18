@@ -25,6 +25,7 @@ import {
   CalendarDays,
   FileCheck2,
   Loader2,
+  HelpCircle,
 } from 'lucide-react';
 import {
   Select,
@@ -375,11 +376,21 @@ export default function DashboardPage() {
 
   return (
     <div className="p-8 animate-fade-in relative min-h-[calc(100vh-4rem)]">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-[#000080] mb-2">Dashboard</h1>
-        <p className="text-gray-600">
-          Access your financial documents and analysis tools
-        </p>
+      <div className="mb-8 flex items-center justify-between border-b pb-6 border-gray-200">
+        <div>
+          <h1 className="text-3xl font-bold text-[#000080] mb-2">Dashboard</h1>
+          <p className="text-gray-600">
+            Access your financial documents and analysis tools
+          </p>
+        </div>
+        <Button
+          onClick={() => navigate('/help-center')}
+          variant="outline"
+          className="flex items-center gap-2 border-[#000080]/30 text-[#000080] hover:bg-[#000080]/5"
+        >
+          <HelpCircle className="h-4 w-4" />
+          Help Center
+        </Button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -395,7 +406,7 @@ export default function DashboardPage() {
             <CardHeader className="flex flex-row items-center gap-4 pb-2">
               <div
                 className={`p-3 rounded-xl ${item.disabled ? 'bg-gray-200' : 'bg-blue-50'}`}
-              > 
+              >
                 {item.icon}
               </div>
               <div>
