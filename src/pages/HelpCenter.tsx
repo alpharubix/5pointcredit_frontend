@@ -166,7 +166,7 @@ export default function HelpCenter() {
 
   // Copy support email
   const copyEmailToClipboard = () => {
-    navigator.clipboard.writeText("r1xchange@gmail.com");
+    navigator.clipboard.writeText("support@5pointcredit.com");
     setEmailCopied(true);
     toast.success("Support email copied to clipboard!");
     setTimeout(() => setEmailCopied(false), 2000);
