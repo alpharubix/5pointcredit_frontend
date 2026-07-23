@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Mail,
@@ -59,6 +59,7 @@ export default function HelpCenter() {
 
   // Tickets History
   const [tickets, setTickets] = useState<Ticket[]>([]);
+  const hasFetched = useRef(false);
 
   // Load tickets on mount
   const fetchTickets = async () => {
@@ -95,7 +96,10 @@ export default function HelpCenter() {
   };
 
   useEffect(() => {
-    fetchTickets();
+    if (!hasFetched.current) {
+      hasFetched.current = true;
+      fetchTickets();
+    }
   }, []);
 
   // Save tickets helper
@@ -245,7 +249,7 @@ export default function HelpCenter() {
                   </p> */}
                   <div className="pt-2 flex items-center justify-between bg-slate-50 border border-slate-100 rounded-xl px-4 py-3">
                     <span className="font-mono text-base font-bold text-[#000080] tracking-wide select-all">
-                      r1@xchange.com
+                     support@5pointcredit.com
                     </span>
                     <Button
                       onClick={copyEmailToClipboard}
