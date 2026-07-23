@@ -37,8 +37,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { KycModal } from '@/components/KycModal';
-import logo5pc from '../assets/5pc.png';
-
 
 interface Bank {
   srNo: number;
@@ -116,10 +114,9 @@ const mapResponseCodeToState = (code?: string): ITRState => {
       return 'EMAIL_INPUT';
   }
 };
-import { useSidebar } from '@/components/Sidebar';
+
 
 export default function DashboardPage() {
-  const { collapsed } = useSidebar();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalStep, setModalStep] = useState<ModalStep>('form');
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
