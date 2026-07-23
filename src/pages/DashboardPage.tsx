@@ -885,7 +885,7 @@ export default function DashboardPage() {
   <div className="w-px h-5 bg-gray-300" />
 
   <span className="text-gray-500">
-    Crafted in Bengaluru💙
+    Engineered in Bengaluru💙
   </span>
 
   <span className="text-blue-400">///</span>
