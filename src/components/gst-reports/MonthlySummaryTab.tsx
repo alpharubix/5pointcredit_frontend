@@ -60,11 +60,11 @@ export default function MonthlySummaryTab({ gstReferenceId }: { gstReferenceId: 
                 const taxableVal = Number(row["Taxable Value"] || 0);
                 const taxVal = Number(row["Tax"] || 0);
                 return (
-                <tr key={idx} className="hover:bg-gray-50">
-                  <td className="px-4 py-2 border border-gray-200 text-center font-medium">{row.Month}</td>
-                  <td className={`px-4 py-2 border border-gray-200 text-right ${taxableVal < 0 ? 'text-red-600' : ''}`}>₹ {taxableVal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
-                  <td className={`px-4 py-2 border border-gray-200 text-right ${taxVal < 0 ? 'text-red-600' : ''}`}>₹ {taxVal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
-                </tr>
+                  <tr key={idx} className="hover:bg-gray-50">
+                    <td className="px-4 py-2 border border-gray-200 text-center font-medium">{row.Month}</td>
+                    <td className={`px-4 py-2 border border-gray-200 text-right ${taxableVal < 0 ? 'text-red-600' : ''}`}>₹ {taxableVal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                    <td className={`px-4 py-2 border border-gray-200 text-right ${taxVal < 0 ? 'text-red-600' : ''}`}>₹ {taxVal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                  </tr>
                 );
               }) : (
                 <tr>
@@ -76,13 +76,13 @@ export default function MonthlySummaryTab({ gstReferenceId }: { gstReferenceId: 
               const totalTaxable = Number(totalData["Taxable Value"] || 0);
               const totalTax = Number(totalData["Tax"] || 0);
               return (
-              <tfoot className="bg-[#e67e22] text-white font-bold">
-                <tr>
-                  <td className="px-4 py-2 border border-[#d35400] text-center">Total</td>
-                  <td className={`px-4 py-2 border border-[#d35400] text-right ${totalTaxable < 0 ? 'text-red-900 bg-white/20' : ''}`}>₹ {totalTaxable.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
-                  <td className={`px-4 py-2 border border-[#d35400] text-right ${totalTax < 0 ? 'text-red-900 bg-white/20' : ''}`}>₹ {totalTax.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
-                </tr>
-              </tfoot>
+                <tfoot className="bg-[#e67e22] text-white font-bold">
+                  <tr>
+                    <td className="px-4 py-2 border border-[#d35400] text-center">Total</td>
+                    <td className={`px-4 py-2 border border-[#d35400] text-right ${totalTaxable < 0 ? 'text-red-900 bg-white/20' : ''}`}>₹ {totalTaxable.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                    <td className={`px-4 py-2 border border-[#d35400] text-right ${totalTax < 0 ? 'text-red-900 bg-white/20' : ''}`}>₹ {totalTax.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                  </tr>
+                </tfoot>
               );
             })()}
           </table>
@@ -100,29 +100,29 @@ export default function MonthlySummaryTab({ gstReferenceId }: { gstReferenceId: 
             Customer Profile
           </h3>
           <div className="p-4 grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-center">
-             <div className="border border-gray-200 rounded-md p-2">
-               <span className="font-semibold text-[#000080] block mb-1">Company Name</span>
-               <span className="text-gray-700">{accountDetails["GSTR Analysis Report  - "] || "N/A"}</span>
+            <div className="border border-gray-200 rounded-md p-2">
+              <span className="font-semibold text-[#000080] block mb-1">Company Name</span>
+              <span className="text-gray-700">{accountDetails["GSTR Analysis Report  - "] || "N/A"}</span>
             </div>
             <div className="border border-gray-200 rounded-md p-2">
-               <span className="font-semibold text-[#000080] block mb-1">GSTIN</span>
-               <span className="text-gray-700">{accountDetails["GSTIN"]}</span>
+              <span className="font-semibold text-[#000080] block mb-1">GSTIN</span>
+              <span className="text-gray-700">{accountDetails["GSTIN"]}</span>
             </div>
-             <div className="border border-gray-200 rounded-md p-2">
-               <span className="font-semibold text-[#000080] block mb-1">PAN</span>
-               <span className="text-gray-700">{accountDetails["PAN"]}</span>
+            <div className="border border-gray-200 rounded-md p-2">
+              <span className="font-semibold text-[#000080] block mb-1">PAN</span>
+              <span className="text-gray-700">{accountDetails["PAN"]}</span>
             </div>
-             <div className="border border-gray-200 rounded-md p-2">
-               <span className="font-semibold text-[#000080] block mb-1">State</span>
-               <span className="text-gray-700">{accountDetails["State of Operations(based on max. gross sales)"]}</span>
+            <div className="border border-gray-200 rounded-md p-2">
+              <span className="font-semibold text-[#000080] block mb-1">State</span>
+              <span className="text-gray-700">{accountDetails["State of Operations(based on max. gross sales)"]}</span>
             </div>
-             <div className="border border-gray-200 rounded-md p-2">
-               <span className="font-semibold text-[#000080] block mb-1">Period From</span>
-               <span className="text-gray-700">{accountDetails["periodFrom"]}</span>
+            <div className="border border-gray-200 rounded-md p-2">
+              <span className="font-semibold text-[#000080] block mb-1">Period From</span>
+              <span className="text-gray-700">{accountDetails["periodFrom"]}</span>
             </div>
-             <div className="border border-gray-200 rounded-md p-2">
-               <span className="font-semibold text-[#000080] block mb-1">Period To</span>
-               <span className="text-gray-700">{accountDetails["periodTo"]}</span>
+            <div className="border border-gray-200 rounded-md p-2">
+              <span className="font-semibold text-[#000080] block mb-1">Period To</span>
+              <span className="text-gray-700">{accountDetails["periodTo"]}</span>
             </div>
           </div>
         </div>

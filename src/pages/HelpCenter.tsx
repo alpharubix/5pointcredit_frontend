@@ -8,7 +8,6 @@ import {
   Check,
   Loader2,
   HelpCircle,
-  Trash2,
   Clock,
   Tag,
   ChevronRight,
@@ -166,7 +165,7 @@ export default function HelpCenter() {
 
   // Copy support email
   const copyEmailToClipboard = () => {
-    navigator.clipboard.writeText("r1xchange@gmail.com");
+    navigator.clipboard.writeText("support@5pointcredit.com");
     setEmailCopied(true);
     toast.success("Support email copied to clipboard!");
     setTimeout(() => setEmailCopied(false), 2000);
@@ -182,11 +181,7 @@ export default function HelpCenter() {
     }
   };
 
-  // Clear all tickets from local history
-  const clearTicketHistory = () => {
-    saveTickets([]);
-    toast.success("Ticket history cleared");
-  };
+ 
 
   return (
     <div className="p-8 relative min-h-[calc(100vh-4rem)] text-gray-800 bg-gradient-to-br from-slate-50 via-white to-blue-50/30 overflow-hidden">
@@ -307,17 +302,6 @@ export default function HelpCenter() {
                   </div>
                   <h2 className="text-xl font-bold text-slate-800">Support Ticket History</h2>
                 </div>
-                {tickets.length > 0 && (
-                  <Button
-                    onClick={clearTicketHistory}
-                    variant="ghost"
-                    size="sm"
-                    className="text-red-500 hover:text-red-700 hover:bg-red-50/50 flex items-center gap-1.5 font-medium"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                    Clear History
-                  </Button>
-                )}
               </div>
 
               {tickets.length === 0 ? (

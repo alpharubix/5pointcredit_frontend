@@ -114,6 +114,8 @@ const mapResponseCodeToState = (code?: string): ITRState => {
       return 'EMAIL_INPUT';
   }
 };
+
+
 export default function DashboardPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalStep, setModalStep] = useState<ModalStep>('form');
@@ -375,499 +377,521 @@ export default function DashboardPage() {
   ];
 
   return (
-    <div className="p-8 animate-fade-in relative min-h-[calc(100vh-4rem)]">
-      <div className="mb-8 flex items-center justify-between border-b pb-6 border-gray-200">
-        <div>
-          <h1 className="text-3xl font-bold text-[#000080] mb-2">Dashboard</h1>
-          <p className="text-gray-600">
-            Access your financial documents and analysis tools
-          </p>
-        </div>
-        <Button
-          onClick={() => navigate('/help-center')}
-          variant="outline"
-          className="flex items-center gap-2 border-[#000080]/30 text-[#000080] hover:bg-[#000080]/5"
-        >
-          <HelpCircle className="h-4 w-4" />
-          Help Center
-        </Button>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {dashboardItems.map((item, index) => (
-          <Card
-            key={index}
-            className={`transition-all duration-300 ${item.disabled
-              ? 'opacity-60 cursor-not-allowed bg-gray-50'
-              : 'hover:shadow-xl hover:-translate-y-1 cursor-pointer border-[#000080]/20 hover:border-[#000080]/50 bg-white'
-              }`}
-            onClick={!item.disabled ? item.onClick : undefined}
+    <div className="pt-8 px-8 pb-2 animate-fade-in relative min-h-screen flex flex-col justify-between">
+      <div>
+        <div className="mb-8 flex items-center justify-between border-b pb-6 border-gray-200">
+          <div>
+            <h1 className="text-3xl font-bold text-[#000080] mb-2">Dashboard</h1>
+            <p className="text-gray-600">
+              Access your financial documents and analysis tools
+            </p>
+          </div>
+          <Button
+            onClick={() => navigate('/help-center')}
+            variant="outline"
+            className="flex items-center gap-2 border-[#000080]/30 text-[#000080] hover:bg-[#000080]/5"
           >
-            <CardHeader className="flex flex-row items-center gap-4 pb-2">
-              <div
-                className={`p-3 rounded-xl ${item.disabled ? 'bg-gray-200' : 'bg-blue-50'}`}
-              >
-                {item.icon}
-              </div>
-              <div>
-                <CardTitle className="text-xl">{item.title}</CardTitle>
-                <CardDescription>{item.description}</CardDescription>
-              </div>
-            </CardHeader>
-            <CardContent>
-              {!item.disabled && (
-                <div className="mt-4 flex items-center text-sm font-medium text-[#000080]">
-                  Click to proceed <span className="ml-2">→</span>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+            <HelpCircle className="h-4 w-4" />
+            Help Center
+          </Button>
+        </div>
 
-      {/* ── Modal ── */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
-          <Card className="w-full max-w-lg shadow-2xl relative animate-scale-in">
-            <button
-              onClick={handleCloseModal}
-              className="absolute right-4 top-4 text-gray-400 hover:text-gray-600 transition-colors"
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {dashboardItems.map((item, index) => (
+            <Card
+              key={index}
+              className={`transition-all duration-300 ${item.disabled
+                ? 'opacity-60 cursor-not-allowed bg-gray-50'
+                : 'hover:shadow-xl hover:-translate-y-1 cursor-pointer border-[#000080]/20 hover:border-[#000080]/50 bg-white'
+                }`}
+              onClick={!item.disabled ? item.onClick : undefined}
             >
-              <X className="h-5 w-5" />
-            </button>
+              <CardHeader className="flex flex-row items-center gap-4 pb-2">
+                <div
+                  className={`p-3 rounded-xl ${item.disabled ? 'bg-gray-200' : 'bg-blue-50'}`}
+                >
+                  {item.icon}
+                </div>
+                <div>
+                  <CardTitle className="text-xl">{item.title}</CardTitle>
+                  <CardDescription>{item.description}</CardDescription>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {!item.disabled && (
+                  <div className="mt-4 flex items-center text-sm font-medium text-[#000080]">
+                    Click to proceed <span className="ml-2">→</span>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          ))}
+        </div>
 
-            {/* ── STEP 1: Upload Form ── */}
-            {modalStep === 'form' && (
-              <>
-                <CardHeader>
-                  <CardTitle className="text-2xl text-[#000080] flex items-center gap-2">
-                    <UploadCloud className="h-6 w-6" />
-                    Upload Bank Statement
-                  </CardTitle>
-                  <CardDescription>
-                    Provide details and upload your bank statement for analysis
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <form onSubmit={handleSubmit} className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="companyType">
-                          Company Type <span className="text-red-500">*</span>
-                        </Label>
-                        <Select
-                          value={formData.companyType}
-                          onValueChange={(value) =>
-                            setFormData({ ...formData, companyType: value })
-                          }
-                        >
-                          <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Select Company Type" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectGroup>
-                              <SelectLabel>Company Type</SelectLabel>
-                              <SelectItem value="Individual">
-                                Individual
-                              </SelectItem>
-                              <SelectItem value="Company">Company</SelectItem>
-                              <SelectItem value="Sole_Proprietorship">
-                                Sole Proprietorship
-                              </SelectItem>
-                              <SelectItem value="Trust">Trust</SelectItem>
-                              <SelectItem value="Partnership">
-                                Partnership
-                              </SelectItem>
-                            </SelectGroup>
-                          </SelectContent>
-                        </Select>
+        {/* ── Modal ── */}
+        {isModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
+            <Card className="w-full max-w-lg shadow-2xl relative animate-scale-in">
+              <button
+                onClick={handleCloseModal}
+                className="absolute right-4 top-4 text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <X className="h-5 w-5" />
+              </button>
+
+              {/* ── STEP 1: Upload Form ── */}
+              {modalStep === 'form' && (
+                <>
+                  <CardHeader>
+                    <CardTitle className="text-2xl text-[#000080] flex items-center gap-2">
+                      <UploadCloud className="h-6 w-6" />
+                      Upload Bank Statement
+                    </CardTitle>
+                    <CardDescription>
+                      Provide details and upload your bank statement for analysis
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <form onSubmit={handleSubmit} className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="companyType">
+                            Company Type <span className="text-red-500">*</span>
+                          </Label>
+                          <Select
+                            value={formData.companyType}
+                            onValueChange={(value) =>
+                              setFormData({ ...formData, companyType: value })
+                            }
+                          >
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="Select Company Type" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectGroup>
+                                <SelectLabel>Company Type</SelectLabel>
+                                <SelectItem value="Individual">
+                                  Individual
+                                </SelectItem>
+                                <SelectItem value="Company">Company</SelectItem>
+                                <SelectItem value="Sole_Proprietorship">
+                                  Sole Proprietorship
+                                </SelectItem>
+                                <SelectItem value="Trust">Trust</SelectItem>
+                                <SelectItem value="Partnership">
+                                  Partnership
+                                </SelectItem>
+                              </SelectGroup>
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="accountType">
+                            Account Type <span className="text-red-500">*</span>
+                          </Label>
+                          <Select
+                            value={formData.accountType}
+                            onValueChange={(value) =>
+                              setFormData({ ...formData, accountType: value })
+                            }
+                          >
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="Select Account Type" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectGroup>
+                                <SelectLabel>Account Type</SelectLabel>
+                                <SelectItem value="CURRENT">CURRENT</SelectItem>
+                                <SelectItem value="SAVINGS">SAVINGS</SelectItem>
+                                <SelectItem value="OVER_DRAFT">
+                                  Over Draft(OD)
+                                </SelectItem>
+                                <SelectItem value="CASH_CREDIT">
+                                  Cash Credit(CC)
+                                </SelectItem>
+                              </SelectGroup>
+                            </SelectContent>
+                          </Select>
+                        </div>
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor="accountType">
-                          Account Type <span className="text-red-500">*</span>
+                        <Label htmlFor="accountNumber">
+                          Account Number <span className="text-red-500">*</span>
                         </Label>
-                        <Select
-                          value={formData.accountType}
-                          onValueChange={(value) =>
-                            setFormData({ ...formData, accountType: value })
-                          }
-                        >
-                          <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Select Account Type" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectGroup>
-                              <SelectLabel>Account Type</SelectLabel>
-                              <SelectItem value="CURRENT">CURRENT</SelectItem>
-                              <SelectItem value="SAVINGS">SAVINGS</SelectItem>
-                              <SelectItem value="OVER_DRAFT">
-                                Over Draft(OD)
-                              </SelectItem>
-                              <SelectItem value="CASH_CREDIT">
-                                Cash Credit(CC)
-                              </SelectItem>
-                            </SelectGroup>
-                          </SelectContent>
-                        </Select>
+                        <Input
+                          id="accountNumber"
+                          name="accountNumber"
+                          placeholder="Enter account number"
+                          value={formData.accountNumber}
+                          onChange={handleInputChange}
+                          required
+                        />
                       </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="bankCode">
+                          Select Bank <span className="text-red-500">*</span>
+                        </Label>
+                        <select
+                          id="bankCode"
+                          name="bankCode"
+                          value={formData.bankCode}
+                          onChange={handleInputChange}
+                          className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                          required
+                        >
+                          <option value="" disabled>
+                            Select a bank
+                          </option>
+                          {isLoadingBanks ? (
+                            <option disabled>Loading banks...</option>
+                          ) : (
+                            banks?.map((bank, idx) => (
+                              <option key={idx} value={bank.code}>
+                                {bank.bankName}
+                              </option>
+                            ))
+                          )}
+                        </select>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="file">
+                          Statement Files <span className="text-red-500">*</span>
+                        </Label>
+                        <div className="flex flex-col gap-2 w-full">
+                          <Input
+                            id="file"
+                            type="file"
+                            multiple={true}
+                            accept=".pdf"
+                            onChange={(e) => {
+                              if (e.target.files) {
+                                const newFiles = Array.from(e.target.files);
+                                setSelectedFiles((prev) => [
+                                  ...prev,
+                                  ...newFiles,
+                                ]);
+                                e.target.value = ''; // Reset input to allow selecting the same file again if removed
+                              }
+                            }}
+                            className="cursor-pointer file:cursor-pointer file:bg-[#000080]/5 file:text-[#000080] file:border-0 file:rounded-md file:mr-4 file:px-4 file:py-1 hover:file:bg-[#000080]/10 transition-all"
+                          />
+
+                          {selectedFiles.length > 0 && (
+                            <div className="mt-3 space-y-2 max-h-40 overflow-y-auto pr-2">
+                              {selectedFiles.map((file, index) => (
+                                <div
+                                  key={index}
+                                  className="flex items-center justify-between p-2 border rounded-md bg-blue-50/30"
+                                >
+                                  <span
+                                    className="text-sm text-gray-700 truncate mr-2"
+                                    title={file.name}
+                                  >
+                                    {file.name}
+                                  </span>
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => {
+                                      setSelectedFiles((prev) =>
+                                        prev.filter((_, i) => i !== index)
+                                      );
+                                    }}
+                                    className="h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50 shrink-0"
+                                  >
+                                    <X className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      <Button
+                        type="submit"
+                        className="w-full bg-[#000080] hover:bg-[#000060] mt-6"
+                        disabled={uploadMutation.isPending}
+                      >
+                        {uploadMutation.isPending ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Uploading...
+                          </>
+                        ) : (
+                          'Upload & Analyze'
+                        )}
+                      </Button>
+                    </form>
+                  </CardContent>
+                </>
+              )}
+
+              {/* ── STEP 2: Confirmation ── */}
+              {modalStep === 'confirmation' && uploadResult && (
+                <>
+                  <CardHeader>
+                    <CardTitle className="text-2xl text-[#000080] flex items-center gap-2">
+                      <FileCheck2 className="h-6 w-6" />
+                      Confirm Statement Details
+                    </CardTitle>
+                    <CardDescription>
+                      Please review the extracted details before confirming
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {/* File cards */}
+                    {uploadResult.files.map((file, idx) => (
+                      <div
+                        key={idx}
+                        className="rounded-lg border border-[#000080]/20 bg-blue-50/40 p-4 space-y-3"
+                      >
+                        {/* File name */}
+                        <div className="flex items-center gap-2">
+                          <FileText className="h-4 w-4 text-[#000080] shrink-0" />
+                          <span className="text-sm font-semibold text-[#000080] truncate">
+                            {file.name}
+                          </span>
+                        </div>
+
+                        {/* Bank name */}
+                        <div className="flex items-center gap-1.5 pl-1 text-sm">
+                          <Building2 className="h-4 w-4 text-[#000080]/60 shrink-0" />
+                          <span className="font-medium text-gray-500">Bank:</span>
+                          <span className="font-semibold text-gray-800">
+                            {file.bank_name ?? ''}
+                          </span>
+                        </div>
+
+                        {/* Date range */}
+                        <div className="flex items-center gap-6 pl-1">
+                          <div className="flex items-center gap-1.5 text-sm text-gray-600">
+                            <CalendarDays className="h-4 w-4 text-[#000080]/60 shrink-0" />
+                            <span className="font-medium text-gray-500">
+                              From:
+                            </span>
+                            <span className="font-semibold text-gray-800">
+                              {file.starting_date}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-1.5 text-sm text-gray-600">
+                            <CalendarDays className="h-4 w-4 text-[#000080]/60 shrink-0" />
+                            <span className="font-medium text-gray-500">To:</span>
+                            <span className="font-semibold text-gray-800">
+                              {file.ending_date}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+
+                    {/* Action buttons */}
+                    <div className="flex gap-3 pt-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="flex-1 border-[#000080]/30 text-[#000080] hover:bg-[#000080]/5"
+                        onClick={() => setModalStep('form')}
+                        disabled={confirmMutation.isPending}
+                      >
+                        ← Go Back
+                      </Button>
+                      <Button
+                        type="button"
+                        className="flex-1 bg-[#000080] hover:bg-[#000060]"
+                        onClick={() =>
+                          confirmMutation.mutate(uploadResult.upload_ref_id)
+                        }
+                        disabled={confirmMutation.isPending}
+                      >
+                        {confirmMutation.isPending ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Confirming...
+                          </>
+                        ) : (
+                          <>
+                            <CheckCircle2 className="mr-2 h-4 w-4" />
+                            Confirm
+                          </>
+                        )}
+                      </Button>
                     </div>
+                  </CardContent>
+                </>
+              )}
+            </Card>
+          </div>
+        )}
 
+        {/* ── ITR Modal ── */}
+        {isItrModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
+            <Card className="w-full max-w-md shadow-2xl relative animate-scale-in">
+              <button
+                onClick={handleCloseItrModal}
+                className="absolute right-4 top-4 text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <X className="h-5 w-5" />
+              </button>
+              <CardHeader>
+                <CardTitle className="text-2xl text-[#000080] flex items-center gap-2">
+                  <PieChart className="h-6 w-6" />
+                  Income Tax Return
+                </CardTitle>
+                <CardDescription>
+                  Fetch and analyze your ITR data securely
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {itrState === 'INITIALIZING' && (
+                  <div className="flex flex-col items-center justify-center py-8">
+                    <Loader2 className="h-8 w-8 animate-spin text-[#000080] mb-4" />
+                    <p className="text-gray-600">Checking ITR status...</p>
+                  </div>
+                )}
+
+                {itrState === 'EMAIL_INPUT' && (
+                  <div className="space-y-4">
                     <div className="space-y-2">
-                      <Label htmlFor="accountNumber">
-                        Account Number <span className="text-red-500">*</span>
-                      </Label>
+                      <Label htmlFor="itrEmail">Email Address</Label>
                       <Input
-                        id="accountNumber"
-                        name="accountNumber"
-                        placeholder="Enter account number"
-                        value={formData.accountNumber}
-                        onChange={handleInputChange}
-                        required
+                        id="itrEmail"
+                        type="email"
+                        placeholder="Enter your email"
+                        value={itrEmail}
+                        onChange={(e) => setItrEmail(e.target.value)}
                       />
                     </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="bankCode">
-                        Select Bank <span className="text-red-500">*</span>
-                      </Label>
-                      <select
-                        id="bankCode"
-                        name="bankCode"
-                        value={formData.bankCode}
-                        onChange={handleInputChange}
-                        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                        required
-                      >
-                        <option value="" disabled>
-                          Select a bank
-                        </option>
-                        {isLoadingBanks ? (
-                          <option disabled>Loading banks...</option>
-                        ) : (
-                          banks?.map((bank, idx) => (
-                            <option key={idx} value={bank.code}>
-                              {bank.bankName}
-                            </option>
-                          ))
-                        )}
-                      </select>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="file">
-                        Statement Files <span className="text-red-500">*</span>
-                      </Label>
-                      <div className="flex flex-col gap-2 w-full">
-                        <Input
-                          id="file"
-                          type="file"
-                          multiple={true}
-                          accept=".pdf"
-                          onChange={(e) => {
-                            if (e.target.files) {
-                              const newFiles = Array.from(e.target.files);
-                              setSelectedFiles((prev) => [
-                                ...prev,
-                                ...newFiles,
-                              ]);
-                              e.target.value = ''; // Reset input to allow selecting the same file again if removed
-                            }
-                          }}
-                          className="cursor-pointer file:cursor-pointer file:bg-[#000080]/5 file:text-[#000080] file:border-0 file:rounded-md file:mr-4 file:px-4 file:py-1 hover:file:bg-[#000080]/10 transition-all"
-                        />
-
-                        {selectedFiles.length > 0 && (
-                          <div className="mt-3 space-y-2 max-h-40 overflow-y-auto pr-2">
-                            {selectedFiles.map((file, index) => (
-                              <div
-                                key={index}
-                                className="flex items-center justify-between p-2 border rounded-md bg-blue-50/30"
-                              >
-                                <span
-                                  className="text-sm text-gray-700 truncate mr-2"
-                                  title={file.name}
-                                >
-                                  {file.name}
-                                </span>
-                                <Button
-                                  type="button"
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => {
-                                    setSelectedFiles((prev) =>
-                                      prev.filter((_, i) => i !== index)
-                                    );
-                                  }}
-                                  className="h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50 shrink-0"
-                                >
-                                  <X className="h-4 w-4" />
-                                </Button>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
                     <Button
-                      type="submit"
-                      className="w-full bg-[#000080] hover:bg-[#000060] mt-6"
-                      disabled={uploadMutation.isPending}
+                      className="w-full bg-[#000080] hover:bg-[#000060]"
+                      onClick={() => generateItrLinkMutation.mutate(itrEmail)}
+                      disabled={generateItrLinkMutation.isPending || !itrEmail}
                     >
-                      {uploadMutation.isPending ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Uploading...
-                        </>
-                      ) : (
-                        'Upload & Analyze'
-                      )}
+                      {generateItrLinkMutation.isPending ? (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      ) : null}
+                      Generate Link
                     </Button>
-                  </form>
-                </CardContent>
-              </>
-            )}
+                  </div>
+                )}
 
-            {/* ── STEP 2: Confirmation ── */}
-            {modalStep === 'confirmation' && uploadResult && (
-              <>
-                <CardHeader>
-                  <CardTitle className="text-2xl text-[#000080] flex items-center gap-2">
-                    <FileCheck2 className="h-6 w-6" />
-                    Confirm Statement Details
-                  </CardTitle>
-                  <CardDescription>
-                    Please review the extracted details before confirming
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {/* File cards */}
-                  {uploadResult.files.map((file, idx) => (
-                    <div
-                      key={idx}
-                      className="rounded-lg border border-[#000080]/20 bg-blue-50/40 p-4 space-y-3"
-                    >
-                      {/* File name */}
-                      <div className="flex items-center gap-2">
-                        <FileText className="h-4 w-4 text-[#000080] shrink-0" />
-                        <span className="text-sm font-semibold text-[#000080] truncate">
-                          {file.name}
-                        </span>
-                      </div>
-
-                      {/* Bank name */}
-                      <div className="flex items-center gap-1.5 pl-1 text-sm">
-                        <Building2 className="h-4 w-4 text-[#000080]/60 shrink-0" />
-                        <span className="font-medium text-gray-500">Bank:</span>
-                        <span className="font-semibold text-gray-800">
-                          {file.bank_name ?? ''}
-                        </span>
-                      </div>
-
-                      {/* Date range */}
-                      <div className="flex items-center gap-6 pl-1">
-                        <div className="flex items-center gap-1.5 text-sm text-gray-600">
-                          <CalendarDays className="h-4 w-4 text-[#000080]/60 shrink-0" />
-                          <span className="font-medium text-gray-500">
-                            From:
-                          </span>
-                          <span className="font-semibold text-gray-800">
-                            {file.starting_date}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-1.5 text-sm text-gray-600">
-                          <CalendarDays className="h-4 w-4 text-[#000080]/60 shrink-0" />
-                          <span className="font-medium text-gray-500">To:</span>
-                          <span className="font-semibold text-gray-800">
-                            {file.ending_date}
-                          </span>
-                        </div>
-                      </div>
+                {itrState === 'AWAITING_CREDENTIAL_SUBMISSION' && (
+                  <div className="flex flex-col items-center justify-center py-8 space-y-4">
+                    <div className="p-4 bg-blue-50 rounded-full mb-2">
+                      <Loader2 className="h-8 w-8 animate-spin text-[#000080]" />
                     </div>
-                  ))}
+                    <p className="text-center font-medium text-[#000080]">
+                      Verification email sent successfully.
+                    </p>
+                    <p className="text-center text-sm text-gray-500 mb-4">
+                      Please check your email and complete the verification
+                      process.
+                    </p>
+                  </div>
+                )}
 
-                  {/* Action buttons */}
-                  <div className="flex gap-3 pt-2">
+                {itrState === 'PROCESSING' && (
+                  <div className="flex flex-col items-center justify-center py-8 space-y-4">
+                    <div className="p-4 bg-blue-50 rounded-full mb-2">
+                      <Loader2 className="h-8 w-8 animate-spin text-[#000080]" />
+                    </div>
+                    <p className="text-center font-medium text-[#000080]">
+                      Analyzing your ITR data...
+                    </p>
+                    <p className="text-center text-sm text-gray-500">
+                      This may take a few moments. Please wait.
+                    </p>
+                  </div>
+                )}
+
+                {itrState === 'SUCCESS' && (
+                  <div className="flex flex-col items-center justify-center py-8 space-y-4">
+                    <div className="p-4 bg-green-50 rounded-full mb-2">
+                      <CheckCircle2 className="h-8 w-8 text-green-600" />
+                    </div>
+                    <p className="text-center font-medium text-green-700">
+                      ITR Analysis Report already exists!
+                    </p>
                     <Button
-                      type="button"
+                      className="w-full bg-green-600 hover:bg-green-700 mt-4"
+                      onClick={() => {
+                        setIsItrModalOpen(false);
+                        navigate('/itr/itr-tax-calculation');
+                      }}
+                    >
+                      View ITR Analysis
+                    </Button>
+                  </div>
+                )}
+
+                {itrState === 'TIMEOUT' && (
+                  <div className="flex flex-col items-center justify-center py-8 space-y-4">
+                    <div className="p-4 bg-red-50 rounded-full mb-2">
+                      <X className="h-8 w-8 text-red-600" />
+                    </div>
+                    <p className="text-center font-medium text-red-700">
+                      Verification session expired
+                    </p>
+                    <Button
+                      onClick={() => {
+                        setItrReferenceId(null);
+                        setItrEmail('');
+                        setItrState('EMAIL_INPUT');
+                      }}
+                    >
+                      Generate New Link
+                    </Button>
+                  </div>
+                )}
+
+                {itrState === 'ERROR' && (
+                  <div className="flex flex-col items-center justify-center py-8 space-y-4">
+                    <div className="p-4 bg-red-50 rounded-full mb-2">
+                      <X className="h-8 w-8 text-red-600" />
+                    </div>
+                    <p className="text-center font-medium text-red-700">
+                      Invalid request
+                    </p>
+                    <Button
                       variant="outline"
-                      className="flex-1 border-[#000080]/30 text-[#000080] hover:bg-[#000080]/5"
-                      onClick={() => setModalStep('form')}
-                      disabled={confirmMutation.isPending}
+                      className="w-full mt-4"
+                      onClick={() => setItrState('EMAIL_INPUT')}
                     >
-                      ← Go Back
-                    </Button>
-                    <Button
-                      type="button"
-                      className="flex-1 bg-[#000080] hover:bg-[#000060]"
-                      onClick={() =>
-                        confirmMutation.mutate(uploadResult.upload_ref_id)
-                      }
-                      disabled={confirmMutation.isPending}
-                    >
-                      {confirmMutation.isPending ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Confirming...
-                        </>
-                      ) : (
-                        <>
-                          <CheckCircle2 className="mr-2 h-4 w-4" />
-                          Confirm
-                        </>
-                      )}
+                      Go Back
                     </Button>
                   </div>
-                </CardContent>
-              </>
-            )}
-          </Card>
-        </div>
-      )}
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        )}
+      </div>
 
-      {/* ── ITR Modal ── */}
-      {isItrModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
-          <Card className="w-full max-w-md shadow-2xl relative animate-scale-in">
-            <button
-              onClick={handleCloseItrModal}
-              className="absolute right-4 top-4 text-gray-400 hover:text-gray-600 transition-colors"
-            >
-              <X className="h-5 w-5" />
-            </button>
-            <CardHeader>
-              <CardTitle className="text-2xl text-[#000080] flex items-center gap-2">
-                <PieChart className="h-6 w-6" />
-                Income Tax Return
-              </CardTitle>
-              <CardDescription>
-                Fetch and analyze your ITR data securely
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {itrState === 'INITIALIZING' && (
-                <div className="flex flex-col items-center justify-center py-8">
-                  <Loader2 className="h-8 w-8 animate-spin text-[#000080] mb-4" />
-                  <p className="text-gray-600">Checking ITR status...</p>
-                </div>
-              )}
+      {/* Brand Tagline Footer */}
+    <div className="flex items-center justify-center gap-4 py-4 text-sm">
+  <div className="w-20 h-px bg-blue-300" />
+  <span className="text-blue-400">///</span>
 
-              {itrState === 'EMAIL_INPUT' && (
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="itrEmail">Email Address</Label>
-                    <Input
-                      id="itrEmail"
-                      type="email"
-                      placeholder="Enter your email"
-                      value={itrEmail}
-                      onChange={(e) => setItrEmail(e.target.value)}
-                    />
-                  </div>
-                  <Button
-                    className="w-full bg-[#000080] hover:bg-[#000060]"
-                    onClick={() => generateItrLinkMutation.mutate(itrEmail)}
-                    disabled={generateItrLinkMutation.isPending || !itrEmail}
-                  >
-                    {generateItrLinkMutation.isPending ? (
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    ) : null}
-                    Generate Link
-                  </Button>
-                </div>
-              )}
+  <span className="font-semibold text-gray-800">
+    Fueling the Future of Lending
+  </span>
 
-              {itrState === 'AWAITING_CREDENTIAL_SUBMISSION' && (
-                <div className="flex flex-col items-center justify-center py-8 space-y-4">
-                  <div className="p-4 bg-blue-50 rounded-full mb-2">
-                    <Loader2 className="h-8 w-8 animate-spin text-[#000080]" />
-                  </div>
-                  <p className="text-center font-medium text-[#000080]">
-                    Verification email sent successfully.
-                  </p>
-                  <p className="text-center text-sm text-gray-500 mb-4">
-                    Please check your email and complete the verification
-                    process.
-                  </p>
-                </div>
-              )}
+  <div className="w-px h-5 bg-gray-300" />
 
-              {itrState === 'PROCESSING' && (
-                <div className="flex flex-col items-center justify-center py-8 space-y-4">
-                  <div className="p-4 bg-blue-50 rounded-full mb-2">
-                    <Loader2 className="h-8 w-8 animate-spin text-[#000080]" />
-                  </div>
-                  <p className="text-center font-medium text-[#000080]">
-                    Analyzing your ITR data...
-                  </p>
-                  <p className="text-center text-sm text-gray-500">
-                    This may take a few moments. Please wait.
-                  </p>
-                </div>
-              )}
+  <span className="text-gray-500">
+    Crafted in Bengaluru💙
+  </span>
 
-              {itrState === 'SUCCESS' && (
-                <div className="flex flex-col items-center justify-center py-8 space-y-4">
-                  <div className="p-4 bg-green-50 rounded-full mb-2">
-                    <CheckCircle2 className="h-8 w-8 text-green-600" />
-                  </div>
-                  <p className="text-center font-medium text-green-700">
-                    ITR Analysis Report already exists!
-                  </p>
-                  <Button
-                    className="w-full bg-green-600 hover:bg-green-700 mt-4"
-                    onClick={() => {
-                      setIsItrModalOpen(false);
-                      navigate('/itr/itr-tax-calculation');
-                    }}
-                  >
-                    View ITR Analysis
-                  </Button>
-                </div>
-              )}
+  <span className="text-blue-400">///</span>
+  <div className="w-20 h-px bg-blue-300" />
+</div>
 
-              {itrState === 'TIMEOUT' && (
-                <div className="flex flex-col items-center justify-center py-8 space-y-4">
-                  <div className="p-4 bg-red-50 rounded-full mb-2">
-                    <X className="h-8 w-8 text-red-600" />
-                  </div>
-                  <p className="text-center font-medium text-red-700">
-                    Verification session expired
-                  </p>
-                  <Button
-                    onClick={() => {
-                      setItrReferenceId(null);
-                      setItrEmail('');
-                      setItrState('EMAIL_INPUT');
-                    }}
-                  >
-                    Generate New Link
-                  </Button>
-                </div>
-              )}
-
-              {itrState === 'ERROR' && (
-                <div className="flex flex-col items-center justify-center py-8 space-y-4">
-                  <div className="p-4 bg-red-50 rounded-full mb-2">
-                    <X className="h-8 w-8 text-red-600" />
-                  </div>
-                  <p className="text-center font-medium text-red-700">
-                    Invalid request
-                  </p>
-                  <Button
-                    variant="outline"
-                    className="w-full mt-4"
-                    onClick={() => setItrState('EMAIL_INPUT')}
-                  >
-                    Go Back
-                  </Button>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-      )}
       {/* Kyc Modal */}
       <KycModal isOpen={isKycModalOpen} onClose={() => setIsKycModalOpen(false)} />
     </div>
