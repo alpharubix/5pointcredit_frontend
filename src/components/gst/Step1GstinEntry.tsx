@@ -37,10 +37,6 @@ export default function Step1GstinEntry({ onNext }: Step1Props) {
     onSuccess: (res) => {
       onNext(res.data.gstin);
     },
-    onError: (error: any) => {
-      const msg = error.response?.data?.message || "Failed to update GSTIN";
-      toast.error(msg);
-    },
   });
 
   const handleSubmit = (e: React.FormEvent) => {

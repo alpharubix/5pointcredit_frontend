@@ -23,10 +23,6 @@ export default function Step3OtpValidation({ gstin, fromMonth, toMonth, onNext, 
       toast.success("OTP sent successfully");
       setOtpReferenceId(res.data.otp_reference_id);
     },
-    onError: (error: any) => {
-      const msg = error.response?.data?.detail?.message || "Failed to generate OTP";
-      toast.error(msg);
-    }
   });
 
   const validateMutation = useMutation({
@@ -39,13 +35,9 @@ export default function Step3OtpValidation({ gstin, fromMonth, toMonth, onNext, 
     },
     onError: (error: any) => {
       const msg = error.response?.data?.message;
-      if (msg === "OTP has expired" || msg === "Invalid otp_reference_id") {
-        toast.error("OTP expired or invalid. Please resend.");
-      } else if (msg === "OTP already authenticated") {
+      if (msg === "OTP already authenticated") {
         setIsValidated(true);
         submitMutation.mutate({ gstin, from_month: fromMonth, to_month: toMonth });
-      } else {
-        toast.error(msg || "Invalid OTP");
       }
     }
   });
@@ -55,9 +47,6 @@ export default function Step3OtpValidation({ gstin, fromMonth, toMonth, onNext, 
     onSuccess: (res) => {
       onNext(res.data.gst_reference_id);
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || "Failed to submit for analysis");
-    }
   });
 
   const handleGenerateOtp = (e: React.FormEvent) => {
