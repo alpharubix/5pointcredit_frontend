@@ -93,6 +93,12 @@ export default function GstHistoryPage() {
                     scope="col"
                     className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                   >
+                    GSTIN
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
                     Reference ID
                   </th>
                   <th
@@ -119,6 +125,9 @@ export default function GstHistoryPage() {
                 {historyList.map((item) => (
                   <tr key={item.reference_id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                      {item.gstin || '-'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {item.reference_id}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">

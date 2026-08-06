@@ -89,6 +89,7 @@ export interface GstStatusResponse {
 }
 
 export interface GstHistoryItem {
+  gstin: string;
   reference_id: string;
   gst_reference_id_status: string;
   from_month: string;
