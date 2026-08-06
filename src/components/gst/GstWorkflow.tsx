@@ -49,6 +49,10 @@ export default function GstWorkflow() {
     setCurrentStep(1);
   };
 
+  const handleGstinChange = (newGstin: string) => {
+    setGstin(newGstin);
+  };
+
   return (
     <div className="w-full max-w-4xl mx-auto py-8 px-4">
       
@@ -108,6 +112,7 @@ export default function GstWorkflow() {
             onSuccessSubmit={handleStep2Success}
             onRequiresAuth={handleStep2RequiresAuth}
             onBack={() => setCurrentStep(1)}
+            onGstinChange={handleGstinChange}
           />
         )}
 

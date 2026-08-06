@@ -17,8 +17,18 @@ export default function Step1GstinEntry({ onNext }: Step1Props) {
 
   useEffect(() => {
     if (gstinData?.is_found && gstinData.gst_number) {
-      setGstinInput(gstinData.gst_number);
-      onNext(gstinData.gst_number);
+      const rawGst = gstinData.gst_number;
+      const gstinVal = Array.isArray(rawGst)
+        ? rawGst[0]
+        : typeof rawGst === "string"
+        ? rawGst.split(",")[0]
+        : "";
+
+      const cleanGstin = gstinVal?.trim() || "";
+      if (cleanGstin) {
+        setGstinInput(cleanGstin);
+        onNext(cleanGstin);
+      }
     }
   }, [gstinData, onNext]);
 
@@ -35,9 +45,14 @@ export default function Step1GstinEntry({ onNext }: Step1Props) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const gstin = gstinInput.toUpperCase();
+    const gstin = gstinInput.toUpperCase().trim();
     const gstRegex = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/;
     
+    if (gstin.length !== 15) {
+      toast.error("GSTIN must be exactly 15 characters long");
+      return;
+    }
+
     if (!gstRegex.test(gstin)) {
       toast.error("Invalid GSTIN format");
       return;
@@ -72,7 +87,10 @@ export default function Step1GstinEntry({ onNext }: Step1Props) {
             className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-[#000080] focus:border-[#000080] uppercase"
             placeholder="e.g. 27AAAPL1234C1Z5"
             value={gstinInput}
-            onChange={(e) => setGstinInput(e.target.value.toUpperCase())}
+            onChange={(e) => {
+              const clean = e.target.value.replace(/[^A-Z0-9]/gi, "").toUpperCase().slice(0, 15);
+              setGstinInput(clean);
+            }}
             required
             maxLength={15}
           />
