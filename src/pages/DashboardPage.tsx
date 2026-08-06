@@ -377,7 +377,7 @@ export default function DashboardPage() {
   ];
 
   return (
-    <div className="pt-8 px-8 pb-2 animate-fade-in relative min-h-screen flex flex-col justify-between">
+    <div className="pt-8 px-8 pb-2 animate-fade-in relative min-h-screen flex flex-col">
       <div>
         <div className="mb-8 flex items-center justify-between border-b pb-6 border-gray-200">
           <div>
@@ -874,7 +874,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Brand Tagline Footer */}
-    <div className="flex items-center justify-center gap-4 py-4 text-sm">
+    <div className="flex items-center justify-center gap-4 py-4 text-sm mt-auto pt-8">
   <div className="w-20 h-px bg-blue-300" />
   <span className="text-blue-400">///</span>
 
