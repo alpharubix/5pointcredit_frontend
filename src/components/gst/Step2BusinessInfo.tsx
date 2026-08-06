@@ -122,10 +122,6 @@ export default function Step2BusinessInfo({ gstin, onSuccessSubmit, onRequiresAu
       setActiveGstin(updatedGstin);
       onGstinChange(updatedGstin);
     },
-    onError: (error: any) => {
-      const msg = error.response?.data?.message || "Failed to add GSTIN";
-      toast.error(msg);
-    }
   });
 
   const handleModalSubmit = (e: React.FormEvent) => {
@@ -155,13 +151,9 @@ export default function Step2BusinessInfo({ gstin, onSuccessSubmit, onRequiresAu
     onError: (error: any) => {
       const detail = error.response?.data?.detail;
       const responseCode = detail?.responseCode;
-      const message = detail?.message || error.response?.data?.message || "Failed to start analysis";
 
       if (responseCode === "EOA048" || responseCode === "EAE052") {
         setNeedsAuth(true);
-        toast.error("GST Portal authentication required.");
-      } else {
-        toast.error(message);
       }
     }
   });
