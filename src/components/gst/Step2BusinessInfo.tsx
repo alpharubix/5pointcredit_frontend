@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { fetchBasicInfo, submitGst, updateGstin, getGstin, addNewGstin } from "@/api/gst";
+import { fetchBasicInfo, submitGst, getGstin, addNewGstin } from "@/api/gst";
 import { toast } from "sonner";
 
 interface Step2Props {
