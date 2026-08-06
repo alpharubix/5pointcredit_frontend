@@ -19,7 +19,7 @@ export interface SaveGstinResponse {
 }
 
 export interface BasicInfoPayload {
-  gstin: string;
+  gstin: string | string[];
 }
 
 export interface BasicInfoResponse {

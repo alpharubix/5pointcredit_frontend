@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
-import { fetchBasicInfo, submitGst, updateGstin, getGstin, addNewGstin } from "@/api/gst";
+import { useState, useEffect, useMemo } from "react";
+import { useQuery, useMutation, useQueries } from "@tanstack/react-query";
+import { fetchBasicInfo, submitGst, getGstin, addNewGstin } from "@/api/gst";
 import { toast } from "sonner";
 
 interface Step2Props {
@@ -44,30 +44,40 @@ export default function Step2BusinessInfo({ gstin, onSuccessSubmit, onRequiresAu
   });
 
   const [activeGstin, setActiveGstin] = useState<string>(gstin);
-  const [businessDataMap, setBusinessDataMap] = useState<Record<string, any>>({});
-  const [loadingMap, setLoadingMap] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     localStorage.setItem("gstin_list", JSON.stringify(gstinList));
   }, [gstinList]);
 
-  const fetchInfoForGstin = async (gstinCode: string) => {
-    if (!gstinCode || businessDataMap[gstinCode] || loadingMap[gstinCode]) return;
+  // Fetch basic info for all GSTINs using useQueries for automatic de-duplication, caching and loading states
+  const basicInfoQueries = useQueries({
+    queries: gstinList.map((gstinCode) => ({
+      queryKey: ["gstinBasicInfo", gstinCode],
+      queryFn: () => fetchBasicInfo({ gstin: gstinCode }),
+      enabled: !!gstinCode,
+    })),
+  });
 
-    setLoadingMap(prev => ({ ...prev, [gstinCode]: true }));
-    try {
-      const res = await fetchBasicInfo({ gstin: gstinCode });
-      const data = res?.data?.[0];
+  const businessDataMap = useMemo(() => {
+    const map: Record<string, any> = {};
+    basicInfoQueries.forEach((q, idx) => {
+      const gstinCode = gstinList[idx];
+      const data = q.data?.data?.[0];
       if (data) {
-        setBusinessDataMap(prev => ({ ...prev, [gstinCode]: data }));
+        map[gstinCode] = data;
       }
-    } catch (error) {
-      console.error("Failed to fetch info for", gstinCode);
-      toast.error(`Failed to fetch details for GSTIN: ${gstinCode}`);
-    } finally {
-      setLoadingMap(prev => ({ ...prev, [gstinCode]: false }));
-    }
-  };
+    });
+    return map;
+  }, [basicInfoQueries, gstinList]);
+
+  const loadingMap = useMemo(() => {
+    const map: Record<string, boolean> = {};
+    basicInfoQueries.forEach((q, idx) => {
+      const gstinCode = gstinList[idx];
+      map[gstinCode] = q.isLoading;
+    });
+    return map;
+  }, [basicInfoQueries, gstinList]);
 
   // Synchronize list with backend response
   useEffect(() => {
@@ -82,7 +92,11 @@ export default function Step2BusinessInfo({ gstin, onSuccessSubmit, onRequiresAu
       if (gstin && !mergedList.includes(gstin)) {
         mergedList.push(gstin);
       }
-      setGstinList(mergedList);
+      // Only update if the content has changed to avoid unnecessary re-renders
+      setGstinList((prev) => {
+        const isSame = prev.length === mergedList.length && prev.every((val, index) => val === mergedList[index]);
+        return isSame ? prev : mergedList;
+      });
     } else if (gstin) {
       setGstinList((prev) => prev.includes(gstin) ? prev : [...prev, gstin]);
     }
@@ -94,13 +108,6 @@ export default function Step2BusinessInfo({ gstin, onSuccessSubmit, onRequiresAu
       setActiveGstin(gstin);
     }
   }, [gstin]);
-
-  // Fetch info for all loaded GSTINs
-  useEffect(() => {
-    gstinList.forEach((item) => {
-      fetchInfoForGstin(item);
-    });
-  }, [gstinList]);
 
   const addNewGstinMutation = useMutation({
     mutationFn: addNewGstin,
@@ -114,7 +121,6 @@ export default function Step2BusinessInfo({ gstin, onSuccessSubmit, onRequiresAu
       }
       setActiveGstin(updatedGstin);
       onGstinChange(updatedGstin);
-      fetchInfoForGstin(updatedGstin);
     },
     onError: (error: any) => {
       const msg = error.response?.data?.message || "Failed to add GSTIN";
@@ -210,7 +216,6 @@ export default function Step2BusinessInfo({ gstin, onSuccessSubmit, onRequiresAu
                 if (!isSelected) {
                   setActiveGstin(itemGstin);
                   onGstinChange(itemGstin);
-                  fetchInfoForGstin(itemGstin);
                 }
               }}
             >
