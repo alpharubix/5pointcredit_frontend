@@ -6,10 +6,12 @@ declare module "axios" {
   interface AxiosRequestConfig {
     successMessage?: string;
     errorMessage?: string;
+    skipErrorToast?: boolean;
   }
   interface InternalAxiosRequestConfig {
     successMessage?: string;
     errorMessage?: string;
+    skipErrorToast?: boolean;
   }
 }
 
@@ -20,16 +22,22 @@ const apiClient = axios.create({
   },
   withCredentials: true,
 });
- 
+
 console.log("Base URL:", ENV.VITE_BACKEND_BASE_URL);
 
 
 // Helper to extract a user-friendly error message from backend responses
-const extractErrorMessage = (error: any): string | null => {
-  const data = error.response?.data;
+export const extractErrorMessage = (error: any): string | null => {
+  let data = error.response?.data;
   if (!data) return null;
 
-  if (typeof data === "string") return data;
+  if (typeof data === "string") {
+    try {
+      data = JSON.parse(data);
+    } catch {
+      return data;
+    }
+  }
 
   const fromObject = (obj: any): string | null => {
     if (!obj || typeof obj !== "object") return null;
@@ -85,13 +93,22 @@ apiClient.interceptors.response.use(
   },
   (error) => {
     console.error("API error response:", error.response);
-    
-    const serverMessage = extractErrorMessage(error);
-    console.log("Extracted server error message:", serverMessage);
 
-    const errorMessage = serverMessage || error.config?.errorMessage;
-    if (errorMessage) {
-      toast.error(errorMessage);
+    if (error.config.url === "/user/me") {
+      window.dispatchEvent(new CustomEvent("auth:unauthorized"));
+      if (error.response?.status === 401 || error.response?.status === 403) {
+        return Promise.reject(error);
+      }
+    }
+
+    if (!error.config?.skipErrorToast) {
+      const serverMessage = extractErrorMessage(error);
+      console.log("Extracted server error message:", serverMessage);
+
+      const errorMessage = serverMessage || error.config?.errorMessage;
+      if (errorMessage) {
+        toast.error(errorMessage);
+      }
     }
 
     return Promise.reject(error);

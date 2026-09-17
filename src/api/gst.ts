@@ -4,7 +4,7 @@ import apiClient from "@/lib/axios";
 
 export interface GstinResponse {
   is_found: boolean;
-  gst_number: string | null;
+  gst_number: string | string[] | null;
 }
 
 export interface SaveGstinPayload {

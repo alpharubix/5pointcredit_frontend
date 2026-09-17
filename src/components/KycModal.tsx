@@ -7,8 +7,8 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+// import { Input } from '@/components/ui/input';
+// import { Label } from '@/components/ui/label';
 import {
   X,
   Loader2,
@@ -19,8 +19,8 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import {
-  generateAadhaarOtp,
-  validateAadhaarOtp,
+  // generateAadhaarOtp,
+  // validateAadhaarOtp,
   fetchAadhaarDetails,
   documentPrecheck,
   getCurrentSession,
@@ -36,7 +36,7 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 type KycState =
   | 'INITIALIZING'
   | 'AADHAAR_INPUT'
-  | 'OTP_INPUT'
+  // | 'OTP_INPUT'
   | 'CHECK_DIGILOCKER_SESSION'
   | 'POLLING_SESSION'
   | 'FETCHING_DOCUMENTS'
@@ -50,9 +50,9 @@ interface KycModalProps {
 
 export function KycModal({ isOpen, onClose }: KycModalProps) {
   const [state, setState] = useState<KycState>('INITIALIZING');
-  const [aadhaarNumber, setAadhaarNumber] = useState('');
-  const [otp, setOtp] = useState('');
-  const [referenceId, setReferenceId] = useState('');
+ // const [aadhaarNumber, setAadhaarNumber] = useState('');
+  // const [otp, setOtp] = useState('');
+  // const [referenceId, setReferenceId] = useState('');
   const [kycFlowId, setKycFlowId] = useState('');
   const [documents, setDocuments] = useState<DigiLockerDocument[]>([]);
   const [errorMsg, setErrorMsg] = useState('');
@@ -115,9 +115,9 @@ export function KycModal({ isOpen, onClose }: KycModalProps) {
   const cleanup = () => {
     toast.dismiss();
     setState('INITIALIZING');
-    setAadhaarNumber('');
-    setOtp('');
-    setReferenceId('');
+   // setAadhaarNumber('');
+    // setOtp('');
+    //setReferenceId('');
     setKycFlowId('');
     setDocuments([]);
     setErrorMsg('');
@@ -155,47 +155,47 @@ export function KycModal({ isOpen, onClose }: KycModalProps) {
     }
   };
 
-  const handleGenerateOtp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (aadhaarNumber.length !== 12) {
-      toast.error('Aadhaar number must be exactly 12 digits.');
-      return;
-    }
-    setState('INITIALIZING');
-    try {
-      const res = await generateAadhaarOtp(aadhaarNumber);
-      setReferenceId(res.reference_id);
-      toast.success('OTP sent to your registered mobile number.');
-      setState('OTP_INPUT');
-    } catch (err: any) {
-      handleError(
-        err?.response?.data?.detail?.message || 'Failed to generate OTP',
-        err
-      );
-      setState('AADHAAR_INPUT');
-    }
-  };
+  // const handleGenerateOtp = async (e: React.FormEvent) => {
+  //   e.preventDefault();
+  //   if (aadhaarNumber.length !== 12) {
+  //     toast.error('Aadhaar number must be exactly 12 digits.');
+  //     return;
+  //   }
+  //   setState('INITIALIZING');
+  //   try {
+  //     const res = await generateAadhaarOtp(aadhaarNumber);
+  //     setReferenceId(res.reference_id);
+  //     toast.success('OTP sent to your registered mobile number.');
+  //     setState('OTP_INPUT');
+  //   } catch (err: any) {
+  //     handleError(
+  //       err?.response?.data?.detail?.message || 'Failed to generate OTP',
+  //       err
+  //     );
+  //     setState('AADHAAR_INPUT');
+  //   }
+  // };
 
-  const handleValidateOtp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (otp.length !== 6) {
-      toast.error('Please enter the OTP.');
-      return;
-    }
-    setState('INITIALIZING');
-    try {
-      await validateAadhaarOtp(aadhaarNumber, otp, referenceId);
-      toast.success('Aadhaar verified successfully.');
-      setState('CHECK_DIGILOCKER_SESSION');
-      checkOrGenerateSession();
-    } catch (err: any) {
-      handleError(
-        err?.response?.data?.detail?.message || 'Failed to validate OTP',
-        err
-      );
-      setState('OTP_INPUT');
-    }
-  };
+  // const handleValidateOtp = async (e: React.FormEvent) => {
+  //   e.preventDefault();
+  //   if (otp.length !== 6) {
+  //     toast.error('Please enter the OTP.');
+  //     return;
+  //   }
+  //   setState('INITIALIZING');
+  //   try {
+  //     await validateAadhaarOtp(aadhaarNumber, otp, referenceId);
+  //     toast.success('Aadhaar verified successfully.');
+  //     setState('CHECK_DIGILOCKER_SESSION');
+  //     checkOrGenerateSession();
+  //   } catch (err: any) {
+  //     handleError(
+  //       err?.response?.data?.detail?.message || 'Failed to validate OTP',
+  //       err
+  //     );
+  //     setState('OTP_INPUT');
+  //   }
+  // };
 
   const checkOrGenerateSession = async () => {
     try {
@@ -341,7 +341,7 @@ const handleViewDocument = (doc: DigiLockerDocument) => {
             </div>
           )}
 
-          {state === 'AADHAAR_INPUT' && (
+          {/* {state === 'AADHAAR_INPUT' && (
             <form
               onSubmit={handleGenerateOtp}
               className="space-y-4 animate-fade-in"
@@ -371,9 +371,9 @@ const handleViewDocument = (doc: DigiLockerDocument) => {
                 Generate OTP
               </Button>
             </form>
-          )}
+          )} */}
 
-          {state === 'OTP_INPUT' && (
+          {/* {state === 'OTP_INPUT' && (
             <form
               onSubmit={handleValidateOtp}
               className="space-y-4 animate-fade-in"
@@ -413,7 +413,7 @@ const handleViewDocument = (doc: DigiLockerDocument) => {
                 Initializing DigiLocker session...
               </p>
             </div>
-          )}
+          )} */}
 
           {state === 'POLLING_SESSION' && (
             <div className="flex flex-col items-center justify-center py-8 space-y-4 animate-fade-in text-center">
