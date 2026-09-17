@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
-import apiClient from '@/lib/axios';
+import React, { useState, useEffect } from 'react';
+import apiClient, { extractErrorMessage } from '@/lib/axios';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'sonner';
 import {
   Card,
@@ -26,6 +26,10 @@ import {
   FileCheck2,
   Loader2,
   HelpCircle,
+  ShoppingCart,
+  Minus,
+  Plus,
+  BriefcaseBusiness,
 } from 'lucide-react';
 import {
   Select,
@@ -37,6 +41,10 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { KycModal } from '@/components/KycModal';
+import PaymentModal from '@/components/cart/PaymentModal';
+import { getPricingDetails } from '@/lib/paymentUtils';
+import { getWalletBalance, type ServiceBreakup } from '@/api/payment';
+import { useAuthContext } from '@/contexts/AuthContext';
 
 interface Bank {
   srNo: number;
@@ -93,44 +101,52 @@ const mapResponseCodeToState = (code?: string): ITRState => {
   switch (code) {
     case 'ENC220':
       return 'AWAITING_CREDENTIAL_SUBMISSION';
-
     case 'RNP020':
       return 'PROCESSING';
-
     case 'SRC001':
       return 'SUCCESS';
-
     case 'ECR214':
       return 'TIMEOUT';
-
     case 'ENR029':
       return 'EMAIL_INPUT';
-
     case 'EBF017':
     case 'EIP018':
       return 'ERROR';
-
     default:
       return 'EMAIL_INPUT';
   }
 };
 
-
 export default function DashboardPage() {
+  const { user } = useAuthContext() as any;
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [highlightedService, setHighlightedService] = useState<string | undefined>(undefined);
+
+  // BSA Modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalStep, setModalStep] = useState<ModalStep>('form');
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
-  const [uploadResult, setUploadResult] = useState<ParsedUploadResult | null>(
-    null
-  );
+  const [uploadResult, setUploadResult] = useState<ParsedUploadResult | null>(null);
 
+  // Other Modals
   const [isItrModalOpen, setIsItrModalOpen] = useState(false);
   const [isKycModalOpen, setIsKycModalOpen] = useState(false);
   const [itrState, setItrState] = useState<ITRState>('INITIALIZING');
   const [itrEmail, setItrEmail] = useState('');
   const [itrReferenceId, setItrReferenceId] = useState<string | null>(null);
 
-  const navigate = useNavigate();
+  // Cart & Checkout state
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const [isCheckingWallet, setIsCheckingWallet] = useState(false);
+  const [quantities, setQuantities] = useState<Record<string, number>>({
+    BSA: 1,
+    GST: 1,
+    ITR: 1,
+    CIBIL: 1,
+  });
+
+  const [companyName, setCompanyName] = useState<string>('');
 
   const [formData, setFormData] = useState({
     entityName: '',
@@ -140,7 +156,148 @@ export default function DashboardPage() {
     bankCode: '',
   });
 
-  const { data: banks, isLoading: isLoadingBanks } = useQuery({
+  useEffect(() => {
+    const savedName =
+      sessionStorage.getItem('company_name') ||
+      user?.company_name ||
+      user?.customer_name ||
+      user?.name ||
+      '';
+    setCompanyName(savedName);
+  }, [user]);
+
+  // Lock background scroll when any modal is open to keep background standard & fixed
+  useEffect(() => {
+    const isAnyModalOpen = isModalOpen || isItrModalOpen || isKycModalOpen || checkoutOpen;
+    if (isAnyModalOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isModalOpen, isItrModalOpen, isKycModalOpen, checkoutOpen]);
+
+  // Highlight Service when redirected from wallet-protected route
+  useEffect(() => {
+    const service = location.state?.highlight as string | undefined;
+
+    if (!service) {
+      return;
+    }
+
+    setHighlightedService(service);
+    setQuantities((prev) => ({
+      ...prev,
+      [service]: Math.max(1, prev[service] || 1),
+    }));
+
+    const timer = setTimeout(() => {
+      setHighlightedService(undefined);
+    }, 5000);
+
+    return () => clearTimeout(timer);
+  }, [location.state]);
+
+  // Cart logic
+  const updateQuantity = (service: string, change: number) => {
+    setQuantities((current) => ({
+      ...current,
+      [service]: Math.min(10, Math.max(0, (current[service] || 0) + change)),
+    }));
+  };
+
+  const cartItems = [
+    {
+      service: 'BSA',
+      label: 'Bank Statement Analysis',
+      period: '12 month period for 1 Bank Acc.',
+      pricing: getPricingDetails('BSA', 1),
+    },
+    {
+      service: 'GST',
+      label: 'Goods & Services Tax',
+      period: '12 month period for 1 GST No.',
+      pricing: getPricingDetails('GST', 1),
+    },
+    {
+      service: 'ITR',
+      label: 'Income Tax Returns',
+      period: '2 Financial Years for 1 Business',
+      pricing: getPricingDetails('ITR', 1),
+    },
+    {
+      service: 'CIBIL',
+      label: 'CIBIL Credit Report',
+      period: 'Credit Bureau Records till date',
+      pricing: getPricingDetails('CIBIL', 1),
+    },
+  ].map((item) => ({
+    ...item,
+    qty: quantities[item.service] || 0,
+  }));
+
+  const selectedCartItems = cartItems.filter((item) => item.qty > 0);
+
+  const cartSubtotal = selectedCartItems.reduce(
+    (sum, item) => sum + item.pricing.base * item.qty,
+    0
+  );
+
+  const cartIgst = Number((cartSubtotal * 0.18).toFixed(2));
+  const cartTotal = Number((cartSubtotal + cartIgst).toFixed(2));
+
+  const cartSelection: ServiceBreakup[] = cartItems.map((item) => ({
+    service: item.service,
+    qty: item.qty,
+  }));
+
+  const openCartPayment = () => {
+    if (selectedCartItems.length === 0) {
+      toast.error('Please select at least one service before checkout.');
+      return;
+    }
+    setCheckoutOpen(true);
+  };
+
+  const handleModuleClick = async (
+    serviceId: string,
+    onWalletAvailable: () => void
+  ) => {
+    try {
+      setIsCheckingWallet(true);
+      const userId =
+        user?.user_id ||
+        user?._id ||
+        user?.id ||
+        user?.data?.user_id ||
+        user?.data?._id ||
+        '';
+
+      const response = await getWalletBalance(serviceId, userId);
+
+      if (response.data?.is_balance_available) {
+        onWalletAvailable();
+        return;
+      }
+
+      toast.info(`Please add credits to analyze ${serviceId} reports.`);
+      // Ensure the service quantity is at least 1 in cart and open checkout modal
+      setQuantities((prev) => ({
+        ...prev,
+        [serviceId]: Math.max(1, prev[serviceId] || 1),
+      }));
+      setCheckoutOpen(true);
+    } catch (error: any) {
+      // If error checking wallet, allow proceeding to avoid blocking offline/mock environments
+      onWalletAvailable();
+    } finally {
+      setIsCheckingWallet(false);
+    }
+  };
+
+  const { data: banks } = useQuery({
     queryKey: ['banks'],
     queryFn: async () => {
       const response = await apiClient.get('/bsa/get-bank-names');
@@ -152,6 +309,7 @@ export default function DashboardPage() {
     mutationFn: async (uploadData: FormData) => {
       const response = await apiClient.post('/bsa/upload', uploadData, {
         headers: { 'Content-Type': 'multipart/form-data' },
+        skipErrorToast: true,
       });
       return response.data as UploadResponse;
     },
@@ -161,15 +319,18 @@ export default function DashboardPage() {
       setModalStep('confirmation');
     },
     onError: (error: any) => {
-      toast.error(`${error.response?.data?.detail?.message}`);
+      const msg = extractErrorMessage(error) || 'Failed to upload bank statement';
+      toast.error(msg);
     },
   });
 
   const confirmMutation = useMutation({
     mutationFn: async (upload_ref_id: string) => {
-      const response = await apiClient.post('/bsa/upload_ref_id', {
-        upload_ref_id,
-      });
+      const response = await apiClient.post(
+        '/bsa/upload_ref_id',
+        { upload_ref_id },
+        { skipErrorToast: true }
+      );
       return response.data;
     },
     onSuccess: (data: any) => {
@@ -177,7 +338,8 @@ export default function DashboardPage() {
       handleCloseModal();
     },
     onError: (error: any) => {
-      toast.error(`${error.response?.data?.detail?.message}`);
+      const msg = extractErrorMessage(error) || 'Failed to confirm statement';
+      toast.error(msg);
     },
   });
 
@@ -248,17 +410,12 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const payload = itrPrecheckData?.data;
-
     if (!payload) {
       setItrState('EMAIL_INPUT');
       return;
     }
 
     const { itr_reference_id, itr_link_response_code } = payload;
-
-    console.log('response code', itr_link_response_code);
-    console.log('mapped state', mapResponseCodeToState(itr_link_response_code));
-
     setItrReferenceId(itr_reference_id ?? null);
 
     if (!itr_link_response_code) {
@@ -287,16 +444,13 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (!itrPollingData?.data) return;
-
     const code = itrPollingData.data.itr_link_response_code;
-
     setItrState(mapResponseCodeToState(code));
 
     if (code === 'ENR029') {
       setItrReferenceId(null);
       toast.error('Session not found');
     }
-
     if (code === 'EBF017' || code === 'EIP018') {
       toast.error('Invalid request');
     }
@@ -311,7 +465,6 @@ export default function DashboardPage() {
     },
     onSuccess: (data) => {
       const refId = data.data?.itr_reference_id;
-
       if (refId) {
         setItrReferenceId(refId);
         setItrState('AWAITING_CREDENTIAL_SUBMISSION');
@@ -330,36 +483,49 @@ export default function DashboardPage() {
   const dashboardItems = [
     {
       title: 'Bank Statement Analysis',
-      description: 'Upload & Analysis',
-      icon: <Building2 className="h-8 w-8 text-[#000080]" />,
+      description: '12 month period for 1 Bank Acc.',
+      moduleId: 'BSA',
+      price: '₹565',
+      icon: <Building2 className="h-6 w-6 text-[#000080]" />,
       onClick: () => {
-        setModalStep('form');
-        setIsModalOpen(true);
+        handleModuleClick('BSA', () => {
+          setModalStep('form');
+          setIsModalOpen(true);
+        });
       },
       disabled: false,
     },
     {
       title: 'GSTR Analysis',
-      description: 'Analysis GSTR',
-      icon: <FileText className="h-8 w-8 text-[#000080]" />,
+      description: '12 month period for 1 GST No.',
+      moduleId: 'GST',
+      price: '₹561',
+      icon: <FileText className="h-6 w-6 text-[#000080]" />,
       onClick: () => {
-        navigate('/gst/analysis');
+        handleModuleClick('GST', () => {
+          navigate('/gst/analysis');
+        });
       },
       disabled: false,
     },
     {
       title: 'ITR',
-      description: 'Income Tax Return',
-      icon: <PieChart className="h-8 w-8 text-[#000080]" />,
+      description: '2 Financial Years for 1 Business',
+      moduleId: 'ITR',
+      price: '₹525',
+      icon: <PieChart className="h-6 w-6 text-[#000080]" />,
       disabled: false,
       onClick: () => {
-        setIsItrModalOpen(true);
+        handleModuleClick('ITR', () => {
+          setIsItrModalOpen(true);
+        });
       },
     },
     {
       title: 'KYC',
       description: 'Identity Verification',
-      icon: <ShieldCheck className="h-8 w-8 text-[#000080]" />,
+      price: 'Included',
+      icon: <ShieldCheck className="h-6 w-6 text-[#000080]" />,
       disabled: false,
       onClick: () => {
         setIsKycModalOpen(true);
@@ -367,68 +533,158 @@ export default function DashboardPage() {
     },
     {
       title: 'CIBIL Score',
-      description: 'Credit Report',
-      icon: <CreditCard className="h-8 w-8 text-[#000080]" />,
+      description: 'Credit Bureau Records till date',
+      moduleId: 'CIBIL',
+      price: '₹643',
+      icon: <CreditCard className="h-6 w-6 text-[#000080]" />,
       disabled: false,
       onClick: () => {
-        navigate('/cibil');
+        handleModuleClick('CIBIL', () => {
+          navigate('/cibil');
+        });
       },
     },
   ];
 
   return (
-    <div className="pt-8 px-8 pb-2 animate-fade-in relative min-h-screen flex flex-col">
-      <div>
-        <div className="mb-8 flex items-center justify-between border-b pb-6 border-gray-200">
+    <div className="h-full flex flex-col justify-between px-6 py-4 lg:px-8 lg:py-5 overflow-hidden">
+      <div className="flex-1 flex flex-col justify-start min-h-0">
+        {/* Header with Title and Help Center */}
+        <div className="mb-3 lg:mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b pb-3 border-gray-200 shrink-0">
           <div>
-            <h1 className="text-3xl font-bold text-[#000080] mb-2">Dashboard</h1>
-            <p className="text-gray-600">
+            <h1 className="text-2xl lg:text-3xl font-bold text-[#000080]">Dashboard</h1>
+            <p className="text-xs sm:text-sm text-gray-500">
               Access your financial documents and analysis tools
             </p>
           </div>
+
+          <div className="flex items-center gap-3">
+            <Button
+              onClick={() => navigate('/help-center')}
+              variant="outline"
+              size="sm"
+              className="flex items-center gap-2 border-[#000080]/30 text-[#000080] hover:bg-[#000080]/5 h-8 sm:h-9 text-xs sm:text-sm"
+            >
+              <HelpCircle className="h-4 w-4" />
+              Help Center
+            </Button>
+          </div>
+        </div>
+
+        {/* Welcome greeting if available */}
+        {companyName && (
+          <div className="mb-3 lg:mb-4 flex items-center gap-2.5 shrink-0">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#000080]/10 border border-[#000080]/20 text-[#000080]">
+              <BriefcaseBusiness className="h-4 w-4" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-[10px] font-medium uppercase tracking-wider text-gray-400">
+                Welcome back
+              </p>
+              <h2 className="truncate text-sm sm:text-base font-bold text-[#000080]">
+                5PointCredit
+              </h2>
+            </div>
+          </div>
+        )}
+
+        {/* Services Grid with Quantity Selectors */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 xl:gap-3.5 shrink-0">
+          {dashboardItems.map((item, index) => {
+            const isHighlighted =
+              Boolean(highlightedService) &&
+              highlightedService === item.moduleId;
+
+            const shouldBlur =
+              Boolean(highlightedService) && !isHighlighted;
+
+            return (
+              <Card
+                key={index}
+                className={`flex flex-col justify-between rounded-xl border bg-white shadow-sm transition-all duration-300 ${item.disabled
+                  ? 'opacity-60 cursor-not-allowed bg-gray-50 border-slate-200'
+                  : isHighlighted
+                    ? 'relative z-20 cursor-pointer scale-[1.02] border-2 border-[#000080] bg-white shadow-[0_0_25px_rgba(0,0,128,0.4)]'
+                    : shouldBlur
+                      ? 'pointer-events-none cursor-default blur-sm opacity-35 border-slate-200'
+                      : 'cursor-pointer border-slate-200 hover:border-[#000080]/40 hover:shadow-md'
+                  } ${isCheckingWallet ? 'pointer-events-none opacity-80' : ''}`}
+                onClick={!item.disabled ? item.onClick : undefined}
+              >
+                <CardHeader className="flex flex-row items-center gap-3 p-3.5 pb-1">
+                  <div
+                    className={`p-2 rounded-lg shrink-0 ${item.disabled ? 'bg-gray-200' : 'bg-blue-50'
+                      }`}
+                  >
+                    {item.icon}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <CardTitle className="text-base font-bold truncate text-[#000080]">
+                      {item.title}
+                    </CardTitle>
+                    <CardDescription className="text-xs mt-0.5 text-gray-500 line-clamp-1">
+                      {item.description}
+                    </CardDescription>
+                  </div>
+                </CardHeader>
+
+                <CardContent className="p-3.5 pt-0">
+                  {!item.disabled && (
+                    <div className="mt-2 flex items-center justify-between gap-2 text-xs">
+                      <span className="font-semibold text-[#000080] flex items-center gap-1">
+                        Click to proceed <span>→</span>
+                      </span>
+
+                      {/* Quantity Selector for Cart */}
+                      {item.moduleId && (
+                        <div
+                          className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-1.5 py-0.5 shadow-inner"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <button
+                            type="button"
+                            aria-label={`Decrease ${item.moduleId} quantity`}
+                            onClick={() => updateQuantity(item.moduleId!, -1)}
+                            disabled={(quantities[item.moduleId] || 0) === 0}
+                            className="flex h-6 w-6 items-center justify-center rounded text-[#000080] hover:bg-[#000080]/10 disabled:cursor-not-allowed disabled:opacity-30 transition-colors"
+                          >
+                            <Minus className="h-3 w-3" />
+                          </button>
+                          <span className="min-w-4 text-center text-xs font-bold text-slate-800">
+                            {quantities[item.moduleId] || 0}
+                          </span>
+                          <button
+                            type="button"
+                            aria-label={`Increase ${item.moduleId} quantity`}
+                            onClick={() => updateQuantity(item.moduleId!, 1)}
+                            disabled={(quantities[item.moduleId] || 0) === 10}
+                            className="flex h-6 w-6 items-center justify-center rounded text-[#000080] hover:bg-[#000080]/10 disabled:cursor-not-allowed disabled:opacity-30 transition-colors"
+                          >
+                            <Plus className="h-3 w-3" />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+
+        {/* Checkout Button Bar */}
+        <div className="mt-3 lg:mt-4 flex items-center justify-end shrink-0">
           <Button
-            onClick={() => navigate('/help-center')}
-            variant="outline"
-            className="flex items-center gap-2 border-[#000080]/30 text-[#000080] hover:bg-[#000080]/5"
+            onClick={openCartPayment}
+            disabled={selectedCartItems.length === 0}
+            className="h-9 sm:h-10 rounded-xl bg-[#002366] hover:bg-[#002366]/90 px-5 text-xs sm:text-sm font-bold text-white shadow-md flex items-center gap-2 disabled:opacity-50 transition-all"
           >
-            <HelpCircle className="h-4 w-4" />
-            Help Center
+            <ShoppingCart className="h-4 w-4" />
+            Go to Checkout
           </Button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {dashboardItems.map((item, index) => (
-            <Card
-              key={index}
-              className={`transition-all duration-300 ${item.disabled
-                ? 'opacity-60 cursor-not-allowed bg-gray-50'
-                : 'hover:shadow-xl hover:-translate-y-1 cursor-pointer border-[#000080]/20 hover:border-[#000080]/50 bg-white'
-                }`}
-              onClick={!item.disabled ? item.onClick : undefined}
-            >
-              <CardHeader className="flex flex-row items-center gap-4 pb-2">
-                <div
-                  className={`p-3 rounded-xl ${item.disabled ? 'bg-gray-200' : 'bg-blue-50'}`}
-                >
-                  {item.icon}
-                </div>
-                <div>
-                  <CardTitle className="text-xl">{item.title}</CardTitle>
-                  <CardDescription>{item.description}</CardDescription>
-                </div>
-              </CardHeader>
-              <CardContent>
-                {!item.disabled && (
-                  <div className="mt-4 flex items-center text-sm font-medium text-[#000080]">
-                    Click to proceed <span className="ml-2">→</span>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        {/* ── Modal ── */}
+        {/* BSA Modal */}
         {isModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
             <Card className="w-full max-w-lg shadow-2xl relative animate-scale-in">
@@ -439,20 +695,34 @@ export default function DashboardPage() {
                 <X className="h-5 w-5" />
               </button>
 
-              {/* ── STEP 1: Upload Form ── */}
+              {/* STEP 1: Upload Form */}
               {modalStep === 'form' && (
                 <>
                   <CardHeader>
                     <CardTitle className="text-2xl text-[#000080] flex items-center gap-2">
-                      <UploadCloud className="h-6 w-6" />
+                      <Building2 className="h-6 w-6" />
                       Upload Bank Statement
                     </CardTitle>
                     <CardDescription>
-                      Provide details and upload your bank statement for analysis
+                      Upload your bank statement files for automated analysis.
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
                     <form onSubmit={handleSubmit} className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="entityName">
+                          Entity / Company Name <span className="text-red-500">*</span>
+                        </Label>
+                        <Input
+                          id="entityName"
+                          name="entityName"
+                          placeholder="e.g. Acme Enterprises"
+                          value={formData.entityName}
+                          onChange={handleInputChange}
+                          required
+                        />
+                      </div>
+
                       <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
                           <Label htmlFor="companyType">
@@ -460,30 +730,77 @@ export default function DashboardPage() {
                           </Label>
                           <Select
                             value={formData.companyType}
-                            onValueChange={(value) =>
-                              setFormData({ ...formData, companyType: value })
+                            onValueChange={(val) =>
+                              setFormData((prev) => ({ ...prev, companyType: val }))
                             }
+                            required
                           >
-                            <SelectTrigger className="w-full">
-                              <SelectValue placeholder="Select Company Type" />
+                            <SelectTrigger id="companyType">
+                              <SelectValue placeholder="Select type" />
                             </SelectTrigger>
                             <SelectContent>
                               <SelectGroup>
-                                <SelectLabel>Company Type</SelectLabel>
-                                <SelectItem value="Individual">
-                                  Individual
+                                <SelectLabel>Types</SelectLabel>
+                                <SelectItem value="Private Limited">
+                                  Private Limited
                                 </SelectItem>
-                                <SelectItem value="Company">Company</SelectItem>
-                                <SelectItem value="Sole_Proprietorship">
-                                  Sole Proprietorship
+                                <SelectItem value="Public Limited">
+                                  Public Limited
                                 </SelectItem>
-                                <SelectItem value="Trust">Trust</SelectItem>
+                                <SelectItem value="Proprietorship">
+                                  Proprietorship
+                                </SelectItem>
                                 <SelectItem value="Partnership">
                                   Partnership
                                 </SelectItem>
+                                <SelectItem value="LLP">LLP</SelectItem>
+                                <SelectItem value="Individual">Individual</SelectItem>
                               </SelectGroup>
                             </SelectContent>
                           </Select>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="bankCode">
+                            Bank <span className="text-red-500">*</span>
+                          </Label>
+                          <Select
+                            value={formData.bankCode}
+                            onValueChange={(val) =>
+                              setFormData((prev) => ({ ...prev, bankCode: val }))
+                            }
+                            required
+                          >
+                            <SelectTrigger id="bankCode">
+                              <SelectValue placeholder="Select bank" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectGroup>
+                                <SelectLabel>Supported Banks</SelectLabel>
+                                {banks?.map((bank) => (
+                                  <SelectItem key={bank.code} value={bank.code}>
+                                    {bank.bankName}
+                                  </SelectItem>
+                                ))}
+                              </SelectGroup>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="accountNumber">
+                            Account Number <span className="text-red-500">*</span>
+                          </Label>
+                          <Input
+                            id="accountNumber"
+                            name="accountNumber"
+                            placeholder="e.g. 1234567890"
+                            value={formData.accountNumber}
+                            onChange={handleInputChange}
+                            required
+                          />
                         </div>
 
                         <div className="space-y-2">
@@ -492,23 +809,22 @@ export default function DashboardPage() {
                           </Label>
                           <Select
                             value={formData.accountType}
-                            onValueChange={(value) =>
-                              setFormData({ ...formData, accountType: value })
+                            onValueChange={(val) =>
+                              setFormData((prev) => ({ ...prev, accountType: val }))
                             }
+                            required
                           >
-                            <SelectTrigger className="w-full">
-                              <SelectValue placeholder="Select Account Type" />
+                            <SelectTrigger id="accountType">
+                              <SelectValue placeholder="Select type" />
                             </SelectTrigger>
                             <SelectContent>
                               <SelectGroup>
-                                <SelectLabel>Account Type</SelectLabel>
-                                <SelectItem value="CURRENT">CURRENT</SelectItem>
-                                <SelectItem value="SAVINGS">SAVINGS</SelectItem>
-                                <SelectItem value="OVER_DRAFT">
-                                  Over Draft(OD)
-                                </SelectItem>
-                                <SelectItem value="CASH_CREDIT">
-                                  Cash Credit(CC)
+                                <SelectLabel>Account Types</SelectLabel>
+                                <SelectItem value="Savings">Savings</SelectItem>
+                                <SelectItem value="Current">Current</SelectItem>
+                                <SelectItem value="Overdraft">Overdraft</SelectItem>
+                                <SelectItem value="Cash Credit">
+                                  Cash Credit
                                 </SelectItem>
                               </SelectGroup>
                             </SelectContent>
@@ -516,190 +832,141 @@ export default function DashboardPage() {
                         </div>
                       </div>
 
+                      {/* File Upload Drop Zone */}
                       <div className="space-y-2">
-                        <Label htmlFor="accountNumber">
-                          Account Number <span className="text-red-500">*</span>
+                        <Label>
+                          Bank Statement Files (PDF / Excel){' '}
+                          <span className="text-red-500">*</span>
                         </Label>
-                        <Input
-                          id="accountNumber"
-                          name="accountNumber"
-                          placeholder="Enter account number"
-                          value={formData.accountNumber}
-                          onChange={handleInputChange}
-                          required
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="bankCode">
-                          Select Bank <span className="text-red-500">*</span>
-                        </Label>
-                        <select
-                          id="bankCode"
-                          name="bankCode"
-                          value={formData.bankCode}
-                          onChange={handleInputChange}
-                          className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                          required
+                        <label
+                          htmlFor="file-upload"
+                          className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-[#000080]/30 rounded-xl cursor-pointer hover:border-[#000080] hover:bg-blue-50/50 transition-colors"
                         >
-                          <option value="" disabled>
-                            Select a bank
-                          </option>
-                          {isLoadingBanks ? (
-                            <option disabled>Loading banks...</option>
-                          ) : (
-                            banks?.map((bank, idx) => (
-                              <option key={idx} value={bank.code}>
-                                {bank.bankName}
-                              </option>
-                            ))
-                          )}
-                        </select>
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="file">
-                          Statement Files <span className="text-red-500">*</span>
-                        </Label>
-                        <div className="flex flex-col gap-2 w-full">
-                          <Input
-                            id="file"
+                          <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                            <UploadCloud className="h-8 w-8 text-[#000080] mb-2" />
+                            <p className="text-sm text-gray-600">
+                              <span className="font-semibold text-[#000080]">
+                                Click to upload
+                              </span>{' '}
+                              or drag and drop
+                            </p>
+                            <p className="text-xs text-gray-400">PDF, XLS, XLSX</p>
+                          </div>
+                          <input
+                            id="file-upload"
                             type="file"
-                            multiple={true}
-                            accept=".pdf"
+                            multiple
+                            accept=".pdf,.xls,.xlsx"
+                            className="hidden"
                             onChange={(e) => {
                               if (e.target.files) {
-                                const newFiles = Array.from(e.target.files);
-                                setSelectedFiles((prev) => [
-                                  ...prev,
-                                  ...newFiles,
-                                ]);
-                                e.target.value = ''; // Reset input to allow selecting the same file again if removed
+                                setSelectedFiles(Array.from(e.target.files));
                               }
                             }}
-                            className="cursor-pointer file:cursor-pointer file:bg-[#000080]/5 file:text-[#000080] file:border-0 file:rounded-md file:mr-4 file:px-4 file:py-1 hover:file:bg-[#000080]/10 transition-all"
                           />
-
-                          {selectedFiles.length > 0 && (
-                            <div className="mt-3 space-y-2 max-h-40 overflow-y-auto pr-2">
-                              {selectedFiles.map((file, index) => (
-                                <div
-                                  key={index}
-                                  className="flex items-center justify-between p-2 border rounded-md bg-blue-50/30"
-                                >
-                                  <span
-                                    className="text-sm text-gray-700 truncate mr-2"
-                                    title={file.name}
-                                  >
-                                    {file.name}
-                                  </span>
-                                  <Button
-                                    type="button"
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => {
-                                      setSelectedFiles((prev) =>
-                                        prev.filter((_, i) => i !== index)
-                                      );
-                                    }}
-                                    className="h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50 shrink-0"
-                                  >
-                                    <X className="h-4 w-4" />
-                                  </Button>
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                        </div>
+                        </label>
                       </div>
 
-                      <Button
-                        type="submit"
-                        className="w-full bg-[#000080] hover:bg-[#000060] mt-6"
-                        disabled={uploadMutation.isPending}
-                      >
-                        {uploadMutation.isPending ? (
-                          <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Uploading...
-                          </>
-                        ) : (
-                          'Upload & Analyze'
-                        )}
-                      </Button>
+                      {selectedFiles.length > 0 && (
+                        <div className="space-y-1">
+                          <p className="text-xs font-semibold text-gray-500">
+                            Selected Files ({selectedFiles.length}):
+                          </p>
+                          <div className="max-h-24 overflow-y-auto space-y-1">
+                            {selectedFiles.map((f, idx) => (
+                              <div
+                                key={idx}
+                                className="flex items-center justify-between text-xs bg-gray-50 px-3 py-1.5 rounded-lg"
+                              >
+                                <span className="truncate max-w-[280px]">{f.name}</span>
+                                <span className="text-gray-400">
+                                  {(f.size / 1024).toFixed(0)} KB
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="flex gap-3 pt-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="flex-1"
+                          onClick={handleCloseModal}
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          type="submit"
+                          className="flex-1 bg-[#000080] hover:bg-[#000060]"
+                          disabled={uploadMutation.isPending}
+                        >
+                          {uploadMutation.isPending ? (
+                            <>
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              Uploading...
+                            </>
+                          ) : (
+                            'Upload & Continue'
+                          )}
+                        </Button>
+                      </div>
                     </form>
                   </CardContent>
                 </>
               )}
 
-              {/* ── STEP 2: Confirmation ── */}
+              {/* STEP 2: Confirmation */}
               {modalStep === 'confirmation' && uploadResult && (
                 <>
                   <CardHeader>
                     <CardTitle className="text-2xl text-[#000080] flex items-center gap-2">
-                      <FileCheck2 className="h-6 w-6" />
-                      Confirm Statement Details
+                      <FileCheck2 className="h-6 w-6 text-green-600" />
+                      Verify Statement Period
                     </CardTitle>
                     <CardDescription>
-                      Please review the extracted details before confirming
+                      Review detected dates before confirming analysis.
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    {/* File cards */}
-                    {uploadResult.files.map((file, idx) => (
-                      <div
-                        key={idx}
-                        className="rounded-lg border border-[#000080]/20 bg-blue-50/40 p-4 space-y-3"
-                      >
-                        {/* File name */}
-                        <div className="flex items-center gap-2">
-                          <FileText className="h-4 w-4 text-[#000080] shrink-0" />
-                          <span className="text-sm font-semibold text-[#000080] truncate">
-                            {file.name}
-                          </span>
-                        </div>
-
-                        {/* Bank name */}
-                        <div className="flex items-center gap-1.5 pl-1 text-sm">
-                          <Building2 className="h-4 w-4 text-[#000080]/60 shrink-0" />
-                          <span className="font-medium text-gray-500">Bank:</span>
-                          <span className="font-semibold text-gray-800">
-                            {file.bank_name ?? ''}
-                          </span>
-                        </div>
-
-                        {/* Date range */}
-                        <div className="flex items-center gap-6 pl-1">
-                          <div className="flex items-center gap-1.5 text-sm text-gray-600">
-                            <CalendarDays className="h-4 w-4 text-[#000080]/60 shrink-0" />
-                            <span className="font-medium text-gray-500">
-                              From:
-                            </span>
-                            <span className="font-semibold text-gray-800">
-                              {file.starting_date}
-                            </span>
+                    <div className="space-y-3 max-h-60 overflow-y-auto">
+                      {uploadResult.files.map((file, idx) => (
+                        <div
+                          key={idx}
+                          className="p-3 bg-gray-50 rounded-xl border border-gray-200 space-y-2"
+                        >
+                          <div className="flex items-center gap-2 text-sm font-semibold text-gray-800">
+                            <FileText className="h-4 w-4 text-[#000080]" />
+                            <span className="truncate">{file.name}</span>
                           </div>
-                          <div className="flex items-center gap-1.5 text-sm text-gray-600">
-                            <CalendarDays className="h-4 w-4 text-[#000080]/60 shrink-0" />
-                            <span className="font-medium text-gray-500">To:</span>
-                            <span className="font-semibold text-gray-800">
-                              {file.ending_date}
+                          {file.bank_name && (
+                            <p className="text-xs text-gray-500">
+                              Bank: {file.bank_name}
+                            </p>
+                          )}
+                          <div className="flex items-center gap-4 text-xs text-gray-600">
+                            <span className="flex items-center gap-1">
+                              <CalendarDays className="h-3.5 w-3.5 text-blue-500" />
+                              From: {file.starting_date}
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <CalendarDays className="h-3.5 w-3.5 text-blue-500" />
+                              To: {file.ending_date}
                             </span>
                           </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
 
-                    {/* Action buttons */}
                     <div className="flex gap-3 pt-2">
                       <Button
                         type="button"
                         variant="outline"
-                        className="flex-1 border-[#000080]/30 text-[#000080] hover:bg-[#000080]/5"
+                        className="flex-1"
                         onClick={() => setModalStep('form')}
-                        disabled={confirmMutation.isPending}
                       >
-                        ← Go Back
+                        Back
                       </Button>
                       <Button
                         type="button"
@@ -729,7 +996,7 @@ export default function DashboardPage() {
           </div>
         )}
 
-        {/* ── ITR Modal ── */}
+        {/* ITR Modal */}
         {isItrModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
             <Card className="w-full max-w-md shadow-2xl relative animate-scale-in">
@@ -755,6 +1022,7 @@ export default function DashboardPage() {
                     <p className="text-gray-600">Checking ITR status...</p>
                   </div>
                 )}
+
 
                 {itrState === 'EMAIL_INPUT' && (
                   <div className="space-y-4">
@@ -871,26 +1139,43 @@ export default function DashboardPage() {
             </Card>
           </div>
         )}
+
+        {/* Checkout Payment Modal */}
+        <PaymentModal
+          isOpen={checkoutOpen}
+          onClose={() => setCheckoutOpen(false)}
+          moduleName="Checkout"
+          serviceId="BSA"
+          amount={cartTotal}
+          servicesBreakup={cartSelection}
+          onQuantityChange={updateQuantity}
+          onSuccess={() => {
+            setCheckoutOpen(false);
+            setQuantities({
+              BSA: 1,
+              GST: 1,
+              ITR: 1,
+              CIBIL: 1,
+            });
+            toast.success('Payment completed successfully!');
+          }}
+        />
       </div>
 
       {/* Brand Tagline Footer */}
-    <div className="flex items-center justify-center gap-4 py-4 text-sm mt-auto pt-8">
-  <div className="w-20 h-px bg-blue-300" />
-  <span className="text-blue-400">///</span>
-
-  <span className="font-semibold text-gray-800">
-    Fueling the Future of Lending
-  </span>
-
-  <div className="w-px h-5 bg-gray-300" />
-
-  <span className="text-gray-500">
-    Engineered in Bengaluru💙
-  </span>
-
-  <span className="text-blue-400">///</span>
-  <div className="w-20 h-px bg-blue-300" />
-</div>
+      <div className="flex items-center justify-center gap-3 py-2 text-xs mt-auto pt-2 shrink-0">
+        <div className="w-16 h-px bg-blue-300" />
+        <span className="text-blue-400 font-mono">///</span>
+        <span className="font-semibold text-gray-700">
+          Fueling the Future of Lending
+        </span>
+        <div className="w-px h-4 bg-gray-300" />
+        <span className="text-gray-500">
+          Engineered in Bengaluru
+        </span>
+        <span className="text-blue-400 font-mono">///</span>
+        <div className="w-16 h-px bg-blue-300" />
+      </div>
 
       {/* Kyc Modal */}
       <KycModal isOpen={isKycModalOpen} onClose={() => setIsKycModalOpen(false)} />

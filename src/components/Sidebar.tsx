@@ -38,12 +38,26 @@ export function SidebarProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
+interface NavSubItem {
+  label: string;
+  path: string;
+}
+
+interface NavItem {
+  icon: any;
+  label: string;
+  path?: string;
+  service?: string;
+  subItems?: NavSubItem[];
+}
+
 // ─── Nav Items ───────────────────────────────────────────────────────────────
-const navItems = [
+const navItems: NavItem[] = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/home/dashboard" },
   {
     icon: Building2,
     label: "BSA Reports",
+    service: "BSA",
     subItems: [
       { label: "Summary of Debit and Credit", path: "/bsa/summary-of-debit-and-credit" },
       { label: "Cash Flow", path: "/bsa/cash-flow" },
@@ -53,6 +67,7 @@ const navItems = [
   {
     icon: FileText,
     label: "GST",
+    service: "GST",
     subItems: [
       { label: "GST Analysis", path: "/gst/analysis" },
       { label: "GST Analysis History", path: "/gst/history" },
@@ -62,6 +77,7 @@ const navItems = [
   {
     icon: PieChart,
     label: "ITR",
+    service: "ITR",
     subItems: [
       { label: "Tax Calculation", path: "/itr/itr-tax-calculation" },
       { label: "Balance Sheet", path: "/itr/balance-sheet" },
@@ -72,13 +88,21 @@ const navItems = [
   {
     icon: CreditCard,
     label: "CIBIL",
+    service: "CIBIL",
     subItems: [
       { label: "Credit Score", path: "/cibil" },
       { label: "Previous Reports", path: "/cibil/reports" }
     ]
   },
-
+  {
+    icon: CreditCard,
+    label: "Payments",
+    path: "/payments"
+  }
 ];
+
+
+
 
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────

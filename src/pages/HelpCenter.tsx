@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Mail,
@@ -59,7 +59,6 @@ export default function HelpCenter() {
 
   // Tickets History
   const [tickets, setTickets] = useState<Ticket[]>([]);
-  const hasFetched = useRef(false);
 
   // Load tickets on mount
   const fetchTickets = async () => {
@@ -77,29 +76,15 @@ export default function HelpCenter() {
           createdAt: t.created_at,
         }));
         setTickets(mappedTickets);
-        localStorage.setItem("5pointcredit_tickets", JSON.stringify(mappedTickets));
-      } else {
-        setTickets([]);
-        localStorage.setItem("5pointcredit_tickets", JSON.stringify([]));
       }
     } catch (e) {
-      console.error("Failed to fetch tickets from backend, loading from localStorage fallback", e);
-      const savedTickets = localStorage.getItem("5pointcredit_tickets");
-      if (savedTickets) {
-        try {
-          setTickets(JSON.parse(savedTickets));
-        } catch (parseError) {
-          console.error("Failed to parse saved tickets", parseError);
-        }
-      }
+      console.error("Failed to fetch tickets from backend", e);
     }
   };
 
   useEffect(() => {
-    if (!hasFetched.current) {
-      hasFetched.current = true;
-      fetchTickets();
-    }
+    localStorage.removeItem("5pointcredit_tickets");
+    fetchTickets();
   }, []);
 
   // Save tickets helper

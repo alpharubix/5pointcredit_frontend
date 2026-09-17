@@ -29,6 +29,8 @@ const ITRRatioAnalysisPage = lazy(() => import("@/pages/itr/RatioAnalysis"));
 const ProfilePage = lazy(() => import("@/pages/ProfileManagement"))
 const HelpCenterPage = lazy(() => import("@/pages/HelpCenter"));
 const CibilCustDataFetching = lazy(() => import("@/pages/cibil/CibilCustDataFetching"));
+const CustomerPaymentsPage = lazy(() => import("@/components/CustomerPaymentsPage"));
+const WalletProtectedComponent = lazy(() => import("@/components/WalletProtectedComponent"));
 
 
 function App() {
@@ -59,40 +61,107 @@ function App() {
                       <Route path="/home/dashboard" element={<DashboardPage />} />
                       <Route
                         path="/bsa/summary-of-debit-and-credit"
-                        element={<SummeryOfDebitAndCredit />}
+                        element={
+                          <WalletProtectedComponent service="BSA">
+                            <SummeryOfDebitAndCredit />
+                          </WalletProtectedComponent>
+                        }
                       />
-                      <Route path="/bsa/cash-flow" element={<CashFlow />} />
+                      <Route
+                        path="/bsa/cash-flow"
+                        element={
+                          <WalletProtectedComponent service="BSA">
+                            <CashFlow />
+                          </WalletProtectedComponent>
+                        }
+                      />
                       <Route
                         path="/bsa/overview-monthly-wise"
-                        element={<OverviewMonthlyWise />}
+                        element={
+                          <WalletProtectedComponent service="BSA">
+                            <OverviewMonthlyWise />
+                          </WalletProtectedComponent>
+                        }
                       />
-                      <Route path="/gst/analysis" element={<GstAnalysisPage />} />
-                      <Route path="/gst/history" element={<GstHistoryPage />} />
-                      <Route path="/gst/reports" element={<GstReportPage />} />
+                      <Route
+                        path="/gst/analysis"
+                        element={
+                          <WalletProtectedComponent service="GST">
+                            <GstAnalysisPage />
+                          </WalletProtectedComponent>
+                        }
+                      />
+                      <Route
+                        path="/gst/history"
+                        element={
+                          <WalletProtectedComponent service="GST">
+                            <GstHistoryPage />
+                          </WalletProtectedComponent>
+                        }
+                      />
+                      <Route
+                        path="/gst/reports"
+                        element={
+                          <WalletProtectedComponent service="GST">
+                            <GstReportPage />
+                          </WalletProtectedComponent>
+                        }
+                      />
                       <Route
                         path="/itr/itr-tax-calculation"
-                        element={<ITRTaxCalculationPage />}
+                        element={
+                          <WalletProtectedComponent service="ITR">
+                            <ITRTaxCalculationPage />
+                          </WalletProtectedComponent>
+                        }
                       />
                       <Route
                         path="/itr/balance-sheet"
-                        element={<ITRBalanceSheetPage />}
+                        element={
+                          <WalletProtectedComponent service="ITR">
+                            <ITRBalanceSheetPage />
+                          </WalletProtectedComponent>
+                        }
                       />
                       <Route
                         path="/itr/profit-and-loss-statement"
-                        element={<ITRProfitAndLossStatementPage />}
+                        element={
+                          <WalletProtectedComponent service="ITR">
+                            <ITRProfitAndLossStatementPage />
+                          </WalletProtectedComponent>
+                        }
                       />
                       <Route
                         path="/itr/ratio-analysis"
-                        element={<ITRRatioAnalysisPage />}
+                        element={
+                          <WalletProtectedComponent service="ITR">
+                            <ITRRatioAnalysisPage />
+                          </WalletProtectedComponent>
+                        }
                       />
                       <Route
                         path="/help-center"
                         element={<HelpCenterPage />}
                       />
                       <Route path="/profile" element={<ProfilePage />} />
-                      <Route path="/cibil" element={<CibilCustDataFetching />} />
-                      <Route path="/cibil/reports" element={<ExistingReports />} />
+                      <Route
+                        path="/cibil"
+                        element={
+                          <WalletProtectedComponent service="CIBIL">
+                            <CibilCustDataFetching />
+                          </WalletProtectedComponent>
+                        }
+                      />
+                      <Route
+                        path="/cibil/reports"
+                        element={
+                          <WalletProtectedComponent service="CIBIL">
+                            <ExistingReports />
+                          </WalletProtectedComponent>
+                        }
+                      />
                       <Route path="/cibil/view-report/:reference_id" element={<ViewReport />} />
+                      <Route path="/payments" element={<CustomerPaymentsPage />} />
                     </Route>
                   </Route>
 

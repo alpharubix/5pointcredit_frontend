@@ -20,7 +20,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
-// import { useNavigate } from "react-router-dom";
+import BankAccountDetails from '@/components/bsa/BankAccountDetails';
 
 interface MonthlyBreakdown {
   month: string;
@@ -115,7 +115,7 @@ export default function SummaryOfDebitAndCredit() {
     }
   };
 
-  const { data, isLoading, isError, error, refetch } = useQuery({
+  const { data: queryResponse, isLoading, isError, error, refetch } = useQuery({
     queryKey: ['summary-of-debit-and-credit', appliedFromDate, appliedToDate],
     queryFn: async () => {
       const response = await apiClient.get(
@@ -125,10 +125,12 @@ export default function SummaryOfDebitAndCredit() {
             'Failed to load summary of debit and credit. Please try again.',
         }
       );
-      return response.data?.data as SummaryData;
+      return response.data;
     },
     enabled: !!appliedFromDate && !!appliedToDate,
   });
+
+  const data = (queryResponse?.data ?? queryResponse) as SummaryData;
 
   const generateMonthsRange = (startStr: string, endStr: string) => {
     if (!startStr || !endStr) return [];
@@ -161,11 +163,32 @@ export default function SummaryOfDebitAndCredit() {
   };
 
   const dataMap = new Map<string, MonthlyBreakdown>();
-  if (data?.monthly_breakdown) {
+    if (data?.monthly_breakdown) {
     data.monthly_breakdown.forEach((item) => {
       dataMap.set(item.month.toLowerCase(), item);
     });
   }
+
+  const rawMessage = queryResponse?.message ?? (data as any)?.message;
+  let parsedMessage = null;
+  if (typeof rawMessage === 'object' && rawMessage !== null) {
+    parsedMessage = rawMessage;
+  } else if (typeof rawMessage === 'string') {
+    try {
+      parsedMessage = JSON.parse(rawMessage);
+    } catch {
+      parsedMessage = null;
+    }
+  }
+
+  const accountDetails =
+    parsedMessage ||
+    queryResponse?.account_details ||
+    queryResponse?.accountDetails ||
+    queryResponse?.['Account Details'] ||
+    (data as any)?.account_details ||
+    (data as any)?.accountDetails ||
+    (data as any)?.['Account Details'];
 
   const getColorClass = (value: number | undefined, isCurrency: boolean) => {
     if (!isCurrency || value === undefined || value === null) return '';
@@ -230,6 +253,8 @@ export default function SummaryOfDebitAndCredit() {
           </p>
         </div>
       </div>
+
+      {accountDetails && <BankAccountDetails accountDetails={accountDetails} />}
 
       {dateRangeData && (
         <Card className="mb-8 shadow-sm border-[#000080]/10 bg-white">

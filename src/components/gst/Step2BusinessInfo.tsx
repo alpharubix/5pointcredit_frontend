@@ -11,6 +11,8 @@ interface Step2Props {
   onGstinChange: (newGstin: string) => void;
 }
 
+const GSTIN_REGEX = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/;
+
 export default function Step2BusinessInfo({ gstin, onSuccessSubmit, onRequiresAuth, onGstinChange }: Step2Props) {
   const [fromMonth, setFromMonth] = useState("");
   const [toMonth, setToMonth] = useState("");
@@ -24,45 +26,65 @@ export default function Step2BusinessInfo({ gstin, onSuccessSubmit, onRequiresAu
     queryFn: getGstin,
   });
 
-  // Manage multiple GSTINs
+  // Manage multiple GSTINs (normalized and filtered strictly to valid format)
   const [gstinList, setGstinList] = useState<string[]>(() => {
-    const saved = localStorage.getItem("gstin_list");
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          if (gstin && !parsed.includes(gstin)) {
-            return [...parsed, gstin];
-          }
-          return parsed;
-        }
-      } catch (e) {
-        console.error(e);
+    let list: string[] = [];
+
+    // Initialize from cached query data if already loaded/cached
+    if (gstinData?.is_found && gstinData.gst_number) {
+      const rawList = Array.isArray(gstinData.gst_number)
+        ? gstinData.gst_number
+        : typeof gstinData.gst_number === "string"
+        ? gstinData.gst_number.split(",").map((g: string) => g.trim()).filter(Boolean)
+        : [];
+      list = rawList
+        .map((g) => String(g || "").toUpperCase().trim())
+        .filter((g) => GSTIN_REGEX.test(g));
+    }
+
+    const safePropGstin = typeof gstin === "string" 
+      ? gstin 
+      : Array.isArray(gstin) 
+      ? gstin[0] 
+      : "";
+    if (safePropGstin) {
+      const normalizedGstin = String(safePropGstin).toUpperCase().trim();
+      if (GSTIN_REGEX.test(normalizedGstin) && !list.includes(normalizedGstin)) {
+        list.push(normalizedGstin);
       }
     }
-    return gstin ? [gstin] : [];
+    return list;
   });
 
-  const [activeGstin, setActiveGstin] = useState<string>(gstin);
-
-  useEffect(() => {
-    localStorage.setItem("gstin_list", JSON.stringify(gstinList));
-  }, [gstinList]);
+  const [activeGstin, setActiveGstin] = useState<string>(() => {
+    const safePropGstin = typeof gstin === "string" 
+      ? gstin 
+      : Array.isArray(gstin) 
+      ? gstin[0] 
+      : "";
+    return String(safePropGstin).toUpperCase().trim();
+  });
 
   // Fetch basic info for all GSTINs using useQueries for automatic de-duplication, caching and loading states
   const basicInfoQueries = useQueries({
-    queries: gstinList.map((gstinCode) => ({
-      queryKey: ["gstinBasicInfo", gstinCode],
-      queryFn: () => fetchBasicInfo({ gstin: gstinCode }),
-      enabled: !!gstinCode,
-    })),
+    queries: gstinList.map((gstinCode) => {
+      const normalized = String(gstinCode || "").toUpperCase().trim();
+      const isValid = GSTIN_REGEX.test(normalized);
+      return {
+        queryKey: ["gstinBasicInfo", normalized],
+        queryFn: () => fetchBasicInfo({ gstin: normalized }),
+        enabled: isValid,
+      };
+    }),
   });
 
   const businessDataMap = useMemo(() => {
     const map: Record<string, any> = {};
     basicInfoQueries.forEach((q, idx) => {
-      const gstinCode = gstinList[idx];
-      const data = q.data?.data?.[0];
+      const gstinCode = gstinList[idx]?.toUpperCase().trim();
+      if (!gstinCode) return;
+      const raw = q.data?.data || q.data;
+      const data = Array.isArray(raw) ? raw[0] : raw;
       if (data) {
         map[gstinCode] = data;
       }
@@ -73,52 +95,79 @@ export default function Step2BusinessInfo({ gstin, onSuccessSubmit, onRequiresAu
   const loadingMap = useMemo(() => {
     const map: Record<string, boolean> = {};
     basicInfoQueries.forEach((q, idx) => {
-      const gstinCode = gstinList[idx];
-      map[gstinCode] = q.isLoading;
+      const gstinCode = gstinList[idx]?.toUpperCase().trim();
+      if (gstinCode) {
+        map[gstinCode] = q.isLoading;
+      }
     });
     return map;
   }, [basicInfoQueries, gstinList]);
 
   // Synchronize list with backend response
   useEffect(() => {
+    let list: string[] = [];
     if (gstinData?.is_found && gstinData.gst_number) {
-      const list = Array.isArray(gstinData.gst_number)
+      const rawList = Array.isArray(gstinData.gst_number)
         ? gstinData.gst_number
         : typeof gstinData.gst_number === "string"
         ? gstinData.gst_number.split(",").map((g: string) => g.trim()).filter(Boolean)
         : [];
-      
-      const mergedList = [...list];
-      if (gstin && !mergedList.includes(gstin)) {
-        mergedList.push(gstin);
-      }
-      // Only update if the content has changed to avoid unnecessary re-renders
-      setGstinList((prev) => {
-        const isSame = prev.length === mergedList.length && prev.every((val, index) => val === mergedList[index]);
-        return isSame ? prev : mergedList;
-      });
-    } else if (gstin) {
-      setGstinList((prev) => prev.includes(gstin) ? prev : [...prev, gstin]);
+      list = rawList
+        .map((g) => String(g || "").toUpperCase().trim())
+        .filter((g) => GSTIN_REGEX.test(g));
     }
+
+    const safePropGstin = typeof gstin === "string" 
+      ? gstin 
+      : Array.isArray(gstin) 
+      ? gstin[0] 
+      : "";
+
+    setGstinList((prev) => {
+      const mergedList = Array.from(
+        new Set([
+          ...prev.map((g) => String(g || "").toUpperCase().trim()),
+          ...list,
+          ...(safePropGstin && GSTIN_REGEX.test(String(safePropGstin).toUpperCase().trim()) 
+            ? [String(safePropGstin).toUpperCase().trim()] 
+            : [])
+        ])
+      ).filter((g) => GSTIN_REGEX.test(g));
+
+      const isSame = prev.length === mergedList.length && prev.every((val, index) => val === mergedList[index]);
+      return isSame ? prev : mergedList;
+    });
   }, [gstinData, gstin]);
 
   // Set active GSTIN
   useEffect(() => {
-    if (gstin) {
-      setActiveGstin(gstin);
+    const safePropGstin = typeof gstin === "string" 
+      ? gstin 
+      : Array.isArray(gstin) 
+      ? gstin[0] 
+      : "";
+    if (safePropGstin) {
+      const normalized = String(safePropGstin).toUpperCase().trim();
+      if (GSTIN_REGEX.test(normalized)) {
+        setActiveGstin(normalized);
+      }
     }
   }, [gstin]);
 
   const addNewGstinMutation = useMutation({
     mutationFn: addNewGstin,
     onSuccess: (res) => {
-      const updatedGstin = res.data.gstin;
+      const updatedGstin = (res.data?.gstin || (res as any).gstin || res.data || "").toUpperCase().trim();
+      if (!updatedGstin || !GSTIN_REGEX.test(updatedGstin)) return;
       toast.success("GSTIN added successfully.");
       setIsModalOpen(false);
       
-      if (!gstinList.includes(updatedGstin)) {
-        setGstinList(prev => [...prev, updatedGstin]);
-      }
+      setGstinList(prev => {
+        if (!prev.includes(updatedGstin)) {
+          return [...prev, updatedGstin];
+        }
+        return prev;
+      });
       setActiveGstin(updatedGstin);
       onGstinChange(updatedGstin);
     },
