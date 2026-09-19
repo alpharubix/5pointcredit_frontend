@@ -6,12 +6,39 @@ export interface DateRange {
   to_date: string;
 }
 
-export function useDateRange() {
+export function useDateRange(accountNumber?: string) {
+  const resolvedAccount =
+    accountNumber ||
+    (typeof window !== 'undefined'
+      ? sessionStorage.getItem('selected_bsa_account_number') || ''
+      : '');
+
   return useQuery<DateRange>({
-    queryKey: ['report-date-range'],
+    queryKey: ['report-date-range', resolvedAccount],
     queryFn: async () => {
-      const response = await apiClient.get('/bsa/report-date-range');
-      return response.data?.data as DateRange;
+      // Try POST with account_number first (as required by current backend)
+      if (resolvedAccount) {
+        try {
+          const postRes = await apiClient.post('/bsa/report-date-range', {
+            account_number: resolvedAccount,
+          });
+          const data = postRes.data?.data ?? postRes.data;
+          if (data?.from_date && data?.to_date) {
+            return data as DateRange;
+          }
+        } catch (err: any) {
+          if (err?.response?.status !== 405 && err?.response?.status !== 404) {
+            // If it's a real server/auth error, throw unless 405/404 method fallback is needed
+            // Fall through to GET attempt
+          }
+        }
+      }
+
+      // Fallback to GET with query params
+      const response = await apiClient.get('/bsa/report-date-range', {
+        params: resolvedAccount ? { account_number: resolvedAccount } : undefined,
+      });
+      return (response.data?.data ?? response.data) as DateRange;
     },
     staleTime: 1000 * 60 * 5,
     retry: false,

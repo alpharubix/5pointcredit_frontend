@@ -18,6 +18,7 @@ const SummeryOfDebitAndCredit = lazy(() => import("@/pages/bsa/SummaryOfDebitAnd
 const DashboardPage = lazy(() => import("@/pages/DashboardPage"));
 const CashFlow = lazy(() => import("@/pages/bsa/cashFlow/CashFlow"));
 const OverviewMonthlyWise = lazy(() => import("@/pages/bsa/OverviewMonthlyWise"));
+const BankAccountsPage = lazy(() => import("@/pages/bsa/BankAccountsPage"));
 const NotF = lazy(() => import("@/pages/404"));
 const GstAnalysisPage = lazy(() => import("@/pages/gst/GstAnalysisPage"));
 const GstHistoryPage = lazy(() => import("@/pages/gst/GstHistoryPage"));
@@ -60,28 +61,24 @@ function App() {
                     <Route element={<DashboardLayout />}>
                       <Route path="/home/dashboard" element={<DashboardPage />} />
                       <Route
-                        path="/bsa/summary-of-debit-and-credit"
+                        path="/bsa/bank-accounts"
                         element={
-                          <WalletProtectedComponent service="BSA">
-                            <SummeryOfDebitAndCredit />
-                          </WalletProtectedComponent>
+
+                          <BankAccountsPage />
+                          
                         }
+                      />
+                      <Route
+                        path="/bsa/summary-of-debit-and-credit"
+                        element={<SummeryOfDebitAndCredit />}
                       />
                       <Route
                         path="/bsa/cash-flow"
-                        element={
-                          <WalletProtectedComponent service="BSA">
-                            <CashFlow />
-                          </WalletProtectedComponent>
-                        }
+                        element={<CashFlow />}
                       />
                       <Route
                         path="/bsa/overview-monthly-wise"
-                        element={
-                          <WalletProtectedComponent service="BSA">
-                            <OverviewMonthlyWise />
-                          </WalletProtectedComponent>
-                        }
+                        element={<OverviewMonthlyWise />}
                       />
                       <Route
                         path="/gst/analysis"

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import apiClient from '@/lib/axios';
 import { useQuery } from '@tanstack/react-query';
 import { useDateRange } from '@/hooks/useDateRange';
@@ -22,14 +23,22 @@ import {
 import { Calendar } from '@/components/ui/calendar';
 import type { CashFlowData } from './cashFlowType';
 import rows from './cashflowtablerow';
+import BankAccountDetails from '@/components/bsa/BankAccountDetails';
 
 export default function CashFlow() {
+  const location = useLocation();
+  const selectedAccountNumber =
+    (location.state as any)?.accountNumber ||
+    (typeof window !== 'undefined'
+      ? sessionStorage.getItem('selected_bsa_account_number') || ''
+      : '');
+
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
   const [appliedFromDate, setAppliedFromDate] = useState('');
   const [appliedToDate, setAppliedToDate] = useState('');
 
-  const { data: dateRangeData } = useDateRange();
+  const { data: dateRangeData } = useDateRange(selectedAccountNumber);
 
   useEffect(() => {
     if (dateRangeData && !appliedFromDate && !appliedToDate) {
@@ -102,15 +111,20 @@ export default function CashFlow() {
   };
 
   const { data, isLoading, isError, error, refetch } = useQuery({
-    queryKey: ['cashflow', appliedFromDate, appliedToDate],
+    queryKey: ['cashflow', appliedFromDate, appliedToDate, selectedAccountNumber],
     queryFn: async () => {
-      const response = await apiClient.get(
-        `/bsa/cashflow?from_month=${appliedFromDate}&to_month=${appliedToDate}`,
+      const response = await apiClient.post(
+        '/bsa/cashflow',
+        {
+          from_date: appliedFromDate,
+          to_date: appliedToDate,
+          account_number: selectedAccountNumber,
+        },
         {
           errorMessage: 'Failed to load cashflow. Please try again.',
         }
       );
-      return response.data?.data as CashFlowData;
+      return (response.data?.data ?? response.data) as CashFlowData;
     },
     enabled: !!appliedFromDate && !!appliedToDate,
   });
@@ -165,6 +179,8 @@ export default function CashFlow() {
           </p>
         </div>
       </div>
+
+      <BankAccountDetails />
 
       {/* Date Filter Card */}
       {dateRangeData && (
