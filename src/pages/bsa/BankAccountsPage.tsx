@@ -5,11 +5,11 @@ import {
   CreditCard,
   Loader2,
   RefreshCw,
-  ArrowRightLeft,
-  Activity,
-  PieChart,
   ChevronRight,
   UploadCloud,
+  FileText,
+  BarChart3,
+  Landmark,
 } from 'lucide-react';
 import BsaUploadModal from '@/components/ui/BsaUploadModal';
 
@@ -289,7 +289,7 @@ export default function BankAccountsPage({
                                 ========================= */}
 
                             <div className="mt-5 space-y-2">
-                              {/* Summary of Debit and Credit */}
+                              {/* Individual Overview */}
                               <button
                                 type="button"
                                 className="w-full rounded-lg border border-slate-200 bg-slate-50 p-3 text-left text-sm font-medium text-slate-700 transition-all duration-200 hover:-translate-y-0.5 hover:border-[#002366]/20 hover:bg-[#002366]/5 hover:text-[#002366] hover:shadow-sm"
@@ -300,51 +300,11 @@ export default function BankAccountsPage({
                                   );
                                   if (isAnchor) {
                                     searchParams.set('module', 'bsa');
-                                    searchParams.set('bsaView', 'summary');
-                                    searchParams.set(
-                                      'accountNumber',
-                                      accountNumber
-                                    );
+                                    searchParams.set('bsaView', 'individual-overview');
+                                    searchParams.set('accountNumber', accountNumber);
                                     setSearchParams(searchParams);
                                   } else {
-                                    navigate(
-                                      '/bsa/summary-of-debit-and-credit',
-                                      {
-                                        state: { accountNumber },
-                                      }
-                                    );
-                                  }
-                                }}
-                                disabled={!accountNumber}
-                              >
-                                <div className="flex items-center gap-3">
-                                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#002366]/5 text-[#002366] transition-colors group-hover:bg-[#002366]/10">
-                                    <Activity className="h-4 w-4" />
-                                  </div>
-                                  Summary of Debit and Credit
-                                  <ChevronRight className="h-4 w-4 text-slate-400 transition-transform group-hover:translate-x-1" />
-                                </div>
-                              </button>
-
-                              {/* Cash Flow */}
-                              <button
-                                type="button"
-                                className="w-full rounded-lg border border-slate-200 bg-slate-50 p-3 text-left text-sm font-medium text-slate-700 transition-all duration-200 hover:-translate-y-0.5 hover:border-[#002366]/20 hover:bg-[#002366]/5 hover:text-[#002366] hover:shadow-sm"
-                                onClick={() => {
-                                  sessionStorage.setItem(
-                                    'selected_bsa_account_number',
-                                    accountNumber
-                                  );
-                                  if (isAnchor) {
-                                    searchParams.set('module', 'bsa');
-                                    searchParams.set('bsaView', 'cashflow');
-                                    searchParams.set(
-                                      'accountNumber',
-                                      accountNumber
-                                    );
-                                    setSearchParams(searchParams);
-                                  } else {
-                                    navigate('/bsa/cash-flow', {
+                                    navigate('/bsa/individual/overview', {
                                       state: { accountNumber },
                                     });
                                   }
@@ -353,14 +313,14 @@ export default function BankAccountsPage({
                               >
                                 <div className="flex items-center gap-3">
                                   <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#002366]/5 text-[#002366] transition-colors group-hover:bg-[#002366]/10">
-                                    <ArrowRightLeft className="h-4 w-4" />
+                                    <FileText className="h-4 w-4" />
                                   </div>
-                                  Cash Flow
+                                  Individual Overview
                                   <ChevronRight className="h-4 w-4 text-slate-400 transition-transform group-hover:translate-x-1" />
                                 </div>
                               </button>
 
-                              {/* Monthly Overview */}
+                              {/* EOD Analysis */}
                               <button
                                 type="button"
                                 className="w-full rounded-lg border border-slate-200 bg-slate-50 p-3 text-left text-sm font-medium text-slate-700 transition-all duration-200 hover:-translate-y-0.5 hover:border-[#002366]/20 hover:bg-[#002366]/5 hover:text-[#002366] hover:shadow-sm"
@@ -371,14 +331,11 @@ export default function BankAccountsPage({
                                   );
                                   if (isAnchor) {
                                     searchParams.set('module', 'bsa');
-                                    searchParams.set('bsaView', 'overview');
-                                    searchParams.set(
-                                      'accountNumber',
-                                      accountNumber
-                                    );
+                                    searchParams.set('bsaView', 'eod-analysis');
+                                    searchParams.set('accountNumber', accountNumber);
                                     setSearchParams(searchParams);
                                   } else {
-                                    navigate('/bsa/overview-monthly-wise', {
+                                    navigate('/bsa/individual/eod-analysis', {
                                       state: { accountNumber },
                                     });
                                   }
@@ -387,9 +344,40 @@ export default function BankAccountsPage({
                               >
                                 <div className="flex items-center gap-3">
                                   <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#002366]/5 text-[#002366] transition-colors group-hover:bg-[#002366]/10">
-                                    <PieChart className="h-4 w-4" />
+                                    <BarChart3 className="h-4 w-4" />
                                   </div>
-                                  Monthly Overview
+                                  EOD Analysis
+                                  <ChevronRight className="h-4 w-4 text-slate-400 transition-transform group-hover:translate-x-1" />
+                                </div>
+                              </button>
+
+                              {/* Loan Transactions */}
+                              <button
+                                type="button"
+                                className="w-full rounded-lg border border-slate-200 bg-slate-50 p-3 text-left text-sm font-medium text-slate-700 transition-all duration-200 hover:-translate-y-0.5 hover:border-[#002366]/20 hover:bg-[#002366]/5 hover:text-[#002366] hover:shadow-sm"
+                                onClick={() => {
+                                  sessionStorage.setItem(
+                                    'selected_bsa_account_number',
+                                    accountNumber
+                                  );
+                                  if (isAnchor) {
+                                    searchParams.set('module', 'bsa');
+                                    searchParams.set('bsaView', 'loan-transactions');
+                                    searchParams.set('accountNumber', accountNumber);
+                                    setSearchParams(searchParams);
+                                  } else {
+                                    navigate('/bsa/individual/loan-transactions', {
+                                      state: { accountNumber },
+                                    });
+                                  }
+                                }}
+                                disabled={!accountNumber}
+                              >
+                                <div className="flex items-center gap-3">
+                                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#002366]/5 text-[#002366] transition-colors group-hover:bg-[#002366]/10">
+                                    <Landmark className="h-4 w-4" />
+                                  </div>
+                                  Loan Transactions
                                   <ChevronRight className="h-4 w-4 text-slate-400 transition-transform group-hover:translate-x-1" />
                                 </div>
                               </button>

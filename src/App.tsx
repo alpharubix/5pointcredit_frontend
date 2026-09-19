@@ -19,6 +19,9 @@ const DashboardPage = lazy(() => import("@/pages/DashboardPage"));
 const CashFlow = lazy(() => import("@/pages/bsa/cashFlow/CashFlow"));
 const OverviewMonthlyWise = lazy(() => import("@/pages/bsa/OverviewMonthlyWise"));
 const BankAccountsPage = lazy(() => import("@/pages/bsa/BankAccountsPage"));
+const IndividualOverview = lazy(() => import("@/pages/bsa/individual/Overview"));
+const IndividualEodAnalysis = lazy(() => import("@/pages/bsa/individual/EodAnalysis"));
+const IndividualLoanTransactions = lazy(() => import("@/pages/bsa/individual/LoanTransactions"));
 const NotF = lazy(() => import("@/pages/404"));
 const GstAnalysisPage = lazy(() => import("@/pages/gst/GstAnalysisPage"));
 const GstHistoryPage = lazy(() => import("@/pages/gst/GstHistoryPage"));
@@ -79,6 +82,18 @@ function App() {
                       <Route
                         path="/bsa/overview-monthly-wise"
                         element={<OverviewMonthlyWise />}
+                      />
+                      <Route
+                        path="/bsa/individual/overview"
+                        element={<IndividualOverview />}
+                      />
+                      <Route
+                        path="/bsa/individual/eod-analysis"
+                        element={<IndividualEodAnalysis />}
+                      />
+                      <Route
+                        path="/bsa/individual/loan-transactions"
+                        element={<IndividualLoanTransactions />}
                       />
                       <Route
                         path="/gst/analysis"
