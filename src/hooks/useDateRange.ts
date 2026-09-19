@@ -7,11 +7,20 @@ export interface DateRange {
 }
 
 export function useDateRange(accountNumber?: string) {
+  const searchAcc =
+    typeof window !== 'undefined'
+      ? new URLSearchParams(window.location.search).get('accountNumber') || ''
+      : '';
   const resolvedAccount =
     accountNumber ||
+    searchAcc ||
     (typeof window !== 'undefined'
       ? sessionStorage.getItem('selected_bsa_account_number') || ''
       : '');
+
+  if (resolvedAccount && typeof window !== 'undefined') {
+    sessionStorage.setItem('selected_bsa_account_number', resolvedAccount);
+  }
 
   return useQuery<DateRange>({
     queryKey: ['report-date-range', resolvedAccount],

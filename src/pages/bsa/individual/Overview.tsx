@@ -1,5 +1,4 @@
-import { useState, useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useState, useEffect, useRef } from 'react';
 import apiClient, { extractErrorMessage } from '@/lib/axios';
 import { useQuery } from '@tanstack/react-query';
 import { useDateRange } from '@/hooks/useDateRange';
@@ -21,10 +20,13 @@ import {
 } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { toast } from 'sonner';
-import BankAccountDetails from '@/components/bsa/BankAccountDetails';
+import BankAccountDetails from '../BankAccountDetails';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+// import BsaDownloadButton from '@/components/bsa/BsaDownloadButton';
 
 interface MonthlyBreakdown {
   Month: string;
+  parsedMonthDate?: string;
   AverageCreditTranx: number;
   TotalCreditNo: number;
   AverageDebitTranx: number;
@@ -162,423 +164,270 @@ type RowConfig = {
 };
 
 const ROWS: RowConfig[] = [
+  { label: 'Receipts', isSeparator: true },
   {
-    label: 'Average Credit Tranx',
-    overallKey: ['overview', 'average_credit_tranx'],
-    monthKey: 'AverageCreditTranx',
-    isCurrency: false,
-    isBold: true,
+    label: 'Cash Deposit',
+    overallKey: ['receipts', 'cash_deposit'],
+    monthKey: 'CashDeposit' as any,
+    isCurrency: true,
   },
   {
-    label: 'Total Credit (Nos.)',
-    overallKey: ['overview', 'total_credit_nos'],
-    monthKey: 'TotalCreditNo',
-    isCurrency: false,
-    isRed: false,
-    isItalic: true,
+    label: 'Cheque Receipts',
+    overallKey: ['receipts', 'cheque_receipts'],
+    monthKey: 'ChequeReceipts' as any,
+    isCurrency: true,
   },
   {
-    label: 'Average Debit Tranx',
-    overallKey: ['overview', 'average_debit_tranx'],
-    monthKey: 'AverageDebitTranx',
-    isCurrency: false,
-    isBold: true,
+    label: 'Online Receipts',
+    overallKey: ['receipts', 'online_receipts'],
+    monthKey: 'OnlineReceipts' as any,
+    isCurrency: true,
   },
   {
-    label: 'Total Debit (Nos.)',
-    overallKey: ['overview', 'total_debit_nos'],
-    monthKey: 'TotalDebitNo',
-    isCurrency: false,
-    isRed: false,
-    isItalic: true,
+    label: 'Bank Instrument',
+    overallKey: ['receipts', 'bank_instrument'],
+    monthKey: 'BankInstrument' as any,
+    isCurrency: true,
   },
-  { label: '', isSeparator: true },
+  {
+    label: 'Forex Remittance',
+    overallKey: ['receipts', 'forex_remittance'],
+    monthKey: 'ForexRemittance' as any,
+    isCurrency: true,
+  },
+  {
+    label: 'Refund/Reversal',
+    overallKey: ['receipts', 'refund_reversal'],
+    monthKey: 'RefundReversal' as any,
+    isCurrency: true,
+  },
+  {
+    label: 'Other Receipts',
+    overallKey: ['receipts', 'other_receipts'],
+    monthKey: 'OtherReceipts' as any,
+    isCurrency: true,
+  },
+
+  { label: 'Income Receipts', isSeparator: true },
+  {
+    label: 'Salary Income',
+    overallKey: ['income_receipts', 'salary_income'],
+    monthKey: 'SalaryIncome' as any,
+    isCurrency: true,
+  },
+  {
+    label: 'Rent Income',
+    overallKey: ['income_receipts', 'rent_income'],
+    monthKey: 'RentIncome' as any,
+    isCurrency: true,
+  },
+  {
+    label: 'Interest Income',
+    overallKey: ['income_receipts', 'interest_income'],
+    monthKey: 'InterestIncome' as any,
+    isCurrency: true,
+  },
+
+  { label: 'Financial Receipts', isSeparator: true },
+  {
+    label: 'Loan Received',
+    overallKey: ['financial_receipts', 'loan_received'],
+    monthKey: 'LoanReceived' as any,
+    isCurrency: true,
+  },
+  {
+    label: 'Insurance',
+    overallKey: ['financial_receipts', 'insurance'],
+    monthKey: 'Insurance' as any,
+    isCurrency: true,
+  },
+  {
+    label: 'Investment Receipt',
+    overallKey: ['financial_receipts', 'investment_receipt'],
+    monthKey: 'InvestmentReceipt' as any,
+    isCurrency: true,
+  },
 
   {
-    label: 'Total Credits (A)',
-    overallKey: ['cash_inflow', 'total_credits_a'],
-    monthKey: 'TotalCredit',
+    label: 'Total Receipts',
+    overallKey: ['total_receipts'],
+    monthKey: 'TotalReceipts' as any,
     isCurrency: true,
-  },
-  {
-    label: 'Outward Cheque Return (B)',
-    overallKey: ['cash_inflow', 'outward_cheque_return_b'],
-    monthKey: 'OutwardChequeReturn',
-    isCurrency: true,
-    isRed: false,
-  },
-  {
-    label: 'Reversal of Inward Cheque Return (C)',
-    overallKey: ['cash_inflow', 'reversal_inward_cheque_return_c'],
-    monthKey: 'ReversalOfInwardChequeReturn',
-    isCurrency: true,
-    isRed: false,
-  },
-  {
-    label: 'Reversal of Online Return (D)',
-    overallKey: ['cash_inflow', 'reversal_online_return_d'],
-    monthKey: 'ReversalOfOnlineReturn',
-    isCurrency: true,
-    isRed: false,
-  },
-  {
-    label: 'Gross Credits (E = A-B-C-D)',
-    overallKey: ['cash_inflow', 'gross_credits_e'],
-    monthKey: 'GrossCredits',
-    isCurrency: true,
-    isGreyBg: true,
     isBold: true,
-  },
-  {
-    label: 'Contra (F)',
-    overallKey: ['cash_inflow', 'contra_f'],
-    monthKey: 'Contra',
-    isCurrency: true,
-    isRed: false,
-  },
-  {
-    label: 'Loan Received (G)',
-    overallKey: ['cash_inflow', 'loan_received_g'],
-    monthKey: 'LoanReceived',
-    isCurrency: true,
-    isRed: false,
-  },
-  {
-    label: 'Net Credits (H = E-F-G)',
-    overallKey: ['cash_inflow', 'net_credits_h'],
-    monthKey: 'NetCredits',
-    isCurrency: true,
     isGreyBg: true,
-    isBold: true,
+  },
+
+  { label: 'Expenses', isSeparator: true },
+  {
+    label: 'External Payments',
+    overallKey: ['expenses', 'external_payments'],
+    monthKey: 'ExternalPayments' as any,
+    isCurrency: true,
   },
   {
-    label: 'Inhouse Credit (I)',
-    overallKey: ['cash_inflow', 'inhouse_credit_i'],
-    monthKey: 'InhouseCredit',
+    label: 'Cash Withdrawals',
+    overallKey: ['expenses', 'cash_withdrawals'],
+    monthKey: 'CashWithdrawals' as any,
     isCurrency: true,
-    isRed: false,
   },
   {
-    label: 'Net Cash Inflow (H-I)',
-    overallKey: ['cash_inflow', 'net_cash_inflow_j'],
-    monthKey: 'NetCashInflow',
+    label: 'Cheque Payments',
+    overallKey: ['expenses', 'cheque_payments'],
+    monthKey: 'ChequePayments' as any,
     isCurrency: true,
-    isGreyBg: true,
-    isBold: true,
   },
-  { label: '', isSeparator: true },
+  {
+    label: 'Online Payments',
+    overallKey: ['expenses', 'online_payments'],
+    monthKey: 'OnlinePayments' as any,
+    isCurrency: true,
+  },
+  {
+    label: 'Bank Instrument',
+    overallKey: ['expenses', 'bank_instrument'],
+    monthKey: 'BankInstrument' as any,
+    isCurrency: true,
+  },
+  {
+    label: 'Forex Remittance',
+    overallKey: ['expenses', 'forex_remittance'],
+    monthKey: 'ForexRemittance' as any,
+    isCurrency: true,
+  },
+  {
+    label: 'Other Payments',
+    overallKey: ['expenses', 'other_payments'],
+    monthKey: 'OtherPayments' as any,
+    isCurrency: true,
+  },
+
+  { label: 'Maintenance Payments', isSeparator: true },
+  {
+    label: 'Rent Payment',
+    overallKey: ['maintenance_payments', 'rent_payment'],
+    monthKey: 'RentPayment' as any,
+    isCurrency: true,
+  },
+  {
+    label: 'Utility Payment',
+    overallKey: ['maintenance_payments', 'utility_payment'],
+    monthKey: 'UtilityPayment' as any,
+    isCurrency: true,
+  },
+  {
+    label: 'Salary Payment',
+    overallKey: ['maintenance_payments', 'salary_payment'],
+    monthKey: 'SalaryPayment' as any,
+    isCurrency: true,
+  },
+  {
+    label: 'POS Expenses',
+    overallKey: ['maintenance_payments', 'pos_expenses'],
+    monthKey: 'POSExpenses' as any,
+    isCurrency: true,
+  },
+  {
+    label: 'Credit Card Payments',
+    overallKey: ['maintenance_payments', 'credit_card_payments'],
+    monthKey: 'CreditCardPayments' as any,
+    isCurrency: true,
+  },
+  {
+    label: 'Goods Purchase',
+    overallKey: ['maintenance_payments', 'goods_purchase'],
+    monthKey: 'GoodsPurchase' as any,
+    isCurrency: true,
+  },
+  {
+    label: 'Bank Charges',
+    overallKey: ['maintenance_payments', 'bank_charges'],
+    monthKey: 'BankCharges' as any,
+    isCurrency: true,
+  },
+
+  { label: 'Financial Payments', isSeparator: true },
+  {
+    label: 'Loan Repayment',
+    overallKey: ['financial_payments', 'loan_repayment'],
+    monthKey: 'LoanRepayment' as any,
+    isCurrency: true,
+  },
+  {
+    label: 'Insurance',
+    overallKey: ['financial_payments', 'insurance'],
+    monthKey: 'Insurance' as any,
+    isCurrency: true,
+  },
+  {
+    label: 'Interest',
+    overallKey: ['financial_payments', 'interest'],
+    monthKey: 'Interest' as any,
+    isCurrency: true,
+  },
+  {
+    label: 'Investment Expense',
+    overallKey: ['financial_payments', 'investment_expense'],
+    monthKey: 'InvestmentExpense' as any,
+    isCurrency: true,
+  },
+  {
+    label: 'Tax',
+    overallKey: ['financial_payments', 'tax'],
+    monthKey: 'Tax' as any,
+    isCurrency: true,
+  },
 
   {
-    label: 'Total Debits (A)',
-    overallKey: ['cash_outflow', 'total_debits_a'],
-    monthKey: 'TotalDebit',
+    label: 'Total Expenses',
+    overallKey: ['total_expenses'],
+    monthKey: 'TotalExpenses' as any,
     isCurrency: true,
-  },
-  {
-    label: 'Inward Cheque Return (B)',
-    overallKey: ['cash_outflow', 'inward_cheque_return_b'],
-    monthKey: 'InwardChequeReturn',
-    isCurrency: true,
-    isRed: false,
-  },
-  {
-    label: 'Reversal of Outward Cheque Return (C)',
-    overallKey: ['cash_outflow', 'reversal_outward_cheque_return_c'],
-    monthKey: 'ReversalOfOutwardChequeReturn',
-    isCurrency: true,
-    isRed: false,
-  },
-  {
-    label: 'Online Return (D)',
-    overallKey: ['cash_outflow', 'online_return_d'],
-    monthKey: 'OnlineReturn',
-    isCurrency: true,
-    isRed: false,
-  },
-  {
-    label: 'Gross Debits (E = A-B-C-D)',
-    overallKey: ['cash_outflow', 'gross_debits_e'],
-    monthKey: 'GrossDebit',
-    isCurrency: true,
+    isBold: true,
     isGreyBg: true,
-    isBold: true,
   },
-  {
-    label: 'Contra (F)',
-    overallKey: ['cash_outflow', 'contra_f'],
-    monthKey: 'ContraDebit',
-    isCurrency: true,
-    isRed: false,
-  },
-  {
-    label: 'Net Debits (G=E-F)',
-    overallKey: ['cash_outflow', 'net_debits_g'],
-    monthKey: 'NetDebit',
-    isCurrency: true,
-    isGreyBg: true,
-    isBold: true,
-  },
-  {
-    label: 'Inhouse Debit (H)',
-    overallKey: ['cash_outflow', 'inhouse_debit_h'],
-    monthKey: 'InhouseDebit',
-    isCurrency: true,
-    isRed: false,
-  },
-  {
-    label: 'Net Cash Outflow (G-H)',
-    overallKey: ['cash_outflow', 'net_cash_outflow'],
-    monthKey: 'NetCashOutFlow',
-    isCurrency: true,
-    isGreyBg: true,
-    isBold: true,
-  },
-  { label: '', isSeparator: true },
 
+  { label: 'Summary', isSeparator: true },
   {
-    label: 'Inward Cheque Return (Nos.)',
-    overallKey: ['returns', 'inward_cheque_return_nos'],
-    monthKey: 'InwardChequeReturnNos',
-    isCurrency: false,
-    isRed: false,
-    isItalic: true,
-  },
-  {
-    label: 'Inward Cheque Return/Total Cheques Received (%)',
-    overallKey: ['returns', 'inward_cheque_return_percent'],
-    monthKey: 'InwardChequeReturnToTotalChequeReceivedInPercent',
-    isCurrency: false,
-    isPercent: true,
-    isBold: true,
-  },
-  {
-    label: 'Outward Cheque Return (Nos.)',
-    overallKey: ['returns', 'outward_cheque_return_nos'],
-    monthKey: 'OutwardChequeReturnNo',
-    isCurrency: false,
-    isRed: false,
-    isItalic: true,
-  },
-  {
-    label: 'Outward Cheque Return/Total Cheques Paid (%)',
-    overallKey: ['returns', 'outward_cheque_return_percent'],
-    monthKey: 'OutwardChequeReturnToTotalChequePaidInPercent',
-    isCurrency: false,
-    isPercent: true,
-    isBold: true,
-  },
-  {
-    label: 'Inward Online Return (Nos.)',
-    overallKey: ['returns', 'inward_online_return_nos'],
-    monthKey: 'InwardOnlineReturnNo',
-    isCurrency: false,
-    isRed: false,
-    isItalic: true,
-  },
-  {
-    label: 'Inward Online Return/Total Online Credits (%)',
-    overallKey: ['returns', 'inward_online_return_percent'],
-    monthKey: 'InwardOnlineReturnTototalOnlineCreditInPercent',
-    isCurrency: false,
-    isPercent: true,
-    isBold: true,
-  },
-  {
-    label: 'Outward Online Return (Nos.)',
-    overallKey: ['returns', 'outward_online_return_nos'],
-    monthKey: 'OutwardOnlineReturnNo',
-    isCurrency: false,
-    isRed: false,
-    isItalic: true,
-  },
-  {
-    label: 'Outward Online Return/Total Online Debits (%)',
-    overallKey: ['returns', 'outward_online_return_percent'],
-    monthKey: 'OutwardOnlineReturnToTotalOnlineDebitInPercent',
-    isCurrency: false,
-    isPercent: true,
-    isBold: true,
-  },
-  {
-    label: 'ECS Return (Credit Nos.)',
-    overallKey: ['returns', 'ecs_return_nos'],
-    monthKey: 'EcsReturnNo',
-    isCurrency: false,
-    isRed: false,
-    isItalic: true,
-  },
-  {
-    label: 'ECS Return/Total ECS Payments (%)',
-    overallKey: ['returns', 'ecs_return_percent'],
-    monthKey: 'EcsReturnToTotalEcsPaymentInPercent',
-    isCurrency: false,
-    isPercent: true,
-    isBold: true,
-  },
-  { label: '', isSeparator: true },
-
-  {
-    label: 'Inhouse Credit (Nos.)',
-    overallKey: ['other_calculations', 'inhouse_credit_nos'],
-    monthKey: 'InhouseCreditNos',
-    isCurrency: false,
-    isRed: false,
-    isItalic: true,
-  },
-  {
-    label: 'Inhouse Credit/Total Credits (%)',
-    overallKey: ['other_calculations', 'inhouse_credit/total_percent'],
-    monthKey: 'InhouseCreditToTotalCreditInPercent',
-    isCurrency: false,
-    isPercent: true,
-    isBold: true,
-  },
-  {
-    label: 'Inhouse Debit (Nos.)',
-    overallKey: ['other_calculations', 'inhouse_debit_nos'],
-    monthKey: 'InhouseDebitNos',
-    isCurrency: false,
-    isRed: false,
-    isItalic: true,
-  },
-  {
-    label: 'Inhouse Debit/Total Debits (%)',
-    overallKey: ['other_calculations', 'inhouse_debit/total_percent'],
-    monthKey: 'InhouseDebitToTotalDebitInPercent',
-    isCurrency: false,
-    isPercent: true,
-    isBold: true,
-  },
-  { label: '', isSeparator: true },
-
-  {
-    label: 'Average EOD',
-    overallKey: ['other_calculations', 'average_eod'],
-    monthKey: 'AverageEod',
+    label: 'Monthly Savings',
+    overallKey: ['monthly_savings'],
+    monthKey: 'MonthlySavings' as any,
     isCurrency: true,
     isBold: true,
   },
   {
-    label: 'OD/CC Sanction Limit',
-    overallKey: ['other_calculations', 'od_cc_sanction_limit'],
-    monthKey: 'odccLimit',
+    label: 'Opening Balance',
+    overallKey: ['opening_balance'],
+    monthKey: 'OpeningBalance' as any,
     isCurrency: true,
     isBold: true,
   },
   {
-    label: 'OD/CC Drawing Power Limit',
-    overallKey: ['other_calculations', 'od/cc_drawing_power_limit'],
-    monthKey: 'odccDrawingLimit',
-    isCurrency: true,
-    isBold: true,
-  },
-  {
-    label: 'No. of days limit over-drawn',
-    overallKey: ['other_calculations', 'no_of_days_limit_overdrawn'],
-    monthKey: 'NoOfdaysLimitOverDrawn',
-    isCurrency: false,
-    isBold: true,
-  },
-  {
-    label: 'No. of times limit over-drawn',
-    overallKey: ['other_calculations', 'no_of_times_limit_overdrawn'],
-    monthKey: 'NoOfTimesLimitOverDrawn',
-    isCurrency: false,
-    isBold: true,
-  },
-  {
-    label: 'Overdrawn Amount in Rs. Mn. (for all days)',
-    overallKey: [
-      'other_calculations',
-      'overdrawn_amount_in_rs_mn_for_all_days',
-    ],
-    monthKey: 'OverDrawnAnountInRsMn',
-    isCurrency: true,
-    isBold: true,
-  },
-  {
-    label: 'Overdrawn Average Amount in Rs. Mn.',
-    overallKey: ['other_calculations', 'overdrawn_average_amount_in_rs_mn'],
-    monthKey: 'OverDrawnAverageinRsMn',
-    isCurrency: true,
-    isBold: true,
-  },
-  {
-    label: 'Overdrawn Average as a %age of OD/CC Limit',
-    overallKey: [
-      'other_calculations',
-      'overdrawn_average_as_percent_of_od/cc_limit',
-    ],
-    monthKey: 'OverDrawnAverageAsPercentOfOdCCLimit',
-    isCurrency: false,
-    isPercent: true,
-    isBold: true,
-  },
-  {
-    label: 'Peak overdrawing amount',
-    overallKey: ['other_calculations', 'peak_overdrawing_amount'],
-    monthKey: 'PeakOverDrawingAmount',
-    isCurrency: true,
-    isBold: true,
-  },
-  {
-    label: 'Peak overdrawing date',
-    overallKey: ['other_calculations', 'peak_overdrawing_date'],
-    monthKey: 'PeakOverDrawingDate',
-    isCurrency: false,
-    isBold: true,
-  },
-  { label: '', isSeparator: true },
-
-  {
-    label: 'Loan Repaid',
-    overallKey: ['other_calculations', 'loan_repaid'],
-    monthKey: 'LoanRepaid',
-    isCurrency: true,
-    isRed: false,
-    isItalic: true,
-  },
-  {
-    label: 'ECS Payment',
-    overallKey: ['other_calculations', 'ecs_payment'],
-    monthKey: 'EcsPayment',
-    isCurrency: true,
-    isRed: false,
-    isItalic: true,
-  },
-  {
-    label: "No. of Unique ECS/EMI's",
-    overallKey: ['other_calculations', 'no_of_unique_ecs/emis'],
-    monthKey: 'NoOfUniqueEcs',
-    isCurrency: false,
-    isRed: false,
-    isItalic: true,
-  },
-  {
-    label: 'Interest Paid',
-    overallKey: ['other_calculations', 'interest_paid'],
-    monthKey: 'InterestPaid',
+    label: 'Closing Balance',
+    overallKey: ['closing_balance'],
+    monthKey: 'ClosingBalance' as any,
     isCurrency: true,
     isBold: true,
   },
 ];
 
-export default function OverviewMonthlyWise() {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const searchAcc = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('accountNumber') || '' : '';
-  const selectedAccountNumber =
-    searchAcc ||
-    (location.state as any)?.accountNumber ||
-    (typeof window !== 'undefined'
-      ? sessionStorage.getItem('selected_bsa_account_number') || ''
-      : '');
-
+export default function IndividualOverview({
+  accountNumber: propAccountNumber,
+}: { accountNumber?: string } = {}) {
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
   const [appliedFromDate, setAppliedFromDate] = useState('');
   const [appliedToDate, setAppliedToDate] = useState('');
 
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  
+  const selectedAccountNumber =
+    propAccountNumber ||
+    searchParams.get('accountNumber') ||
+    (location.state as { accountNumber?: string } | null)?.accountNumber ||
+    sessionStorage.getItem('selected_bsa_account_number') ||
+    '';
   const { data: dateRangeData } = useDateRange(selectedAccountNumber);
 
   useEffect(() => {
@@ -591,7 +440,6 @@ export default function OverviewMonthlyWise() {
       defaultTo.setDate(defaultTo.getDate() - 1);
 
       const finalTo = to < defaultTo ? to : defaultTo;
-
       const startStr = from.toISOString().split('T')[0];
       const endStr = finalTo.toISOString().split('T')[0];
 
@@ -601,6 +449,23 @@ export default function OverviewMonthlyWise() {
       setAppliedToDate(endStr);
     }
   }, [dateRangeData, appliedFromDate, appliedToDate]);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const [showScrollHint, setShowScrollHint] = useState(true);
+
+  useEffect(() => {
+    const container = containerRef.current;
+
+    if (!container) return;
+
+    const handleScroll = () => {
+      setShowScrollHint(container.scrollTop < 80);
+    };
+    // console.log(container.scrollTop);
+    container.addEventListener('scroll', handleScroll);
+
+    return () => container.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const handleApply = () => {
     if (!fromDate || !toDate) {
@@ -652,10 +517,15 @@ export default function OverviewMonthlyWise() {
   };
 
   const { data, isLoading, isError, error, refetch } = useQuery({
-    queryKey: ['month-wise-overview', appliedFromDate, appliedToDate, selectedAccountNumber],
+    queryKey: [
+      'individual-overview',
+      appliedFromDate,
+      appliedToDate,
+      selectedAccountNumber,
+    ],
     queryFn: async () => {
       const response = await apiClient.post(
-        '/bsa/month-wise-overview',
+        `/bsa/individual/overview`,
         {
           from_date: appliedFromDate,
           to_date: appliedToDate,
@@ -666,8 +536,19 @@ export default function OverviewMonthlyWise() {
             'Failed to load overview monthlywise. Please try again.',
         }
       );
+
       const rawData = response.data?.data ?? response.data;
       const dataObj = Array.isArray(rawData) ? rawData[0] : rawData;
+
+      const acc_data =
+        dataObj?.account_details ||
+        response.data?.data?.account_details ||
+        response.data?.data?.[0]?.account_details ||
+        response.data?.account_details;
+      if (acc_data) {
+        sessionStorage.setItem('account_details', JSON.stringify(acc_data));
+      }
+
       return dataObj as OverviewData;
     },
     enabled: !!appliedFromDate && !!appliedToDate,
@@ -677,7 +558,7 @@ export default function OverviewMonthlyWise() {
     if (!startStr || !endStr) return [];
     const months = [];
     const current = new Date(startStr);
-    current.setDate(1); // Set to 1st of the month
+    current.setDate(1);
     const end = new Date(endStr);
 
     let count = 0;
@@ -729,7 +610,7 @@ export default function OverviewMonthlyWise() {
     if (!isCurrency && !isPercent) return '';
     const num = typeof value === 'string' ? parseFloat(value) : value;
     if (isNaN(num) || num === undefined || num === null) return '';
-    return num < 0 ? 'text-red-600' : '';
+    return num < 0 ? 'text-red-700' : '';
   };
 
   const getOverallValue = (
@@ -779,22 +660,35 @@ export default function OverviewMonthlyWise() {
   }
 
   return (
-    <div className="p-8 animate-fade-in relative min-h-[calc(100vh-4rem)]">
-      <div className="flex items-center gap-4 mb-8">
+    <div className="p-8 animate-fade-in relative min-h-[calc(100vh-4rem)] bg-white">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-[#000080] mb-2">
-            Month-Wise Overview
+          <h1 className="text-3xl font-bold text-black mb-2">
+            Individual Overview
           </h1>
           <p className="text-gray-600">
             Detailed month-wise analysis of transactions
           </p>
         </div>
+        {/* <BsaDownloadButton
+          fromDate={appliedFromDate || fromDate}
+          toDate={appliedToDate || toDate}
+        /> */}
       </div>
-
       <BankAccountDetails />
-
+      {showScrollHint && (
+        <div
+          className="mt-4 flex justify-center animate-bounce transition-opacity duration-500"
+          ref={containerRef}
+        >
+          <p className="text-sm text-gray-500">
+            Scroll up to view{' '}
+            <span className="font-medium">Monthly Overview</span>
+          </p>
+        </div>
+      )}
       {dateRangeData && (
-        <Card className="mb-8 shadow-sm border-[#000080]/10 bg-white">
+        <Card className="mb-8 shadow-sm border-black/20 bg-white">
           <CardContent className="p-4">
             <div className="flex flex-col md:flex-row gap-4 items-end">
               <div className="flex-1 space-y-1">
@@ -806,8 +700,8 @@ export default function OverviewMonthlyWise() {
                     <Button
                       variant={'outline'}
                       className={cn(
-                        'w-full justify-start text-left font-normal bg-background border-input',
-                        !fromDate && 'text-muted-foreground'
+                        'w-full justify-start text-left font-normal bg-white border-black/20',
+                        !fromDate && 'text-gray-400'
                       )}
                     >
                       <CalendarIcon className="mr-2 h-4 w-4" />
@@ -871,8 +765,8 @@ export default function OverviewMonthlyWise() {
                     <Button
                       variant={'outline'}
                       className={cn(
-                        'w-full justify-start text-left font-normal bg-background border-input',
-                        !toDate && 'text-muted-foreground'
+                        'w-full justify-start text-left font-normal bg-white border-black/20',
+                        !toDate && 'text-gray-400'
                       )}
                     >
                       <CalendarIcon className="mr-2 h-4 w-4" />
@@ -924,17 +818,17 @@ export default function OverviewMonthlyWise() {
                   </PopoverContent>
                 </Popover>
               </div>
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 <Button
                   onClick={handleApply}
-                  className="bg-[#000080] hover:bg-[#000080]/90 text-white gap-2"
+                  className="bg-[#002366] hover:bg-[#001744] text-white gap-2"
                 >
                   <Filter className="w-4 h-4" /> Apply Filter
                 </Button>
                 <Button
                   onClick={handleClear}
                   variant="outline"
-                  className="gap-2"
+                  className="gap-2 border-black/20 text-black hover:bg-black/5"
                 >
                   <X className="w-4 h-4" /> Clear
                 </Button>
@@ -959,22 +853,17 @@ export default function OverviewMonthlyWise() {
         </Card>
       )}
 
-      <Card className="shadow-lg border-[#000080]/10 bg-white overflow-hidden">
-        <CardHeader className="flex flex-row items-center justify-between bg-gray-50/50 border-b pb-4">
+      <Card className="shadow-lg border-black/20 bg-white overflow-hidden">
+        <CardHeader className="flex flex-row items-center justify-between bg-gray-50 border-b pb-4">
           <div>
-            <CardTitle className="text-xl text-[#000080]">
+            <CardTitle className="text-xl text-black">
               Overview Details
             </CardTitle>
             <CardDescription>
-              {dateRangeData?.from_date && dateRangeData?.to_date && (
+              {appliedFromDate && appliedToDate && (
                 <>
-                  From{' '}
-                  {format(
-                    new Date(dateRangeData.from_date + 'T00:00:00'),
-                    'PPP'
-                  )}{' '}
-                  To{' '}
-                  {format(new Date(dateRangeData.to_date + 'T00:00:00'), 'PPP')}
+                  From {format(new Date(appliedFromDate + 'T00:00:00'), 'PPP')}{' '}
+                  To {format(new Date(appliedToDate + 'T00:00:00'), 'PPP')}
                 </>
               )}
             </CardDescription>
@@ -984,7 +873,7 @@ export default function OverviewMonthlyWise() {
               variant="outline"
               onClick={() => refetch()}
               disabled={isLoading}
-              className="gap-2"
+              className="gap-2 border-black/20 text-black hover:bg-black/5"
             >
               <RefreshCcw
                 className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`}
@@ -995,8 +884,8 @@ export default function OverviewMonthlyWise() {
         </CardHeader>
         <CardContent className="p-0">
           {isLoading ? (
-            <div className="flex flex-col items-center justify-center p-12 text-gray-500">
-              <Loader2 className="h-8 w-8 animate-spin text-[#000080] mb-4" />
+            <div className="flex flex-col items-center justify-center p-12 text-gray-600">
+              <Loader2 className="h-8 w-8 animate-spin text-black mb-4" />
               <p>Loading overview data...</p>
             </div>
           ) : isError ? (
@@ -1015,7 +904,7 @@ export default function OverviewMonthlyWise() {
               <div className="flex items-center gap-3">
                 <Button
                   onClick={() => navigate('/bsa/bank-accounts')}
-                  className="bg-[#000080] hover:bg-[#000080]/90 text-white gap-2"
+                  className="bg-black hover:bg-black/90 text-white gap-2"
                 >
                   <UploadCloud className="h-4 w-4" /> Go to Bank Accounts
                 </Button>
@@ -1025,12 +914,12 @@ export default function OverviewMonthlyWise() {
               </div>
             </div>
           ) : data ? (
-           <div className="overflow-x-auto overflow-y-auto max-h-[600px] w-full">
+            <div className="overflow-x-auto w-full">
               <table className="w-full text-sm text-left border-collapse min-w-[1200px]">
-               <thead className="sticky top-0 z-30">
-                  <tr className="bg-[#1f4e78] text-white text-xs">
-                    <th className="sticky top-0 left-0 z-50 bg-[#1f4e78] px-4 py-3 border border-black/20 font-medium whitespace-nowrap min-w-[300px]">
-                      Particulars (In Lakhs)
+                <thead>
+                  <tr className="bg-[#002366] text-white text-xs">
+                    <th className="px-4 py-3 border border-black/20 font-medium whitespace-nowrap w-[300px] min-w-[300px] max-w-[300px] sticky left-0 bg-[#002366] z-20">
+                      Particulars
                     </th>
                     <th className="px-4 py-3 border border-black/20 font-bold whitespace-nowrap text-right">
                       Overall/Total
@@ -1049,7 +938,7 @@ export default function OverviewMonthlyWise() {
                   {ROWS.map((row, index) => {
                     if (row.isSeparator) {
                       return (
-                        <tr key={index} className="h-1.5 bg-[#1f4e78]">
+                        <tr key={index} className="h-1.5 bg-[#002366]">
                           <td colSpan={expectedMonths.length + 2}></td>
                         </tr>
                       );
@@ -1057,7 +946,7 @@ export default function OverviewMonthlyWise() {
 
                     const labelContent = (
                       <div
-                        className={`flex justify-between items-center w-full ${row.isRed ? 'text-red-600' : 'text-gray-800'}`}
+                        className={`flex justify-between items-center w-full ${row.isRed ? 'text-red-700' : 'text-black'}`}
                       >
                         <span>{row.label}</span>
                         {row.extraLabel && (
@@ -1068,18 +957,16 @@ export default function OverviewMonthlyWise() {
                       </div>
                     );
 
-                    const cellClass = `px-4 py-2.5 border border-black/20 ${row.isRed ? 'text-red-600' : 'text-gray-800'} ${row.isItalic ? 'italic' : ''} ${row.isBold ? 'font-bold' : ''}`;
-                    const bgClass = row.isGreyBg
-                      ? 'bg-gray-200/60'
-                      : 'bg-white';
+                    const cellClass = `px-4 py-2.5 border border-black/20 ${row.isRed ? 'text-red-700' : 'text-black'} ${row.isItalic ? 'italic' : ''} ${row.isBold ? 'font-bold' : ''}`;
+                    const bgClass = row.isGreyBg ? 'bg-gray-100' : 'bg-white';
 
                     return (
                       <tr
                         key={index}
-                        className={`hover:bg-blue-50/30 transition-colors ${bgClass}`}
+                        className={`hover:bg-gray-50 transition-colors ${bgClass}`}
                       >
                         <td
-                          className={`px-4 py-2.5 border border-black/20 sticky left-0 z-10 ${row.isBold ? 'font-bold' : 'font-medium'} ${row.isGreyBg ? 'bg-gray-200' : 'bg-white'}`}
+                          className={`px-4 py-2.5 border border-black/20 w-[300px] min-w-[300px] max-w-[300px] sticky left-0 z-10 ${row.isBold ? 'font-bold' : 'font-medium'} ${row.isGreyBg ? 'bg-gray-100' : 'bg-white'}`}
                         >
                           {labelContent}
                         </td>
@@ -1118,13 +1005,13 @@ export default function OverviewMonthlyWise() {
               </table>
             </div>
           ) : dateRangeData ? (
-            <div className="p-8 text-center text-gray-500">
+            <div className="p-8 text-center text-gray-600">
               Select date range and apply filter
             </div>
           ) : (
-            <div className="p-8 text-center text-gray-500">
-              <Loader2 className="item-center m-auto h-8 w-8 animate-spin text-[#000080] mb-4" />
-              <p className="text-gray-500">
+            <div className="p-8 text-center text-gray-600">
+              <Loader2 className="item-center m-auto h-8 w-8 animate-spin text-black mb-4" />
+              <p className="text-gray-600">
                 No data available yet. Please upload a bank statement, or wait
                 while your uploaded statement is being processed.
               </p>

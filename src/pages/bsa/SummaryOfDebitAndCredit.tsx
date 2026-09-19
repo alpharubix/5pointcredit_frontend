@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
-import apiClient from '@/lib/axios';
+import { useLocation, useNavigate } from 'react-router-dom';
+import apiClient, { extractErrorMessage } from '@/lib/axios';
 import { useQuery } from '@tanstack/react-query';
 import { useDateRange } from '@/hooks/useDateRange';
 import {
@@ -11,7 +11,7 @@ import {
   CardDescription,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, RefreshCcw, Filter, X, CalendarIcon } from 'lucide-react';
+import { Loader2, RefreshCcw, Filter, X, CalendarIcon, FileQuestion, UploadCloud } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -39,7 +39,10 @@ interface SummaryData {
 
 export default function SummaryOfDebitAndCredit() {
   const location = useLocation();
+  const navigate = useNavigate();
+  const searchAcc = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('accountNumber') || '' : '';
   const selectedAccountNumber =
+    searchAcc ||
     (location.state as any)?.accountNumber ||
     (typeof window !== 'undefined'
       ? sessionStorage.getItem('selected_bsa_account_number') || ''
@@ -137,12 +140,13 @@ export default function SummaryOfDebitAndCredit() {
             'Failed to load summary of debit and credit. Please try again.',
         }
       );
-      return response.data;
+      const raw = response.data?.data ?? response.data;
+      return Array.isArray(raw) ? raw[0] : raw;
     },
     enabled: !!appliedFromDate && !!appliedToDate,
   });
 
-  const data = (queryResponse?.data ?? queryResponse) as SummaryData;
+  const data = queryResponse as SummaryData;
 
   const generateMonthsRange = (startStr: string, endStr: string) => {
     if (!startStr || !endStr) return [];
@@ -175,9 +179,27 @@ export default function SummaryOfDebitAndCredit() {
   };
 
   const dataMap = new Map<string, MonthlyBreakdown>();
-    if (data?.monthly_breakdown) {
-    data.monthly_breakdown.forEach((item) => {
-      dataMap.set(item.month.toLowerCase(), item);
+  const monthlyList =
+    data?.monthly_breakdown ||
+    (data as any)?.month_wise_overview ||
+    (data as any)?.monthly_overview ||
+    [];
+  if (Array.isArray(monthlyList)) {
+    monthlyList.forEach((item: any) => {
+      const monthKey = item.Month
+        ? item.Month.toLowerCase()
+        : item.month
+        ? item.month.toLowerCase()
+        : item.parsedMonthDate
+        ? new Date(item.parsedMonthDate)
+            .toLocaleString('en-US', { month: 'short' })
+            .toLowerCase() +
+          ' ' +
+          new Date(item.parsedMonthDate).getFullYear()
+        : '';
+      if (monthKey) {
+        dataMap.set(monthKey, item);
+      }
     });
   }
 
@@ -744,6 +766,31 @@ export default function SummaryOfDebitAndCredit() {
                   )}
                 </tbody>
               </table>
+            </div>
+          ) : isError ? (
+            <div className="flex flex-col items-center justify-center p-12 text-center">
+              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-amber-50 text-amber-600 mb-4">
+                <FileQuestion className="h-7 w-7" />
+              </div>
+              <h3 className="text-lg font-bold text-gray-900 mb-1">
+                Bank Statement Report Not Found
+              </h3>
+              <p className="text-sm text-gray-600 max-w-md mb-6">
+                {extractErrorMessage(error) ||
+                  (error as any)?.message ||
+                  'No bank statement report was found for this account. Please upload a bank statement to generate analysis.'}
+              </p>
+              <div className="flex items-center gap-3">
+                <Button
+                  onClick={() => navigate('/bsa/bank-accounts')}
+                  className="bg-[#000080] hover:bg-[#000080]/90 text-white gap-2"
+                >
+                  <UploadCloud className="h-4 w-4" /> Go to Bank Accounts
+                </Button>
+                <Button onClick={() => (refetch as any)()} variant="outline">
+                  Try Again
+                </Button>
+              </div>
             </div>
           ) : dateRangeData ? (
             <div className="p-8 text-center text-gray-500">
