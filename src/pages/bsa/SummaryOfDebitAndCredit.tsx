@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import apiClient from '@/lib/axios';
 import { useQuery } from '@tanstack/react-query';
 import { useDateRange } from '@/hooks/useDateRange';
@@ -37,13 +38,19 @@ interface SummaryData {
 }
 
 export default function SummaryOfDebitAndCredit() {
-  // const navigate = useNavigate();
+  const location = useLocation();
+  const selectedAccountNumber =
+    (location.state as any)?.accountNumber ||
+    (typeof window !== 'undefined'
+      ? sessionStorage.getItem('selected_bsa_account_number') || ''
+      : '');
+
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
   const [appliedFromDate, setAppliedFromDate] = useState('');
   const [appliedToDate, setAppliedToDate] = useState('');
 
-  const { data: dateRangeData } = useDateRange();
+  const { data: dateRangeData } = useDateRange(selectedAccountNumber);
 
   useEffect(() => {
     if (dateRangeData && !appliedFromDate && !appliedToDate) {
@@ -116,10 +123,15 @@ export default function SummaryOfDebitAndCredit() {
   };
 
   const { data: queryResponse, isLoading, isError, error, refetch } = useQuery({
-    queryKey: ['summary-of-debit-and-credit', appliedFromDate, appliedToDate],
+    queryKey: ['summary-of-debit-and-credit', appliedFromDate, appliedToDate, selectedAccountNumber],
     queryFn: async () => {
-      const response = await apiClient.get(
-        `/bsa/summary-of-debit-and-credit_monthwise?from_date=${appliedFromDate}&to_date=${appliedToDate}`,
+      const response = await apiClient.post(
+        '/bsa/summary-of-debit-and-credit_monthwise',
+        {
+          from_date: appliedFromDate,
+          to_date: appliedToDate,
+          account_number: selectedAccountNumber,
+        },
         {
           errorMessage:
             'Failed to load summary of debit and credit. Please try again.',
@@ -254,7 +266,7 @@ export default function SummaryOfDebitAndCredit() {
         </div>
       </div>
 
-      {accountDetails && <BankAccountDetails accountDetails={accountDetails} />}
+      <BankAccountDetails accountDetails={accountDetails} />
 
       {dateRangeData && (
         <Card className="mb-8 shadow-sm border-[#000080]/10 bg-white">

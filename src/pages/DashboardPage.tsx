@@ -47,10 +47,48 @@ import { getWalletBalance, type ServiceBreakup } from '@/api/payment';
 import { useAuthContext } from '@/contexts/AuthContext';
 
 interface Bank {
-  srNo: number;
+  srNo?: number;
   bankName: string;
   code: string;
 }
+
+const DEFAULT_BANKS: Bank[] = [
+  { code: 'AXIS', bankName: 'Axis Bank' },
+  { code: 'BANDHAN', bankName: 'Bandhan Bank' },
+  { code: 'BOB', bankName: 'Bank of Baroda' },
+  { code: 'BOI', bankName: 'Bank of India' },
+  { code: 'BOM', bankName: 'Bank of Maharashtra' },
+  { code: 'CANARA', bankName: 'Canara Bank' },
+  { code: 'CSB', bankName: 'Catholic Syrian Bank' },
+  { code: 'CBI', bankName: 'Central Bank of India' },
+  { code: 'CITI', bankName: 'Citi Bank' },
+  { code: 'CUB', bankName: 'City Union Bank' },
+  { code: 'DBS', bankName: 'DBS Bank' },
+  { code: 'DCB', bankName: 'DCB Bank' },
+  { code: 'DHAN', bankName: 'Dhanlaxmi Bank' },
+  { code: 'FEDERAL', bankName: 'Federal Bank' },
+  { code: 'HDFC', bankName: 'HDFC Bank' },
+  { code: 'ICICI', bankName: 'ICICI Bank' },
+  { code: 'IDBI', bankName: 'IDBI Bank' },
+  { code: 'IDFC', bankName: 'IDFC FIRST Bank' },
+  { code: 'INDIAN', bankName: 'Indian Bank' },
+  { code: 'IOB', bankName: 'Indian Overseas Bank' },
+  { code: 'INDUS', bankName: 'IndusInd Bank' },
+  { code: 'J&K', bankName: 'Jammu & Kashmir Bank' },
+  { code: 'KARNATAKA', bankName: 'Karnataka Bank' },
+  { code: 'KVB', bankName: 'Karur Vysya Bank' },
+  { code: 'KOTAK', bankName: 'Kotak Mahindra Bank' },
+  { code: 'LVB', bankName: 'Laxmi Vilas Bank' },
+  { code: 'PNB', bankName: 'Punjab & Sind Bank' },
+  { code: 'PUNJAB', bankName: 'Punjab National Bank' },
+  { code: 'RBL', bankName: 'RBL Bank' },
+  { code: 'SBI', bankName: 'State Bank of India' },
+  { code: 'SOUTH', bankName: 'South Indian Bank' },
+  { code: 'TMB', bankName: 'Tamilnad Mercantile Bank' },
+  { code: 'UCO', bankName: 'UCO Bank' },
+  { code: 'UNION', bankName: 'Union Bank of India' },
+  { code: 'YES', bankName: 'Yes Bank' },
+];
 
 interface UploadFileInfo {
   bank_name: string | null;
@@ -154,6 +192,7 @@ export default function DashboardPage() {
     accountNumber: '',
     accountType: '',
     bankCode: '',
+    password: '',
   });
 
   useEffect(() => {
@@ -354,6 +393,7 @@ export default function DashboardPage() {
       accountNumber: '',
       accountType: '',
       bankCode: '',
+      password: '',
     });
   };
 
@@ -380,6 +420,7 @@ export default function DashboardPage() {
       accountNumber: formData.accountNumber,
       accountType: formData.accountType,
       bankCode: formData.bankCode,
+      filePassword: formData.password,
     });
     formPayload.append('data', jsonString);
     selectedFiles.forEach((file) => {
@@ -687,271 +728,251 @@ export default function DashboardPage() {
         {/* BSA Modal */}
         {isModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
-            <Card className="w-full max-w-lg shadow-2xl relative animate-scale-in">
+            <div className="w-full max-w-[390px] bg-white rounded-2xl shadow-2xl p-5 relative animate-scale-in border border-slate-100">
               <button
+                type="button"
                 onClick={handleCloseModal}
-                className="absolute right-4 top-4 text-gray-400 hover:text-gray-600 transition-colors"
+                className="absolute right-4 top-4 text-slate-400 hover:text-slate-600 transition-colors"
               >
-                <X className="h-5 w-5" />
+                <X className="h-4 w-4" />
               </button>
 
               {/* STEP 1: Upload Form */}
               {modalStep === 'form' && (
                 <>
-                  <CardHeader>
-                    <CardTitle className="text-2xl text-[#000080] flex items-center gap-2">
-                      <Building2 className="h-6 w-6" />
-                      Upload Bank Statement
-                    </CardTitle>
-                    <CardDescription>
-                      Upload your bank statement files for automated analysis.
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <form onSubmit={handleSubmit} className="space-y-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="entityName">
-                          Entity / Company Name <span className="text-red-500">*</span>
+                  <div className="flex items-start gap-2.5 mb-3.5 pr-6">
+                    <UploadCloud className="h-5 w-5 text-[#001D4A] shrink-0 mt-0.5" />
+                    <div>
+                      <h2 className="text-lg font-bold text-slate-900 tracking-tight leading-tight">
+                        Upload Bank Statement
+                      </h2>
+                      <p className="text-xs text-slate-500 mt-0.5 leading-snug">
+                        Provide details and upload your bank statement for analysis
+                      </p>
+                    </div>
+                  </div>
+
+                  <form onSubmit={handleSubmit} className="space-y-3">
+                    {/* Row 1: Company Type & Account Type */}
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1">
+                        <Label htmlFor="companyType" className="text-xs font-semibold text-slate-900">
+                          Company Type <span className="text-red-500">*</span>
                         </Label>
-                        <Input
-                          id="entityName"
-                          name="entityName"
-                          placeholder="e.g. Acme Enterprises"
-                          value={formData.entityName}
-                          onChange={handleInputChange}
+                        <Select
+                          value={formData.companyType}
+                          onValueChange={(val) =>
+                            setFormData((prev) => ({ ...prev, companyType: val }))
+                          }
                           required
-                        />
+                        >
+                          <SelectTrigger id="companyType" className="h-9.5 rounded-lg border-slate-300 bg-white px-2.5 text-xs text-slate-700 placeholder:text-slate-400 focus:border-[#002244] focus:ring-1 focus:ring-[#002244]">
+                            <SelectValue placeholder="Select Company Type" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectGroup>
+                              <SelectLabel>Company Types</SelectLabel>
+                              <SelectItem value="Private Limited">
+                                Private Limited
+                              </SelectItem>
+                              <SelectItem value="Public Limited">
+                                Public Limited
+                              </SelectItem>
+                              <SelectItem value="Proprietorship">
+                                Proprietorship
+                              </SelectItem>
+                              <SelectItem value="Partnership">
+                                Partnership
+                              </SelectItem>
+                              <SelectItem value="LLP">LLP</SelectItem>
+                              <SelectItem value="Individual">Individual</SelectItem>
+                            </SelectGroup>
+                          </SelectContent>
+                        </Select>
                       </div>
 
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="companyType">
-                            Company Type <span className="text-red-500">*</span>
-                          </Label>
-                          <Select
-                            value={formData.companyType}
-                            onValueChange={(val) =>
-                              setFormData((prev) => ({ ...prev, companyType: val }))
-                            }
-                            required
-                          >
-                            <SelectTrigger id="companyType">
-                              <SelectValue placeholder="Select type" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectGroup>
-                                <SelectLabel>Types</SelectLabel>
-                                <SelectItem value="Private Limited">
-                                  Private Limited
-                                </SelectItem>
-                                <SelectItem value="Public Limited">
-                                  Public Limited
-                                </SelectItem>
-                                <SelectItem value="Proprietorship">
-                                  Proprietorship
-                                </SelectItem>
-                                <SelectItem value="Partnership">
-                                  Partnership
-                                </SelectItem>
-                                <SelectItem value="LLP">LLP</SelectItem>
-                                <SelectItem value="Individual">Individual</SelectItem>
-                              </SelectGroup>
-                            </SelectContent>
-                          </Select>
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label htmlFor="bankCode">
-                            Bank <span className="text-red-500">*</span>
-                          </Label>
-                          <Select
-                            value={formData.bankCode}
-                            onValueChange={(val) =>
-                              setFormData((prev) => ({ ...prev, bankCode: val }))
-                            }
-                            required
-                          >
-                            <SelectTrigger id="bankCode">
-                              <SelectValue placeholder="Select bank" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectGroup>
-                                <SelectLabel>Supported Banks</SelectLabel>
-                                {banks?.map((bank) => (
-                                  <SelectItem key={bank.code} value={bank.code}>
-                                    {bank.bankName}
-                                  </SelectItem>
-                                ))}
-                              </SelectGroup>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="accountNumber">
-                            Account Number <span className="text-red-500">*</span>
-                          </Label>
-                          <Input
-                            id="accountNumber"
-                            name="accountNumber"
-                            placeholder="e.g. 1234567890"
-                            value={formData.accountNumber}
-                            onChange={handleInputChange}
-                            required
-                          />
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label htmlFor="accountType">
-                            Account Type <span className="text-red-500">*</span>
-                          </Label>
-                          <Select
-                            value={formData.accountType}
-                            onValueChange={(val) =>
-                              setFormData((prev) => ({ ...prev, accountType: val }))
-                            }
-                            required
-                          >
-                            <SelectTrigger id="accountType">
-                              <SelectValue placeholder="Select type" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectGroup>
-                                <SelectLabel>Account Types</SelectLabel>
-                                <SelectItem value="Savings">Savings</SelectItem>
-                                <SelectItem value="Current">Current</SelectItem>
-                                <SelectItem value="Overdraft">Overdraft</SelectItem>
-                                <SelectItem value="Cash Credit">
-                                  Cash Credit
-                                </SelectItem>
-                              </SelectGroup>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      </div>
-
-                      {/* File Upload Drop Zone */}
-                      <div className="space-y-2">
-                        <Label>
-                          Bank Statement Files (PDF / Excel){' '}
-                          <span className="text-red-500">*</span>
+                      <div className="space-y-1">
+                        <Label htmlFor="accountType" className="text-xs font-semibold text-slate-900">
+                          Account Type <span className="text-red-500">*</span>
                         </Label>
-                        <label
-                          htmlFor="file-upload"
-                          className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-[#000080]/30 rounded-xl cursor-pointer hover:border-[#000080] hover:bg-blue-50/50 transition-colors"
+                        <Select
+                          value={formData.accountType}
+                          onValueChange={(val) =>
+                            setFormData((prev) => ({ ...prev, accountType: val }))
+                          }
+                          required
                         >
-                          <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                            <UploadCloud className="h-8 w-8 text-[#000080] mb-2" />
-                            <p className="text-sm text-gray-600">
-                              <span className="font-semibold text-[#000080]">
-                                Click to upload
-                              </span>{' '}
-                              or drag and drop
-                            </p>
-                            <p className="text-xs text-gray-400">PDF, XLS, XLSX</p>
-                          </div>
-                          <input
-                            id="file-upload"
-                            type="file"
-                            multiple
-                            accept=".pdf,.xls,.xlsx"
-                            className="hidden"
-                            onChange={(e) => {
-                              if (e.target.files) {
-                                setSelectedFiles(Array.from(e.target.files));
-                              }
-                            }}
-                          />
-                        </label>
+                          <SelectTrigger id="accountType" className="h-9.5 rounded-lg border-slate-300 bg-white px-2.5 text-xs text-slate-700 placeholder:text-slate-400 focus:border-[#002244] focus:ring-1 focus:ring-[#002244]">
+                            <SelectValue placeholder="Select Account Type" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectGroup>
+                              <SelectLabel>Account Types</SelectLabel>
+                              <SelectItem value="Savings">Savings</SelectItem>
+                              <SelectItem value="Current">Current</SelectItem>
+                              <SelectItem value="Overdraft">Overdraft</SelectItem>
+                              <SelectItem value="Cash Credit">
+                                Cash Credit
+                              </SelectItem>
+                            </SelectGroup>
+                          </SelectContent>
+                        </Select>
                       </div>
+                    </div>
 
-                      {selectedFiles.length > 0 && (
-                        <div className="space-y-1">
-                          <p className="text-xs font-semibold text-gray-500">
-                            Selected Files ({selectedFiles.length}):
-                          </p>
-                          <div className="max-h-24 overflow-y-auto space-y-1">
-                            {selectedFiles.map((f, idx) => (
-                              <div
-                                key={idx}
-                                className="flex items-center justify-between text-xs bg-gray-50 px-3 py-1.5 rounded-lg"
-                              >
-                                <span className="truncate max-w-[280px]">{f.name}</span>
-                                <span className="text-gray-400">
-                                  {(f.size / 1024).toFixed(0)} KB
-                                </span>
-                              </div>
+                    {/* Row 2: Account Number */}
+                    <div className="space-y-1">
+                      <Label htmlFor="accountNumber" className="text-xs font-semibold text-slate-900">
+                        Account Number <span className="text-red-500">*</span>
+                      </Label>
+                      <Input
+                        id="accountNumber"
+                        name="accountNumber"
+                        placeholder="Enter account number"
+                        value={formData.accountNumber}
+                        onChange={handleInputChange}
+                        required
+                        className="h-9.5 rounded-lg border-slate-300 bg-white px-3 text-xs text-slate-700 placeholder:text-slate-400 focus:border-[#002244] focus:ring-1 focus:ring-[#002244]"
+                      />
+                    </div>
+
+                    {/* Row 3: Select Bank */}
+                    <div className="space-y-1">
+                      <Label htmlFor="bankCode" className="text-xs font-semibold text-slate-900">
+                        Select Bank <span className="text-red-500">*</span>
+                      </Label>
+                      <Select
+                        value={formData.bankCode}
+                        onValueChange={(val) =>
+                          setFormData((prev) => ({ ...prev, bankCode: val }))
+                        }
+                        required
+                      >
+                        <SelectTrigger id="bankCode" className="h-9.5 rounded-lg border-slate-300 bg-white px-2.5 text-xs text-slate-700 placeholder:text-slate-400 focus:border-[#002244] focus:ring-1 focus:ring-[#002244]">
+                          <SelectValue placeholder="Select a bank" />
+                        </SelectTrigger>
+                        <SelectContent className="max-h-64 overflow-y-auto">
+                          <SelectGroup>
+                            <SelectLabel>Supported Banks</SelectLabel>
+                            {(banks && banks.length > 0 ? banks : DEFAULT_BANKS).map((bank) => (
+                              <SelectItem key={bank.code} value={bank.code}>
+                                {bank.bankName}
+                              </SelectItem>
                             ))}
-                          </div>
-                        </div>
-                      )}
+                          </SelectGroup>
+                        </SelectContent>
+                      </Select>
+                    </div>
 
-                      <div className="flex gap-3 pt-2">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          className="flex-1"
-                          onClick={handleCloseModal}
-                        >
-                          Cancel
-                        </Button>
-                        <Button
-                          type="submit"
-                          className="flex-1 bg-[#000080] hover:bg-[#000060]"
-                          disabled={uploadMutation.isPending}
-                        >
-                          {uploadMutation.isPending ? (
-                            <>
-                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                              Uploading...
-                            </>
-                          ) : (
-                            'Upload & Continue'
-                          )}
-                        </Button>
-                      </div>
-                    </form>
-                  </CardContent>
+                    {/* Row 4: File Password (Optional) */}
+                    <div className="space-y-1">
+                      <Label htmlFor="password" className="text-xs font-semibold text-slate-900 flex items-center gap-1.5">
+                        File Password <span className="text-slate-400 font-normal text-[11px]">(Optional)</span>
+                      </Label>
+                      <Input
+                        id="password"
+                        name="password"
+                        type="text"
+                        value={formData.password}
+                        onChange={handleInputChange}
+                        placeholder="Enter password if statement is protected"
+                        className="h-9.5 rounded-lg border-slate-300 bg-white px-3 text-xs text-slate-700 placeholder:text-slate-400 focus:border-[#002244] focus:ring-1 focus:ring-[#002244]"
+                      />
+                    </div>
+
+                    {/* Row 5: Statement Files */}
+                    <div className="space-y-1">
+                      <Label className="text-xs font-semibold text-slate-900">
+                        Statement Files <span className="text-red-500">*</span>
+                      </Label>
+                      <label
+                        htmlFor="file-upload"
+                        className="flex items-center gap-2.5 h-9.5 px-2.5 border border-slate-300 rounded-lg bg-white cursor-pointer hover:border-slate-400 transition-colors"
+                      >
+                        <span className="inline-flex items-center justify-center px-2.5 py-1 text-[11px] font-semibold text-[#001D4A] bg-[#EFF6FF] hover:bg-[#E0EFFF] rounded-md transition-colors shrink-0">
+                          Choose Files
+                        </span>
+                        <span className="text-xs text-slate-500 truncate flex-1">
+                          {selectedFiles.length === 0
+                            ? 'No file chosen'
+                            : selectedFiles.length === 1
+                            ? selectedFiles[0].name
+                            : `${selectedFiles.length} files chosen`}
+                        </span>
+                        <input
+                          id="file-upload"
+                          type="file"
+                          multiple
+                          accept=".pdf,.xls,.xlsx"
+                          className="hidden"
+                          onChange={(e) => {
+                            if (e.target.files) {
+                              setSelectedFiles(Array.from(e.target.files));
+                            }
+                          }}
+                        />
+                      </label>
+                    </div>
+
+                    {/* Submit Button */}
+                    <div className="pt-1">
+                      <Button
+                        type="submit"
+                        className="w-full h-10 bg-[#001D4A] hover:bg-[#001538] text-white font-semibold text-xs sm:text-sm rounded-lg transition-colors shadow-sm"
+                        disabled={uploadMutation.isPending}
+                      >
+                        {uploadMutation.isPending ? (
+                          <>
+                            <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
+                            Uploading & Analyzing...
+                          </>
+                        ) : (
+                          'Upload & Analyze'
+                        )}
+                      </Button>
+                    </div>
+                  </form>
                 </>
               )}
 
               {/* STEP 2: Confirmation */}
               {modalStep === 'confirmation' && uploadResult && (
                 <>
-                  <CardHeader>
-                    <CardTitle className="text-2xl text-[#000080] flex items-center gap-2">
-                      <FileCheck2 className="h-6 w-6 text-green-600" />
-                      Verify Statement Period
-                    </CardTitle>
-                    <CardDescription>
-                      Review detected dates before confirming analysis.
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
+                  <div className="flex items-start gap-3.5 mb-6 pr-8">
+                    <FileCheck2 className="h-7 w-7 text-emerald-600 shrink-0 mt-0.5" />
+                    <div>
+                      <h2 className="text-2xl font-bold text-slate-900 tracking-tight">
+                        Verify Statement Period
+                      </h2>
+                      <p className="text-sm text-slate-500 mt-0.5">
+                        Review detected dates before confirming analysis.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
                     <div className="space-y-3 max-h-60 overflow-y-auto">
                       {uploadResult.files.map((file, idx) => (
                         <div
                           key={idx}
-                          className="p-3 bg-gray-50 rounded-xl border border-gray-200 space-y-2"
+                          className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-2"
                         >
-                          <div className="flex items-center gap-2 text-sm font-semibold text-gray-800">
-                            <FileText className="h-4 w-4 text-[#000080]" />
+                          <div className="flex items-center gap-2 text-sm font-semibold text-slate-800">
+                            <FileText className="h-4 w-4 text-[#001D4A]" />
                             <span className="truncate">{file.name}</span>
                           </div>
                           {file.bank_name && (
-                            <p className="text-xs text-gray-500">
+                            <p className="text-xs text-slate-500">
                               Bank: {file.bank_name}
                             </p>
                           )}
-                          <div className="flex items-center gap-4 text-xs text-gray-600">
+                          <div className="flex items-center gap-4 text-xs text-slate-600">
                             <span className="flex items-center gap-1">
-                              <CalendarDays className="h-3.5 w-3.5 text-blue-500" />
+                              <CalendarDays className="h-3.5 w-3.5 text-blue-600" />
                               From: {file.starting_date}
                             </span>
                             <span className="flex items-center gap-1">
-                              <CalendarDays className="h-3.5 w-3.5 text-blue-500" />
+                              <CalendarDays className="h-3.5 w-3.5 text-blue-600" />
                               To: {file.ending_date}
                             </span>
                           </div>
@@ -963,14 +984,14 @@ export default function DashboardPage() {
                       <Button
                         type="button"
                         variant="outline"
-                        className="flex-1"
+                        className="flex-1 h-11 rounded-xl"
                         onClick={() => setModalStep('form')}
                       >
                         Back
                       </Button>
                       <Button
                         type="button"
-                        className="flex-1 bg-[#000080] hover:bg-[#000060]"
+                        className="flex-1 h-11 rounded-xl bg-[#001D4A] hover:bg-[#001538] text-white"
                         onClick={() =>
                           confirmMutation.mutate(uploadResult.upload_ref_id)
                         }
@@ -989,10 +1010,10 @@ export default function DashboardPage() {
                         )}
                       </Button>
                     </div>
-                  </CardContent>
+                  </div>
                 </>
               )}
-            </Card>
+            </div>
           </div>
         )}
 

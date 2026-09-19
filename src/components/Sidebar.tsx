@@ -41,6 +41,7 @@ export function SidebarProvider({ children }: { children: React.ReactNode }) {
 interface NavSubItem {
   label: string;
   path: string;
+  disabled?: boolean;
 }
 
 interface NavItem {
@@ -48,6 +49,7 @@ interface NavItem {
   label: string;
   path?: string;
   service?: string;
+  disabled?: boolean;
   subItems?: NavSubItem[];
 }
 
@@ -56,13 +58,8 @@ const navItems: NavItem[] = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/home/dashboard" },
   {
     icon: Building2,
-    label: "BSA Reports",
-    service: "BSA",
-    subItems: [
-      { label: "Summary of Debit and Credit", path: "/bsa/summary-of-debit-and-credit" },
-      { label: "Cash Flow", path: "/bsa/cash-flow" },
-      { label: "Overview Monthly Wise", path: "/bsa/overview-monthly-wise" }
-    ]
+    label: 'BSA Reports',
+    subItems: [{ label: 'Bank Accounts', path: '/bsa/bank-accounts', disabled: false }],
   },
   {
     icon: FileText,
@@ -244,10 +241,12 @@ export function AppSidebar() {
                     return (
                       <button
                         key={sub.path}
-                        onClick={() => navigate(sub.path)}
+                        onClick={() => !sub.disabled && navigate(sub.path)}
+                        disabled={sub.disabled}
                         className={cn(
                           "flex items-center w-full px-3 py-2 rounded-lg text-sm text-white/70 hover:text-white hover:bg-white/10 transition-colors",
-                          isSubActive && "text-white font-medium bg-white/20"
+                          isSubActive && "text-white font-medium bg-white/20",
+                          sub.disabled && "opacity-50 cursor-not-allowed hover:bg-transparent hover:text-white/70"
                         )}
                       >
                         <span className="truncate">{sub.label}</span>

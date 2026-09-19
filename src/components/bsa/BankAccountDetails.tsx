@@ -1,3 +1,7 @@
+import { useQuery } from '@tanstack/react-query';
+import apiClient from '@/lib/axios';
+import { Loader2 } from 'lucide-react';
+
 export interface BankAccountDetailsData {
   bank_name?: string;
   company_name?: string;
@@ -14,9 +18,41 @@ export interface BankAccountDetailsData {
 
 export interface BankAccountDetailsProps {
   accountDetails?: BankAccountDetailsData | any;
+  accountNumber?: string;
 }
 
-export function BankAccountDetails({ accountDetails }: BankAccountDetailsProps) {
+export function BankAccountDetails({ accountDetails: propDetails, accountNumber: propAccNum }: BankAccountDetailsProps) {
+  const selectedAccNum =
+    propAccNum ||
+    (typeof window !== 'undefined'
+      ? sessionStorage.getItem('selected_bsa_account_number') ||
+        new URLSearchParams(window.location.search).get('accountNumber') ||
+        ''
+      : '');
+
+  const { data: fetchedDetails, isLoading } = useQuery({
+    queryKey: ['account-details-component', selectedAccNum],
+    queryFn: async () => {
+      if (!selectedAccNum) return null;
+      const res = await apiClient.post('/bsa/account-details', {
+        account_number: selectedAccNum,
+      });
+      return res.data?.data?.account_details ?? res.data?.data ?? res.data;
+    },
+    enabled: !propDetails && !!selectedAccNum,
+  });
+
+  const accountDetails = propDetails || fetchedDetails;
+
+  if (isLoading && !accountDetails) {
+    return (
+      <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 mb-6 flex items-center justify-center gap-2 text-slate-500">
+        <Loader2 className="h-5 w-5 animate-spin text-[#000080]" />
+        <span className="text-sm font-medium">Loading Account Details...</span>
+      </div>
+    );
+  }
+
   if (!accountDetails) return null;
 
   // If accountDetails is wrapped in backend message (object, string, or array)
