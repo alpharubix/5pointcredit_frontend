@@ -9,7 +9,9 @@ import {
   UploadCloud,
   FileText,
   BarChart3,
-  Landmark,
+  Activity,
+  ArrowLeftRight,
+  Clock,
 } from 'lucide-react';
 import BsaUploadModal from '@/components/ui/BsaUploadModal';
 
@@ -173,7 +175,7 @@ export default function BankAccountsPage({
         {/* =========================
             ACCOUNTS CONTAINER
             ========================= */}
-        <Card className="rounded-lg border-slate-200 shadow-sm">
+        <Card className="rounded-2x1 border-slate-200 shadow-sm bg-white">
           <CardHeader className="flex-row items-center justify-between gap-4 border-b border-slate-100">
             <CardTitle className="text-lg">Accounts List</CardTitle>
 
@@ -240,16 +242,18 @@ export default function BankAccountsPage({
               /* =========================
                ACCOUNTS
                ========================= */
-              <div className="grid grid-cols-1 gap-6 p-5 md:grid-cols-[repeat(auto-fill,minmax(300px,1fr))] ">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6">
                 {accounts.map((account, index) => {
                   const accountNumber = account.accountNumber ?? '';
 
                   const reportsVisible = showReports[accountNumber];
+                  const isIndividual =
+                    (account.entityType || account.entity_type || '').toLowerCase() === 'individual';
 
                   return (
                     <div
                       key={getAccountKey(account, index)}
-                      className="group relative flex flex-col h-full overflow-hidden rounded-xl border border-slate-200 bg-white p-6 shadow-sm transition-all duration-300 ease-out hover:-translate-y-1 hover:border-slate-300 hover:shadow-lg"
+                      className="group relative flex flex-col h-full overflow-hidden rounded-2x1 border border-slate-200 bg-white p-6 shadow-sm transition-all duration-300 ease-out hover:-translate-y-1 hover:border-slate-300 hover:shadow-md"
                     >
                       {/* =========================
                           REPORTS VIEW
@@ -269,19 +273,20 @@ export default function BankAccountsPage({
                                   Select a report to continue
                                 </p>
                               </div>
-
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  setShowReports((prev) => ({
-                                    ...prev,
-                                    [accountNumber]: false,
-                                  }))
-                                }
-                                className="rounded-md px-2 py-1 text-xs font-medium text-slate-500 transition-all duration-200 hover:bg-slate-100 hover:text-slate-700"
-                              >
-                                Back
-                              </button>
+                              <div className="flex items-center gap-1.5">
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    setShowReports((prev) => ({
+                                      ...prev,
+                                      [accountNumber]: false,
+                                    }))
+                                  }
+                                  className="rounded-full bg-[#001D4A] px-3 py-1 text-xs font-semibold text-white transition-all duration-200 hover:bg-[#001538] cursor-pointer shadow-xs"
+                                >
+                                  Back
+                                </button>
+                              </div>
                             </div>
 
                             {/* =========================
@@ -289,98 +294,209 @@ export default function BankAccountsPage({
                                 ========================= */}
 
                             <div className="mt-5 space-y-2">
-                              {/* Individual Overview */}
-                              <button
-                                type="button"
-                                className="w-full rounded-lg border border-slate-200 bg-slate-50 p-3 text-left text-sm font-medium text-slate-700 transition-all duration-200 hover:-translate-y-0.5 hover:border-[#002366]/20 hover:bg-[#002366]/5 hover:text-[#002366] hover:shadow-sm"
-                                onClick={() => {
-                                  sessionStorage.setItem(
-                                    'selected_bsa_account_number',
-                                    accountNumber
-                                  );
-                                  if (isAnchor) {
-                                    searchParams.set('module', 'bsa');
-                                    searchParams.set('bsaView', 'individual-overview');
-                                    searchParams.set('accountNumber', accountNumber);
-                                    setSearchParams(searchParams);
-                                  } else {
-                                    navigate('/bsa/individual/overview', {
-                                      state: { accountNumber },
-                                    });
-                                  }
-                                }}
-                                disabled={!accountNumber}
-                              >
-                                <div className="flex items-center gap-3">
-                                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#002366]/5 text-[#002366] transition-colors group-hover:bg-[#002366]/10">
-                                    <FileText className="h-4 w-4" />
-                                  </div>
-                                  Individual Overview
-                                  <ChevronRight className="h-4 w-4 text-slate-400 transition-transform group-hover:translate-x-1" />
-                                </div>
-                              </button>
+                              {isIndividual ? (
+                                <>
+                                  {/* Overview */}
+                                  <button
+                                    type="button"
+                                    className="w-full rounded-lg border border-slate-200 bg-slate-50 p-3 text-left text-sm font-medium text-slate-700 transition-all duration-200 hover:-translate-y-0.5 hover:border-[#002366]/20 hover:bg-[#002366]/5 hover:text-[#002366] hover:shadow-sm"
+                                    onClick={() => {
+                                      sessionStorage.setItem(
+                                        'selected_bsa_account_number',
+                                        accountNumber
+                                      );
+                                      if (isAnchor) {
+                                        searchParams.set('module', 'bsa');
+                                        searchParams.set('bsaView', 'individual-overview');
+                                        searchParams.set('accountNumber', accountNumber);
+                                        setSearchParams(searchParams);
+                                      } else {
+                                        navigate('/bsa/individual/overview', {
+                                          state: { accountNumber },
+                                        });
+                                      }
+                                    }}
+                                    disabled={!accountNumber}
+                                  >
+                                    <div className="flex items-center justify-between w-full">
+                                      <div className="flex items-center gap-3">
+                                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#002366]/5 text-[#002366] transition-colors group-hover:bg-[#002366]/10">
+                                          <FileText className="h-4 w-4" />
+                                        </div>
+                                        <span>Overview</span>
+                                      </div>
+                                      <ChevronRight className="h-4 w-4 text-slate-400 transition-transform group-hover:translate-x-1" />
+                                    </div>
+                                  </button>
 
-                              {/* EOD Analysis */}
-                              <button
-                                type="button"
-                                className="w-full rounded-lg border border-slate-200 bg-slate-50 p-3 text-left text-sm font-medium text-slate-700 transition-all duration-200 hover:-translate-y-0.5 hover:border-[#002366]/20 hover:bg-[#002366]/5 hover:text-[#002366] hover:shadow-sm"
-                                onClick={() => {
-                                  sessionStorage.setItem(
-                                    'selected_bsa_account_number',
-                                    accountNumber
-                                  );
-                                  if (isAnchor) {
-                                    searchParams.set('module', 'bsa');
-                                    searchParams.set('bsaView', 'eod-analysis');
-                                    searchParams.set('accountNumber', accountNumber);
-                                    setSearchParams(searchParams);
-                                  } else {
-                                    navigate('/bsa/individual/eod-analysis', {
-                                      state: { accountNumber },
-                                    });
-                                  }
-                                }}
-                                disabled={!accountNumber}
-                              >
-                                <div className="flex items-center gap-3">
-                                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#002366]/5 text-[#002366] transition-colors group-hover:bg-[#002366]/10">
-                                    <BarChart3 className="h-4 w-4" />
-                                  </div>
-                                  EOD Analysis
-                                  <ChevronRight className="h-4 w-4 text-slate-400 transition-transform group-hover:translate-x-1" />
-                                </div>
-                              </button>
+                                  {/* EOD Analysis */}
+                                  <button
+                                    type="button"
+                                    className="w-full rounded-lg border border-slate-200 bg-slate-50 p-3 text-left text-sm font-medium text-slate-700 transition-all duration-200 hover:-translate-y-0.5 hover:border-[#002366]/20 hover:bg-[#002366]/5 hover:text-[#002366] hover:shadow-sm"
+                                    onClick={() => {
+                                      sessionStorage.setItem(
+                                        'selected_bsa_account_number',
+                                        accountNumber
+                                      );
+                                      if (isAnchor) {
+                                        searchParams.set('module', 'bsa');
+                                        searchParams.set('bsaView', 'eod-analysis');
+                                        searchParams.set('accountNumber', accountNumber);
+                                        setSearchParams(searchParams);
+                                      } else {
+                                        navigate('/bsa/individual/eod-analysis', {
+                                          state: { accountNumber },
+                                        });
+                                      }
+                                    }}
+                                    disabled={!accountNumber}
+                                  >
+                                    <div className="flex items-center justify-between w-full">
+                                      <div className="flex items-center gap-3">
+                                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#002366]/5 text-[#002366] transition-colors group-hover:bg-[#002366]/10">
+                                          <BarChart3 className="h-4 w-4" />
+                                        </div>
+                                        <span>EOD Analysis</span>
+                                      </div>
+                                      <ChevronRight className="h-4 w-4 text-slate-400 transition-transform group-hover:translate-x-1" />
+                                    </div>
+                                  </button>
 
-                              {/* Loan Transactions */}
-                              <button
-                                type="button"
-                                className="w-full rounded-lg border border-slate-200 bg-slate-50 p-3 text-left text-sm font-medium text-slate-700 transition-all duration-200 hover:-translate-y-0.5 hover:border-[#002366]/20 hover:bg-[#002366]/5 hover:text-[#002366] hover:shadow-sm"
-                                onClick={() => {
-                                  sessionStorage.setItem(
-                                    'selected_bsa_account_number',
-                                    accountNumber
-                                  );
-                                  if (isAnchor) {
-                                    searchParams.set('module', 'bsa');
-                                    searchParams.set('bsaView', 'loan-transactions');
-                                    searchParams.set('accountNumber', accountNumber);
-                                    setSearchParams(searchParams);
-                                  } else {
-                                    navigate('/bsa/individual/loan-transactions', {
-                                      state: { accountNumber },
-                                    });
-                                  }
-                                }}
-                                disabled={!accountNumber}
-                              >
-                                <div className="flex items-center gap-3">
-                                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#002366]/5 text-[#002366] transition-colors group-hover:bg-[#002366]/10">
-                                    <Landmark className="h-4 w-4" />
-                                  </div>
-                                  Loan Transactions
-                                  <ChevronRight className="h-4 w-4 text-slate-400 transition-transform group-hover:translate-x-1" />
-                                </div>
-                              </button>
+                                  {/* Loan Transactions */}
+                                  <button
+                                    type="button"
+                                    className="w-full rounded-lg border border-slate-200 bg-slate-50 p-3 text-left text-sm font-medium text-slate-700 transition-all duration-200 hover:-translate-y-0.5 hover:border-[#002366]/20 hover:bg-[#002366]/5 hover:text-[#002366] hover:shadow-sm"
+                                    onClick={() => {
+                                      sessionStorage.setItem(
+                                        'selected_bsa_account_number',
+                                        accountNumber
+                                      );
+                                      if (isAnchor) {
+                                        searchParams.set('module', 'bsa');
+                                        searchParams.set('bsaView', 'loan-transactions');
+                                        searchParams.set('accountNumber', accountNumber);
+                                        setSearchParams(searchParams);
+                                      } else {
+                                        navigate('/bsa/individual/loan-transactions', {
+                                          state: { accountNumber },
+                                        });
+                                      }
+                                    }}
+                                    disabled={!accountNumber}
+                                  >
+                                    <div className="flex items-center justify-between w-full">
+                                      <div className="flex items-center gap-3">
+                                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#002366]/5 text-[#002366] transition-colors group-hover:bg-[#002366]/10">
+                                          <ArrowLeftRight className="h-4 w-4" />
+                                        </div>
+                                        <span>Loan Transactions</span>
+                                      </div>
+                                      <ChevronRight className="h-4 w-4 text-slate-400 transition-transform group-hover:translate-x-1" />
+                                    </div>
+                                  </button>
+                                </>
+                              ) : (
+                                <>
+                                  {/* Summary of Debit and Credit */}
+                                  <button
+                                    type="button"
+                                    className="w-full rounded-lg border border-slate-200 bg-slate-50 p-3 text-left text-sm font-medium text-slate-700 transition-all duration-200 hover:-translate-y-0.5 hover:border-[#002366]/20 hover:bg-[#002366]/5 hover:text-[#002366] hover:shadow-sm"
+                                    onClick={() => {
+                                      sessionStorage.setItem(
+                                        'selected_bsa_account_number',
+                                        accountNumber
+                                      );
+                                      if (isAnchor) {
+                                        searchParams.set('module', 'bsa');
+                                        searchParams.set('bsaView', 'summary-debit-credit');
+                                        searchParams.set('accountNumber', accountNumber);
+                                        setSearchParams(searchParams);
+                                      } else {
+                                        navigate('/bsa/summary-of-debit-and-credit', {
+                                          state: { accountNumber },
+                                        });
+                                      }
+                                    }}
+                                    disabled={!accountNumber}
+                                  >
+                                    <div className="flex items-center justify-between w-full">
+                                      <div className="flex items-center gap-3">
+                                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#002366]/5 text-[#002366] transition-colors group-hover:bg-[#002366]/10">
+                                          <Activity className="h-4 w-4" />
+                                        </div>
+                                        <span>Summary of Debit and Credit</span>
+                                      </div>
+                                      <ChevronRight className="h-4 w-4 text-slate-400 transition-transform group-hover:translate-x-1" />
+                                    </div>
+                                  </button>
+
+                                  {/* Cash Flow */}
+                                  <button
+                                    type="button"
+                                    className="w-full rounded-lg border border-slate-200 bg-slate-50 p-3 text-left text-sm font-medium text-slate-700 transition-all duration-200 hover:-translate-y-0.5 hover:border-[#002366]/20 hover:bg-[#002366]/5 hover:text-[#002366] hover:shadow-sm"
+                                    onClick={() => {
+                                      sessionStorage.setItem(
+                                        'selected_bsa_account_number',
+                                        accountNumber
+                                      );
+                                      if (isAnchor) {
+                                        searchParams.set('module', 'bsa');
+                                        searchParams.set('bsaView', 'cash-flow');
+                                        searchParams.set('accountNumber', accountNumber);
+                                        setSearchParams(searchParams);
+                                      } else {
+                                        navigate('/bsa/cash-flow', {
+                                          state: { accountNumber },
+                                        });
+                                      }
+                                    }}
+                                    disabled={!accountNumber}
+                                  >
+                                    <div className="flex items-center justify-between w-full">
+                                      <div className="flex items-center gap-3">
+                                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#002366]/5 text-[#002366] transition-colors group-hover:bg-[#002366]/10">
+                                          <ArrowLeftRight className="h-4 w-4" />
+                                        </div>
+                                        <span>Cash Flow</span>
+                                      </div>
+                                      <ChevronRight className="h-4 w-4 text-slate-400 transition-transform group-hover:translate-x-1" />
+                                    </div>
+                                  </button>
+
+                                  {/* Monthly Overview */}
+                                  <button
+                                    type="button"
+                                    className="w-full rounded-lg border border-slate-200 bg-slate-50 p-3 text-left text-sm font-medium text-slate-700 transition-all duration-200 hover:-translate-y-0.5 hover:border-[#002366]/20 hover:bg-[#002366]/5 hover:text-[#002366] hover:shadow-sm"
+                                    onClick={() => {
+                                      sessionStorage.setItem(
+                                        'selected_bsa_account_number',
+                                        accountNumber
+                                      );
+                                      if (isAnchor) {
+                                        searchParams.set('module', 'bsa');
+                                        searchParams.set('bsaView', 'overview-monthly-wise');
+                                        searchParams.set('accountNumber', accountNumber);
+                                        setSearchParams(searchParams);
+                                      } else {
+                                        navigate('/bsa/overview-monthly-wise', {
+                                          state: { accountNumber },
+                                        });
+                                      }
+                                    }}
+                                    disabled={!accountNumber}
+                                  >
+                                    <div className="flex items-center justify-between w-full">
+                                      <div className="flex items-center gap-3">
+                                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#002366]/5 text-[#002366] transition-colors group-hover:bg-[#002366]/10">
+                                          <Clock className="h-4 w-4" />
+                                        </div>
+                                        <span>Monthly Overview</span>
+                                      </div>
+                                      <ChevronRight className="h-4 w-4 text-slate-400 transition-transform group-hover:translate-x-1" />
+                                    </div>
+                                  </button>
+                                </>
+                              )}
                             </div>
                           </div>
                         </div>

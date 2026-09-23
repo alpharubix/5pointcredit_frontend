@@ -269,7 +269,7 @@ export default function IndividualEodAnalysis({
   const location = useLocation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  
+
   const selectedAccountNumber =
     propAccountNumber ||
     searchParams.get('accountNumber') ||
@@ -492,14 +492,14 @@ export default function IndividualEodAnalysis({
       const monthKey = item.Month
         ? item.Month.toLowerCase()
         : item.month
-        ? item.month.toLowerCase()
-        : item.parsedMonthDate
-        ? new Date(item.parsedMonthDate)
-            .toLocaleString('en-US', { month: 'short' })
-            .toLowerCase() +
-          ' ' +
-          new Date(item.parsedMonthDate).getFullYear()
-        : '';
+          ? item.month.toLowerCase()
+          : item.parsedMonthDate
+            ? new Date(item.parsedMonthDate)
+              .toLocaleString('en-US', { month: 'short' })
+              .toLowerCase() +
+            ' ' +
+            new Date(item.parsedMonthDate).getFullYear()
+            : '';
       if (monthKey) {
         dataMap.set(monthKey, item);
       }

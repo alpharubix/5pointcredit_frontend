@@ -76,12 +76,12 @@ export async function getBankAccounts(custId?: string): Promise<BankAccounts[]> 
   const list = Array.isArray(raw)
     ? raw
     : Array.isArray((raw as any)?.accounts)
-    ? (raw as any).accounts
-    : Array.isArray((raw as any)?.bank_accounts)
-    ? (raw as any).bank_accounts
-    : Array.isArray((raw as any)?.bankAccounts)
-    ? (raw as any).bankAccounts
-    : [];
+      ? (raw as any).accounts
+      : Array.isArray((raw as any)?.bank_accounts)
+        ? (raw as any).bank_accounts
+        : Array.isArray((raw as any)?.bankAccounts)
+          ? (raw as any).bankAccounts
+          : [];
 
   // Normalize camelCase and snake_case properties
   return list.map((acc: any) => ({
