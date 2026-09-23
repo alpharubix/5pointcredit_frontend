@@ -137,7 +137,7 @@ export default function CustomerPaymentsPage() {
       setProcessingId(payment.id);
 
       const options = {
-        key: import.meta.env.VITE_RAZORPAY_KEY_ID || "rzp_test_TV7hB4PLNUBB63",
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
         amount: Math.round(payment.amount * 100),
         currency: payment.currency || "INR",
         name: "5PointCredit",
