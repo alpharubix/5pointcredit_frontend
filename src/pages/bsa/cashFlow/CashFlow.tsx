@@ -412,7 +412,7 @@ export default function CashFlow() {
                 <thead>
                   <tr className="bg-[#1f4e78] text-white text-xs">
                     <th
-  className="
+                      className="
     sticky top-0 left-0
     bg-[#1f4e78]
     z-40
@@ -420,17 +420,17 @@ export default function CashFlow() {
     border border-black/20
     min-w-[200px]
   "
->
-  Particulars
-</th>
-                   <th className="sticky top-0 z-30 bg-[#1f4e78] px-4 py-3 border border-black/20 font-medium whitespace-nowrap text-right">
-  Overall/Total
-</th>
+                    >
+                      Particulars
+                    </th>
+                    <th className="sticky top-0 z-30 bg-[#1f4e78] px-4 py-3 border border-black/20 font-medium whitespace-nowrap text-right">
+                      Overall/Total
+                    </th>
                     {expectedMonths.map((month) => (
-                    <th
-  key={month}
-  className="sticky top-0 z-30 bg-[#1f4e78] px-4 py-3 border border-black/20 font-medium whitespace-nowrap text-right capitalize"
->
+                      <th
+                        key={month}
+                        className="sticky top-0 z-30 bg-[#1f4e78] px-4 py-3 border border-black/20 font-medium whitespace-nowrap text-right capitalize"
+                      >
                         {month}
                       </th>
                     ))}
@@ -459,15 +459,15 @@ export default function CashFlow() {
                           row.valueClass,
                           row.summaryKey
                             ? getValueColorClass(
-                                data.summary[row.summaryKey] as number
-                              )
+                              data.summary[row.summaryKey] as number
+                            )
                             : ''
                         )}
                       >
                         {row.summaryKey
                           ? formatCurrency(
-                              data.summary[row.summaryKey] as number
-                            )
+                            data.summary[row.summaryKey] as number
+                          )
                           : ''}
                       </td>
                       {expectedMonths.map((month, monthIndex) => {

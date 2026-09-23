@@ -764,14 +764,14 @@ export default function OverviewMonthlyWise() {
       const monthKey = item.Month
         ? item.Month.toLowerCase()
         : item.month
-        ? item.month.toLowerCase()
-        : item.parsedMonthDate
-        ? new Date(item.parsedMonthDate)
-            .toLocaleString('en-US', { month: 'short' })
-            .toLowerCase() +
-          ' ' +
-          new Date(item.parsedMonthDate).getFullYear()
-        : '';
+          ? item.month.toLowerCase()
+          : item.parsedMonthDate
+            ? new Date(item.parsedMonthDate)
+              .toLocaleString('en-US', { month: 'short' })
+              .toLowerCase() +
+            ' ' +
+            new Date(item.parsedMonthDate).getFullYear()
+            : '';
       if (monthKey) {
         dataMap.set(monthKey, item);
       }
@@ -1025,9 +1025,9 @@ export default function OverviewMonthlyWise() {
               </div>
             </div>
           ) : data ? (
-           <div className="overflow-x-auto overflow-y-auto max-h-[600px] w-full">
+            <div className="overflow-x-auto overflow-y-auto max-h-[600px] w-full">
               <table className="w-full text-sm text-left border-collapse min-w-[1200px]">
-               <thead className="sticky top-0 z-30">
+                <thead className="sticky top-0 z-30">
                   <tr className="bg-[#1f4e78] text-white text-xs">
                     <th className="sticky top-0 left-0 z-50 bg-[#1f4e78] px-4 py-3 border border-black/20 font-medium whitespace-nowrap min-w-[300px]">
                       Particulars (In Lakhs)
