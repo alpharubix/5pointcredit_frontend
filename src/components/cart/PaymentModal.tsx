@@ -157,8 +157,8 @@ export default function PaymentModal({
 
   const payableAmount = isCartPayment
     ? cartGrandTotal
-    : amount;
-
+    : cartGrandTotal;
+  // initally it was cartGrandTotal : amount
   const periodFeature =
     pricing.period !== 'N/A'
       ? pricing.period === 'Latest Report'
