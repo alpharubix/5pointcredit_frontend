@@ -182,6 +182,7 @@ export default function PaymentModal({
         import.meta.env.VITE_RAZOR_PAY_KEY_ID ||
         import.meta.env.VITE_RAZORPAY_KEY_ID;
 
+      console.log("Razorpay key : ", razorpayKey);
       if (!razorpayKey) {
         toast.error(
           'Razorpay live key is not configured. Please contact system administration.'
