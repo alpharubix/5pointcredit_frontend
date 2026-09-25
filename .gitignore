@@ -23,3 +23,6 @@ dist-ssr
 *.sln
 *.sw?
 .env
+
+src/api/export.ts
+src/pages/itr/ItrExportPage.tsx
