@@ -153,9 +153,7 @@ export default function PaymentModal({
     (cartSubtotal * 0.18).toFixed(2)
   );
 
-  const cartGrandTotal = Number(
-    (cartSubtotal + cartIgst).toFixed(2)
-  );
+  const cartGrandTotal = Math.floor(Number(cartSubtotal) + Number(cartIgst));
 
   const payableAmount = isCartPayment
     ? cartGrandTotal
@@ -182,7 +180,7 @@ export default function PaymentModal({
         import.meta.env.VITE_RAZOR_PAY_KEY_ID ||
         import.meta.env.VITE_RAZORPAY_KEY_ID;
 
-      console.log("Razorpay key : ", razorpayKey);
+
       if (!razorpayKey) {
         toast.error(
           'Razorpay live key is not configured. Please contact system administration.'
