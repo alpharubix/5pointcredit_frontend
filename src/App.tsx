@@ -30,6 +30,7 @@ const ITRTaxCalculationPage = lazy(() => import("@/pages/itr/TaxCalculation"));
 const ITRBalanceSheetPage = lazy(() => import("@/pages/itr/BalanceSheet"));
 const ITRProfitAndLossStatementPage = lazy(() => import("@/pages/itr/ProfitAndLossStatement"));
 const ITRRatioAnalysisPage = lazy(() => import("@/pages/itr/RatioAnalysis"));
+const ItrExportPage = lazy(() => import("@/pages/itr/ItrExportPage"));
 const ProfilePage = lazy(() => import("@/pages/ProfileManagement"))
 const HelpCenterPage = lazy(() => import("@/pages/HelpCenter"));
 const CibilCustDataFetching = lazy(() => import("@/pages/cibil/CibilCustDataFetching"));
@@ -116,6 +117,14 @@ function App() {
                         element={
                           <WalletProtectedComponent service="GST">
                             <GstReportPage />
+                          </WalletProtectedComponent>
+                        }
+                      />
+                      <Route
+                        path="/itr/export"
+                        element={
+                          <WalletProtectedComponent service="ITR">
+                            <ItrExportPage />
                           </WalletProtectedComponent>
                         }
                       />

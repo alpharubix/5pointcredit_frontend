@@ -16,6 +16,9 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useMe } from "@/hooks/useUser";
 import { useLogout } from "@/hooks/useAuth";
 import FivePointCreditWhiteLogo from "../assets/5PontCreditWhiteLogo.svg";
+import { downloadItrReport } from "@/api/export";
+import { toast } from "sonner";
+
 
 // ─── Context ────────────────────────────────────────────────────────────────
 interface SidebarContextValue {
@@ -76,6 +79,7 @@ const navItems: NavItem[] = [
     label: "ITR",
     service: "ITR",
     subItems: [
+      { label: "Export", path: "/itr/export" },
       { label: "Tax Calculation", path: "/itr/itr-tax-calculation" },
       { label: "Balance Sheet", path: "/itr/balance-sheet" },
       { label: "Profit and Loss Statement", path: "/itr/profit-and-loss-statement" },
@@ -135,10 +139,40 @@ export function AppSidebar() {
   const displayEmail = user?.email_id || "";
   const displayCompany = user?.company_name || "";
   const initials = getInitials(displayName);
+  const [isExportingItr, setIsExportingItr] = useState(false);
 
   const handleLogout = () => {
     logoutMutation.mutate();
   };
+
+  const handleSubItemClick = async (sub: NavSubItem) => {
+    if (sub.disabled) return;
+
+    if (sub.path === '/itr/export') {
+      if (isExportingItr) return;
+      try {
+        setIsExportingItr(true);
+        toast.loading(
+          'Downloading ITR Report (Tax Calculation, Balance Sheet, Profit & Loss, Ratio Analysis)...',
+          { id: 'itr-sidebar-export' }
+        );
+        await downloadItrReport();
+        toast.success('ITR Report downloaded successfully!', {
+          id: 'itr-sidebar-export',
+        });
+      } catch (error: any) {
+        toast.error(error?.message || 'Failed to download ITR report', {
+          id: 'itr-sidebar-export',
+        });
+      } finally {
+        setIsExportingItr(false);
+      }
+      return;
+    }
+
+    navigate(sub.path);
+  };
+
 
   return (
     <aside
@@ -241,17 +275,21 @@ export function AppSidebar() {
                     return (
                       <button
                         key={sub.path}
-                        onClick={() => !sub.disabled && navigate(sub.path)}
-                        disabled={sub.disabled}
+                        onClick={() => handleSubItemClick(sub)}
+                        disabled={sub.disabled || (sub.path === '/itr/export' && isExportingItr)}
                         className={cn(
-                          "flex items-center w-full px-3 py-2 rounded-lg text-sm text-white/70 hover:text-white hover:bg-white/10 transition-colors",
+                          "flex items-center w-full px-3 py-2 rounded-lg text-sm text-white/70 hover:text-white hover:bg-white/10 transition-colors cursor-pointer",
                           isSubActive && "text-white font-medium bg-white/20",
                           sub.disabled && "opacity-50 cursor-not-allowed hover:bg-transparent hover:text-white/70"
                         )}
                       >
                         <span className="truncate">{sub.label}</span>
-                        {isSubActive && (
-                          <span className="ml-auto h-1.5 w-1.5 rounded-full bg-white" />
+                        {sub.path === '/itr/export' && isExportingItr ? (
+                          <Loader2 className="ml-auto h-3.5 w-3.5 animate-spin text-white" />
+                        ) : (
+                          isSubActive && (
+                            <span className="ml-auto h-1.5 w-1.5 rounded-full bg-white" />
+                          )
                         )}
                       </button>
                     );

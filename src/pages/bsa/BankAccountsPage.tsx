@@ -12,8 +12,11 @@ import {
   Activity,
   ArrowLeftRight,
   Clock,
+  Download,
 } from 'lucide-react';
 import BsaUploadModal from '@/components/ui/BsaUploadModal';
+import { downloadBsaReport } from '@/api/export';
+import { toast } from 'sonner';
 
 import {
   getBankAccounts,
@@ -54,6 +57,26 @@ export default function BankAccountsPage({
 }: { custId?: string; hideHeader?: boolean; isAnchor?: boolean } = {}) {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+  const [downloadingReport, setDownloadingReport] = useState<string | null>(null);
+
+  const handleExport = async (
+    accNum: string,
+    accountNumber?: string | number | null
+  ) => {
+    const targetId = String(accNum || accountNumber || '');
+    if (!targetId) return;
+    try {
+      setDownloadingReport(targetId);
+      toast.loading('Downloading BSA report...', { id: `bsa-export-${targetId}` });
+      await downloadBsaReport({ account_number: accNum, account_id: accountNumber });
+      toast.success('BSA report downloaded successfully!', { id: `bsa-export-${targetId}` });
+    } catch (err: any) {
+      toast.error(err?.message || 'Failed to download BSA report', { id: `bsa-export-${targetId}` });
+    } finally {
+      setDownloadingReport(null);
+    }
+  };
+
   /*
    * Controls whether reports are displayed
    * for each individual account.
@@ -274,6 +297,41 @@ export default function BankAccountsPage({
                                 </p>
                               </div>
                               <div className="flex items-center gap-1.5">
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    handleExport(
+                                      accountNumber,
+                                      account.account_id ?? account.accountId
+                                    )
+                                  }
+                                  disabled={
+                                    downloadingReport ===
+                                    String(
+                                      accountNumber ||
+                                        account.account_id ||
+                                        account.accountId
+                                    )
+                                  }
+                                  className="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-semibold bg-[#002366] text-white transition-all duration-200 hover:bg-[#001a4d] hover:shadow-xs cursor-pointer disabled:opacity-50"
+                                  title={`Download All 3 Files (${
+                                    isIndividual
+                                      ? 'Overview, EOD Analysis, Loan Transactions'
+                                      : 'Summary, Cashflow, Overview'
+                                  })`}
+                                >
+                                  {downloadingReport ===
+                                  String(
+                                    accountNumber ||
+                                      account.account_id ||
+                                      account.accountId
+                                  ) ? (
+                                    <Loader2 className="h-3 w-3 animate-spin" />
+                                  ) : (
+                                    <Download className="h-3 w-3 text-emerald-400" />
+                                  )}
+                                  Export
+                                </button>
                                 <button
                                   type="button"
                                   onClick={() =>
